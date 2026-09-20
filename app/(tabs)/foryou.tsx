@@ -4,24 +4,21 @@ import { useState, useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { articles as mockArticles, Article } from '../../data/mockData';
 import { formatRelativeTime } from '../../utils/bengali';
-import { fetchRSSFeed } from '../../services/rssService';
-import { loadBookmarks, saveBookmarks } from '../../services/storage';
 import { useThemedStyles } from '../../theme';
 import { ArticleThumbnail, ArticleHeroImage } from '../../components/OptimizedImage';
 import { useUserStore } from '../../user';
-import ReadingStreak from '../../components/ReadingStreak';
 
-export default function HomeScreen() {
+export default function ForYouScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
-  const [articles, setArticles] = useState<Article[]>(mockArticles);
-  const [personalizedArticles, setPersonalizedArticles] = useState<Article[]>(mockArticles);
-  const [bookmarks, setBookmarks] = useState<string[]>([]);
-  const getPersonalizedFeed = useUserStore((state) => state.getPersonalizedFeed);
-  const isUserReady = useUserStore((state) => state.isInitialized);
+  const [personalizedArticles, setPersonalizedArticles] = useState<Article[]>([]);
   
-  // Use themed styles
+  const getPersonalizedFeed = useUserStore((state) => state.getPersonalizedFeed);
+  const getUserInterests = useUserStore((state) => state.getUserInterests);
+  const isUserReady = useUserStore((state) => state.isInitialized);
+  const [interests, setInterests] = useState<Array<{ type: string; id: string; score: number }>>([]);
+
   const styles = useThemedStyles((tokens) => StyleSheet.create({
     container: {
       flex: 1,
@@ -37,51 +34,47 @@ export default function HomeScreen() {
       borderBottomWidth: 1,
       borderBottomColor: tokens.border.default,
     },
-    logoContainer: {
+    titleContainer: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 8,
     },
-    logo: {
-      backgroundColor: tokens.brand.primary,
-      paddingHorizontal: 8,
-      paddingVertical: 4,
-      borderRadius: 4,
-    },
-    logoText: {
-      color: tokens.brand.onPrimary,
-      fontSize: 16,
-      fontWeight: 'bold',
-    },
-    appName: {
-      fontSize: 18,
+    title: {
+      fontSize: 20,
       fontWeight: 'bold',
       color: tokens.text.primary,
     },
-    categoryContainer: {
-      flexDirection: 'row',
-      paddingHorizontal: 12,
-      paddingVertical: 8,
+    subtitle: {
+      fontSize: 12,
+      color: tokens.text.secondary,
+      marginTop: 2,
+    },
+    interestsContainer: {
       backgroundColor: tokens.surface.base,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
       borderBottomWidth: 1,
       borderBottomColor: tokens.border.default,
+    },
+    interestsLabel: {
+      fontSize: 12,
+      color: tokens.text.secondary,
+      marginBottom: 8,
+    },
+    interestsList: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
       gap: 8,
     },
-    categoryTab: {
+    interestChip: {
+      backgroundColor: tokens.brand.surface,
       paddingHorizontal: 12,
       paddingVertical: 6,
-      borderRadius: 20,
-      backgroundColor: tokens.surface.elevated,
+      borderRadius: 16,
     },
-    activeCategory: {
-      backgroundColor: tokens.brand.primary,
-    },
-    categoryText: {
-      fontSize: 14,
-      color: tokens.text.secondary,
-    },
-    activeCategoryText: {
-      color: tokens.brand.onPrimary,
+    interestText: {
+      fontSize: 12,
+      color: tokens.brand.primary,
       fontWeight: '600',
     },
     listContent: {
@@ -109,19 +102,6 @@ export default function HomeScreen() {
       right: 0,
       padding: 16,
       backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    },
-    breakingBadge: {
-      backgroundColor: tokens.status.error,
-      paddingHorizontal: 8,
-      paddingVertical: 4,
-      borderRadius: 4,
-      alignSelf: 'flex-start',
-      marginBottom: 8,
-    },
-    breakingText: {
-      color: tokens.text.inverse,
-      fontSize: 10,
-      fontWeight: 'bold',
     },
     heroCategory: {
       color: tokens.brand.accent,
@@ -176,63 +156,44 @@ export default function HomeScreen() {
       fontSize: 12,
       color: tokens.text.secondary,
     },
+    emptyState: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 48,
+    },
+    emptyText: {
+      fontSize: 16,
+      color: tokens.text.secondary,
+      textAlign: 'center',
+      marginTop: 12,
+    },
   }));
 
-  // Load bookmarks on mount
+  // Load personalized feed
   useEffect(() => {
-    loadBookmarks().then(setBookmarks);
-  }, []);
-
-  // Fetch RSS feed on mount
-  useEffect(() => {
-    const loadRSSFeed = async () => {
-      try {
-        const rssArticles = await fetchRSSFeed();
-        if (rssArticles.length > 0) {
-          setArticles(rssArticles);
-        }
-      } catch (error) {
-        console.error('Error loading RSS feed:', error);
-        // Keep using mock data
+    const loadFeed = async () => {
+      if (isUserReady) {
+        const feed = await getPersonalizedFeed(mockArticles);
+        setPersonalizedArticles(feed);
+        
+        const userInterests = await getUserInterests(5);
+        setInterests(userInterests);
       }
     };
     
-    loadRSSFeed();
-  }, []);
-
-  // Generate personalized feed when articles change or user is ready
-  useEffect(() => {
-    const generateFeed = async () => {
-      if (isUserReady && articles.length > 0) {
-        const personalized = await getPersonalizedFeed(articles);
-        setPersonalizedArticles(personalized);
-      } else {
-        setPersonalizedArticles(articles);
-      }
-    };
-    
-    generateFeed();
-  }, [articles, isUserReady]);
+    loadFeed();
+  }, [isUserReady]);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    try {
-      const rssArticles = await fetchRSSFeed();
-      if (rssArticles.length > 0) {
-        setArticles(rssArticles);
-      } else {
-        // Simulate refresh delay if RSS fails
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
-    } catch (error) {
-      console.error('Error refreshing:', error);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
+    const feed = await getPersonalizedFeed(mockArticles);
+    setPersonalizedArticles(feed);
     setRefreshing(false);
   };
 
-  const renderArticle = ({ item, index }: { item: any; index: number }) => {
-    if (index === 0) {
+  const renderArticle = ({ item, index }: { item: Article; index: number }) => {
+    if (index === 0 && personalizedArticles.length > 0) {
       // Hero article
       return (
         <TouchableOpacity
@@ -242,11 +203,6 @@ export default function HomeScreen() {
         >
           <ArticleHeroImage uri={item.imageUrl} style={styles.heroImage} />
           <View style={styles.heroOverlay}>
-            {item.isBreaking && (
-              <View style={styles.breakingBadge}>
-                <Text style={styles.breakingText}>ব্রেকিং</Text>
-              </View>
-            )}
             <Text style={styles.heroCategory}>{item.category}</Text>
             <Text style={styles.heroTitle} numberOfLines={2}>
               {item.title}
@@ -276,50 +232,68 @@ export default function HomeScreen() {
     );
   };
 
+  if (!isUserReady) {
+    return (
+      <View style={[styles.container, { paddingTop: insets.top }]}>
+        <View style={styles.header}>
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>আপনার জন্য</Text>
+          </View>
+        </View>
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyText}>লোড হচ্ছে...</Text>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
       <View style={styles.header}>
-        <View style={styles.logoContainer}>
-          <View style={styles.logo}>
-            <Text style={styles.logoText}>আ.দে</Text>
+        <View style={styles.titleContainer}>
+          <View>
+            <Text style={styles.title}>আপনার জন্য</Text>
+            <Text style={styles.subtitle}>আপনার আগ্রহের উপর ভিত্তি করে</Text>
           </View>
-          <Text style={styles.appName}>আমার দেশ</Text>
         </View>
       </View>
 
-      {/* Category Tabs */}
-      <View style={styles.categoryContainer}>
-        <TouchableOpacity style={[styles.categoryTab, styles.activeCategory]}>
-          <Text style={[styles.categoryText, styles.activeCategoryText]}>সর্বশেষ</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.categoryTab}>
-          <Text style={styles.categoryText}>জাতীয়</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.categoryTab}>
-          <Text style={styles.categoryText}>রাজনীতি</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.categoryTab}>
-          <Text style={styles.categoryText}>খেলা</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Reading Streak */}
-      <View style={{ paddingHorizontal: 16, paddingVertical: 12 }}>
-        <ReadingStreak compact={true} />
-      </View>
+      {/* Interests */}
+      {interests.length > 0 && (
+        <View style={styles.interestsContainer}>
+          <Text style={styles.interestsLabel}>আপনার শীর্ষ আগ্রহ:</Text>
+          <View style={styles.interestsList}>
+            {interests.map((interest, index) => (
+              <View key={index} style={styles.interestChip}>
+                <Text style={styles.interestText}>
+                  {interest.id}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
 
       {/* Articles List */}
-      <FlatList
-        data={personalizedArticles}
-        renderItem={renderArticle}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        showsVerticalScrollIndicator={false}
-      />
+      {personalizedArticles.length > 0 ? (
+        <FlatList
+          data={personalizedArticles}
+          renderItem={renderArticle}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          showsVerticalScrollIndicator={false}
+        />
+      ) : (
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyText}>
+            আরও সংবাদ পড়ুন আপনার জন্য ব্যক্তিগতকৃত সুপারিশ পেতে
+          </Text>
+        </View>
+      )}
     </View>
   );
 }

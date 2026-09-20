@@ -33,6 +33,8 @@ export default function RootLayout() {
           <Stack.Screen name="article/[id]" options={{ headerShown: false }} />
           <Stack.Screen name="settings/notifications" options={{ headerShown: false }} />
           <Stack.Screen name="settings/privacy" options={{ headerShown: false }} />
+          <Stack.Screen name="settings/interests" options={{ headerShown: false }} />
+          <Stack.Screen name="settings/export" options={{ headerShown: false }} />
         </Stack>
       </ThemeProvider>
     </SafeAreaProvider>

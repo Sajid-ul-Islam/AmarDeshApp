@@ -236,9 +236,16 @@ export default function PrivacySettingsScreen() {
         {/* User Interests */}
         {interests.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>আপনার আগ্রহ</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <Text style={styles.sectionTitle}>আপনার আগ্রহ</Text>
+              <TouchableOpacity onPress={() => router.push('/settings/interests')}>
+                <Text style={{ fontSize: 14, color: '#006B3F', fontWeight: '600' }}>
+                  সব দেখুন →
+                </Text>
+              </TouchableOpacity>
+            </View>
             <View style={styles.interestsContainer}>
-              {interests.map((interest, index) => (
+              {interests.slice(0, 10).map((interest, index) => (
                 <View key={index} style={styles.interestChip}>
                   <Text style={styles.interestText}>
                     {interest.id} ({Math.round(interest.score * 100)}%)
@@ -278,6 +285,16 @@ export default function PrivacySettingsScreen() {
             </View>
           </View>
         </View>
+
+        {/* Export Data */}
+        <TouchableOpacity
+          style={[styles.dangerButton, { backgroundColor: '#006B3F' }]}
+          onPress={() => router.push('/settings/export')}
+        >
+          <Text style={styles.dangerButtonText}>
+            ডেটা এক্সপোর্ট করুন
+          </Text>
+        </TouchableOpacity>
 
         {/* Reset Button */}
         <TouchableOpacity
