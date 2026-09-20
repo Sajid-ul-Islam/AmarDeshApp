@@ -8,6 +8,7 @@ import { CardFeed } from '../components/home/CardFeed';
 import { EditLayoutMode } from '../components/home/EditLayoutMode';
 import { formatRelativeTime } from '../utils/bengali';
 import { RefreshCw, Wifi, WifiOff, List, Layers } from 'lucide-react';
+import { ThreeMinUpdate } from '../components/media/ThreeMinUpdate';
 
 interface HomePageProps {
   onArticleClick: (article: Article) => void;
@@ -98,6 +99,9 @@ export const HomePage: React.FC<HomePageProps> = ({ onArticleClick }) => {
 
       {/* Prayer Times Widget */}
       <PrayerTimes />
+
+      {/* 3-Minute Update */}
+      {features.threeMinUpdate && <ThreeMinUpdate />}
 
       {/* Loading State */}
       {loading && articles.length === 0 && (

@@ -1,12 +1,21 @@
 import { create } from 'zustand';
 
-// Feature flags for Group A - Core UX & Personalization
+// Feature flags for Group A + Group B
 export interface FeatureFlags {
+  // Group A - Core UX & Personalization
   groupACoreUx: boolean;     // Master kill switch
   dragDropReorder: boolean;  // A1: User-reorderable sections
   forYouTab: boolean;        // A2: For You / My News tab
   swipeCardFeed: boolean;    // A3: Dual nav toggle (list ↔ cards)
   hyperLocalFeed: boolean;   // A4: District-based filter
+  
+  // Group B - Multimodal Content
+  groupBMultimodal: boolean; // Master kill switch
+  ttsListenMode: boolean;    // B1: TTS listen mode
+  audioPlaylist: boolean;    // B2: Audio playlist
+  threeMinUpdate: boolean;   // B3: 3-minute update
+  verticalVideo: boolean;    // B4: Vertical video feed
+  miniPlayer: boolean;       // B5: Mini player indicator
 }
 
 interface LayoutState {

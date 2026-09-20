@@ -11,6 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Created `AGENTS.md` - Development guide with commands, style, guardrails
 - Created `docs/prd/group-a-core-ux.md` - PRD for Group A features
 
+### Implemented (Group B - Multimodal Content) ✅
+- **B1: TTS Listen Mode** — Browser SpeechSynthesis API, Bengali voice support, play/pause/speed controls
+- **B2: Audio Playlist** — Queue articles, auto-advance, skip previous/next
+- **B3: 3-Minute Update** — Curated top-5 news briefing card on home page
+- **B4: Vertical Video Feed** — TikTok-style YouTube embeds with swipe navigation
+- **B5: Mini Player** — Persistent player bar above bottom nav with progress
+- **TTS Service** — Bengali text-to-speech with rate control and progress tracking
+- **Player Store** — Global audio state with queue management
+- **Listen Button** — Added to article detail pages
+- **Feature flags** — All Group B features independently toggleable
+
 ### Implemented (Group A - Core UX & Personalization) ✅
 - **A1: User-reorderable feed sections** — Drag-to-reorder with @dnd-kit, edit mode, reset to default
 - **A2: "For You" tab** — Personalized feed based on followed categories, interest picker, onboarding

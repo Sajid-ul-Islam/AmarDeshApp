@@ -27,13 +27,20 @@ interface AppState {
 
 const STORAGE_KEY = 'amardesh_app_state';
 
-// Default: all Group A features enabled
+// Default: all Group A + Group B features enabled
 const DEFAULT_FEATURES: FeatureFlags = {
   groupACoreUx: true,
   dragDropReorder: true,
   forYouTab: true,
   swipeCardFeed: true,
   hyperLocalFeed: true,
+  // Group B features
+  groupBMultimodal: true,
+  ttsListenMode: true,
+  audioPlaylist: true,
+  threeMinUpdate: true,
+  verticalVideo: true,
+  miniPlayer: true,
 };
 
 export const useAppStore = create<AppState>((set, get) => ({

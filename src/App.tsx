@@ -10,12 +10,16 @@ import { ForYouPage } from './pages/ForYouPage';
 import { ArticleDetail } from './components/article/ArticleDetail';
 import { AIChat } from './components/ai/AIChat';
 import { AISettings } from './components/ai/AISettings';
+import { MiniPlayer } from './components/media/MiniPlayer';
+import { ListenMode } from './components/media/ListenMode';
+import { VideoFeed } from './components/media/VideoFeed';
 import { Article } from './types';
 import { useAppStore } from './store/useAppStore';
 import { useAIStore } from './store/useAIStore';
 import { useLayoutStore } from './store/useLayoutStore';
 import { usePreferencesStore } from './store/usePreferencesStore';
 import { useLocationStore } from './store/useLocationStore';
+import { usePlayerStore } from './store/usePlayerStore';
 
 function App() {
   const { isDarkMode, features, loadFromStorage: loadAppStorage } = useAppStore();
@@ -28,6 +32,8 @@ function App() {
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [showAISettings, setShowAISettings] = useState(false);
   const [showAIChat, setShowAIChat] = useState(false);
+  const [showListenMode, setShowListenMode] = useState(false);
+  const [showVideoFeed, setShowVideoFeed] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Load all stores from storage on mount
@@ -53,6 +59,23 @@ function App() {
     setShowAISettings(false);
     setShowAIChat(false);
   };
+
+  // Handle "Listen" from article
+  const handleListen = (article: Article) => {
+    setSelectedArticle(null);
+    usePlayerStore.getState().play(article);
+    setShowListenMode(true);
+  };
+
+  // If Video Feed is shown
+  if (showVideoFeed && features.verticalVideo) {
+    return <VideoFeed onBack={() => setShowVideoFeed(false)} />;
+  }
+
+  // If Listen Mode is shown
+  if (showListenMode && features.ttsListenMode) {
+    return <ListenMode onClose={() => setShowListenMode(false)} />;
+  }
 
   // If AI settings is shown
   if (showAISettings) {
@@ -94,6 +117,7 @@ function App() {
             setSelectedArticle(null);
             setShowAIChat(true);
           }}
+          onListen={features.ttsListenMode ? handleListen : undefined}
         />
       </div>
     );
@@ -159,6 +183,19 @@ function App() {
                   </button>
                 </div>
 
+                {/* Video Feed */}
+                {features.verticalVideo && (
+                  <div className={`border-t pt-3 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                    <h3 className={`font-bold text-sm mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>ভিডিও</h3>
+                    <button
+                      onClick={() => setShowVideoFeed(true)}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm ${isDarkMode ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                    >
+                      ▶️ ভিডিও ফিড
+                    </button>
+                  </div>
+                )}
+
                 {/* Feature Flags (Developer) */}
                 <div className={`border-t pt-3 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                   <h3 className={`font-bold text-sm mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -205,6 +242,11 @@ function App() {
 
       {/* Footer */}
       {activeTab === 'home' && <Footer />}
+
+      {/* Mini Player */}
+      {features.miniPlayer && (
+        <MiniPlayer onExpand={() => setShowListenMode(true)} />
+      )}
 
       {/* Bottom Navigation */}
       <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />

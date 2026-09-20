@@ -2,15 +2,16 @@ import React from 'react';
 import { Article } from '../../types';
 import { useAppStore } from '../../store/useAppStore';
 import { formatRelativeTime } from '../../utils/bengali';
-import { ArrowLeft, Clock, Share2, Bookmark, ExternalLink, Sparkles } from 'lucide-react';
+import { ArrowLeft, Clock, Share2, Bookmark, ExternalLink, Sparkles, Headphones } from 'lucide-react';
 
 interface ArticleDetailProps {
   article: Article;
   onBack: () => void;
   onAskAI?: (article: Article) => void;
+  onListen?: (article: Article) => void;
 }
 
-export const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onBack, onAskAI }) => {
+export const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onBack, onAskAI, onListen }) => {
   const { isDarkMode, bookmarks, addBookmark, removeBookmark } = useAppStore();
   const isBookmarked = bookmarks.includes(article.id);
 
@@ -76,6 +77,22 @@ export const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onBack, o
             সরকারি পর্যায়ে ইতোমধ্যে পদক্ষেপ নেওয়া শুরু হয়েছে।
           </p>
         </div>
+
+        {/* Listen Button */}
+        {onListen && (
+          <div className={`mt-6 p-4 rounded-xl ${isDarkMode ? 'bg-blue-900/20 border-blue-800' : 'bg-blue-50 border-blue-200'} border`}>
+            <button
+              onClick={() => onListen(article)}
+              className="flex items-center justify-center gap-2 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm transition-colors"
+            >
+              <Headphones size={16} />
+              🔊 শুনুন (TTS)
+            </button>
+            <p className={`text-xs text-center mt-2 ${isDarkMode ? 'text-blue-300' : 'text-blue-600'}`}>
+              এই সংবাদ শুনুন
+            </p>
+          </div>
+        )}
 
         {/* Tags */}
         <div className="flex flex-wrap gap-2 mt-6">
