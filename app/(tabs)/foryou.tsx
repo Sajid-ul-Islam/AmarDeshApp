@@ -172,24 +172,47 @@ export default function ForYouScreen() {
 
   // Load personalized feed
   useEffect(() => {
+    let active = true;
+
     const loadFeed = async () => {
-      if (isUserReady) {
+      if (!isUserReady) {
+        return;
+      }
+
+      try {
         const feed = await getPersonalizedFeed(mockArticles);
+        if (!active) {
+          return;
+        }
         setPersonalizedArticles(feed);
-        
+
         const userInterests = await getUserInterests(5);
+        if (!active) {
+          return;
+        }
         setInterests(userInterests);
+      } catch (error) {
+        console.error('Error loading personalized feed:', error);
       }
     };
-    
+
     loadFeed();
-  }, [isUserReady]);
+
+    return () => {
+      active = false;
+    };
+  }, [isUserReady, getPersonalizedFeed, getUserInterests]);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    const feed = await getPersonalizedFeed(mockArticles);
-    setPersonalizedArticles(feed);
-    setRefreshing(false);
+    try {
+      const feed = await getPersonalizedFeed(mockArticles);
+      setPersonalizedArticles(feed);
+    } catch (error) {
+      console.error('Error refreshing personalized feed:', error);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   const renderArticle = ({ item, index }: { item: Article; index: number }) => {

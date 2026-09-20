@@ -13,6 +13,8 @@
 
 import { getEvents, upsertAffinity, Affinity, Event } from './db';
 
+export type { Affinity };
+
 // Configuration
 const HALF_LIFE_DAYS = 7; // Recency decay half-life
 const MAX_SCORE = 10; // Raw score cap before normalization

@@ -1,20 +1,28 @@
 import React from 'react';
-import { Image as ExpoImage, ImageProps as ExpoImageProps } from 'expo-image';
-import { Image as RNImage, ImageProps as RNImageProps, StyleSheet, View } from 'react-native';
+import { Image as ExpoImage } from 'expo-image';
+import type { ImageContentFit, ImageProps as ExpoImageProps, ImageTransition } from 'expo-image';
+import { Image as RNImage, StyleSheet } from 'react-native';
+import type { ImageProps as RNImageProps } from 'react-native';
 import { useAppStore } from '../store/useAppStore';
 
-// Combined props type
-type ImageProps = (ExpoImageProps | RNImageProps) & {
-  source: any;
-  style?: any;
-  contentFit?: 'cover' | 'contain' | 'fill' | 'scale-down' | 'none';
-  transition?: number | { duration: number; effect?: 'ease-in-out' | 'ease-in' | 'ease-out' | 'linear' | 'bounce' | 'flip' | 'cross-dissolve' };
-  cachePolicy?: 'none' | 'disk' | 'memory' | 'memory-disk';
+type OptimizedImageSource =
+  | string
+  | number
+  | { uri: string }
+  | string[]
+  | { uri: string }[];
+
+type OptimizedImageProps = {
+  source: OptimizedImageSource;
+  style?: ExpoImageProps['style'];
+  contentFit?: ImageContentFit;
+  transition?: ImageTransition | number | null;
+  cachePolicy?: NonNullable<ExpoImageProps['cachePolicy']>;
   recyclingKey?: string;
   placeholder?: string;
   blurhash?: string;
   testID?: string;
-};
+} & Omit<RNImageProps, 'source' | 'style' | 'resizeMode' | 'testID'>;
 
 /**
  * Optimized Image Component
@@ -30,7 +38,7 @@ type ImageProps = (ExpoImageProps | RNImageProps) & {
  * - Smooth fade-in transitions
  * - Better memory management
  */
-export const OptimizedImage: React.FC<ImageProps> = (props) => {
+export const OptimizedImage: React.FC<OptimizedImageProps> = (props) => {
   const { features } = useAppStore();
   const { 
     source, 
@@ -44,16 +52,25 @@ export const OptimizedImage: React.FC<ImageProps> = (props) => {
     testID,
     ...rest 
   } = props;
+  const expoSource =
+    typeof source === 'string' || typeof source === 'number' || Array.isArray(source)
+      ? source
+      : source.uri;
+  const rnSource = Array.isArray(source)
+    ? source.map((item) => (typeof item === 'string' ? { uri: item } : item))
+    : typeof source === 'string'
+      ? { uri: source }
+      : source;
 
   // Use expo-image if feature flag is enabled
   if (features.enableExpoImage) {
     return (
       <ExpoImage
-        source={typeof source === 'string' ? source : source.uri}
+        source={expoSource}
         style={style}
-        contentFit={contentFit as any}
+        contentFit={contentFit}
         transition={transition}
-        cachePolicy={cachePolicy as any}
+        cachePolicy={cachePolicy}
         recyclingKey={recyclingKey}
         placeholder={blurhash || placeholder}
         testID={testID}
@@ -64,11 +81,11 @@ export const OptimizedImage: React.FC<ImageProps> = (props) => {
   // Fallback to React Native Image
   return (
     <RNImage
-      source={typeof source === 'string' ? { uri: source } : source}
+      source={rnSource}
       style={style}
       resizeMode={contentFit === 'cover' ? 'cover' : contentFit === 'contain' ? 'contain' : 'stretch'}
       testID={testID}
-      {...(rest as RNImageProps)}
+      {...rest}
     />
   );
 };
@@ -79,7 +96,7 @@ export const OptimizedImage: React.FC<ImageProps> = (props) => {
  */
 export const ArticleThumbnail: React.FC<{
   uri: string;
-  style?: any;
+  style?: ExpoImageProps['style'];
   recyclingKey?: string;
 }> = ({ uri, style, recyclingKey }) => {
   return (
@@ -100,7 +117,7 @@ export const ArticleThumbnail: React.FC<{
  */
 export const ArticleHeroImage: React.FC<{
   uri: string;
-  style?: any;
+  style?: ExpoImageProps['style'];
 }> = ({ uri, style }) => {
   return (
     <OptimizedImage

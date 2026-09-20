@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,16 +14,17 @@ import { useUserStore } from '../../user';
 
 export default function ArticleDetailScreen() {
   const { id } = useLocalSearchParams();
+  const articleId = Array.isArray(id) ? id[0] : id;
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [bookmarks, setBookmarks] = useState<string[]>([]);
-  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isSpeakingArticle, setIsSpeakingArticle] = useState(false);
   const [showShareSheet, setShowShareSheet] = useState(false);
   const [scrollDepth, setScrollDepth] = useState(0);
   const openTimeRef = useRef(Date.now());
   const trackEvent = useUserStore((state) => state.trackEvent);
 
-  const article = mockArticles.find((a) => a.id === id);
+  const article = mockArticles.find((a) => a.id === articleId);
   
   // Load bookmarks on mount
   useEffect(() => {
@@ -43,12 +44,12 @@ export default function ArticleDetailScreen() {
         source: 'feed',
       });
     }
-  }, [id]);
+  }, [articleId]);
 
   // Track scroll depth (throttled)
-  const handleScroll = (event: any) => {
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
-    const depth = (layoutMeasurement.height + contentOffset.y) / contentSize.height;
+    const depth = (layoutMeasurement.height + contentOffset.y) / (contentSize.height || 1);
     setScrollDepth(Math.min(1, Math.max(0, depth)));
   };
 
@@ -69,7 +70,7 @@ export default function ArticleDetailScreen() {
       // Cleanup TTS
       stopSpeaking();
     };
-  }, [id]);
+  }, [articleId]);
   if (!article) {
     return (
       <View style={styles.container}>
@@ -115,14 +116,14 @@ export default function ArticleDetailScreen() {
     
     if (currentlySpeaking) {
       stopSpeaking();
-      setIsSpeaking(false);
+      setIsSpeakingArticle(false);
       // Track TTS stopped
       trackEvent('tts_stopped', 'article', article.id, {
         listened_duration_ms: Date.now() - openTimeRef.current,
       });
     } else {
       speakArticle(article, { rate: 1.0 });
-      setIsSpeaking(true);
+      setIsSpeakingArticle(true);
       // Track TTS started
       trackEvent('tts_started', 'article', article.id);
     }
@@ -151,9 +152,9 @@ export default function ArticleDetailScreen() {
             onPress={handleTTS}
           >
             <Ionicons 
-              name={isSpeaking ? "pause" : "volume-high"} 
+              name={isSpeakingArticle ? "pause" : "volume-high"}
               size={24} 
-              color={isSpeaking ? "#006B3F" : "#6B7280"} 
+              color={isSpeakingArticle ? "#006B3F" : "#6B7280"}
             />
           </TouchableOpacity>
           <TouchableOpacity 
@@ -248,7 +249,7 @@ export default function ArticleDetailScreen() {
           </View>
 
           <Text style={styles.excerpt}>{article.excerpt}</Text>
-          <Text style={styles.content}>{article.content}</Text>
+          <Text style={styles.articleText}>{article.content}</Text>
 
           <Text style={styles.additionalContent}>
             সংবাদটি গুরুত্বপূর্ণ কারণ এটি দেশের বর্তমান পরিস্থিতি তুলে ধরে। পাঠকদের এই বিষয়ে সচেতন থাকা জরুরি। বিভিন্ন মহল থেকে এই ঘটনাকে নিয়ে বিভিন্ন প্রতিক্রিয়া আসছে।
@@ -354,7 +355,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     marginBottom: 16,
   },
-  content: {
+  articleText: {
     fontSize: 16,
     color: '#374151',
     lineHeight: 26,
