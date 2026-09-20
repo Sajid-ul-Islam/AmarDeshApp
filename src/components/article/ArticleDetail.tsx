@@ -2,14 +2,15 @@ import React from 'react';
 import { Article } from '../../types';
 import { useAppStore } from '../../store/useAppStore';
 import { formatRelativeTime } from '../../utils/bengali';
-import { ArrowLeft, Clock, Share2, Bookmark, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Clock, Share2, Bookmark, ExternalLink, Sparkles } from 'lucide-react';
 
 interface ArticleDetailProps {
   article: Article;
   onBack: () => void;
+  onAskAI?: (article: Article) => void;
 }
 
-export const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onBack }) => {
+export const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onBack, onAskAI }) => {
   const { isDarkMode, bookmarks, addBookmark, removeBookmark } = useAppStore();
   const isBookmarked = bookmarks.includes(article.id);
 
@@ -85,9 +86,25 @@ export const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onBack })
           )}
         </div>
 
+        {/* Ask AI about this article */}
+        {onAskAI && (
+          <div className={`mt-6 p-4 rounded-xl ${isDarkMode ? 'bg-purple-900/20 border-purple-800' : 'bg-purple-50 border-purple-200'} border`}>
+            <button
+              onClick={() => onAskAI(article)}
+              className="flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg font-medium text-sm transition-all"
+            >
+              <Sparkles size={16} />
+              AI সহকারীকে জিজ্ঞেস করুন
+            </button>
+            <p className={`text-xs text-center mt-2 ${isDarkMode ? 'text-purple-300' : 'text-purple-600'}`}>
+              এই সংবাদ সম্পর্কে প্রশ্ন করুন
+            </p>
+          </div>
+        )}
+
         {/* Read Full Article on Website */}
         {article.sourceUrl && (
-          <div className={`mt-6 p-4 rounded-xl ${isDarkMode ? 'bg-gray-800' : 'bg-green-50'} border ${isDarkMode ? 'border-gray-700' : 'border-green-200'}`}>
+          <div className={`mt-4 p-4 rounded-xl ${isDarkMode ? 'bg-gray-800' : 'bg-green-50'} border ${isDarkMode ? 'border-gray-700' : 'border-green-200'}`}>
             <a
               href={article.sourceUrl}
               target="_blank"

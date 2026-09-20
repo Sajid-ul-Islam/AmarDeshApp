@@ -21,6 +21,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Pull to refresh** - Manual refresh button
 - **Source linking** - "Read on website" button links to original article
 - **Error handling** - Graceful fallback to mock data on failure
+- **BYoak AI Assistant** - Bring Your Own API Key AI chat system
+  - Supports OpenAI, Google Gemini, Anthropic Claude, OpenRouter
+  - Contextual article analysis (summarize, explain, translate, impact)
+  - Chat history with localStorage persistence
+  - Privacy-first: API keys stored only in user's browser
+  - "Ask AI" button on article detail pages
+  - Quick action buttons for common tasks
+  - Bengali language AI responses
+  - Free API key guide for users
 
 ### Planned
 - Home page with hero section and news feed

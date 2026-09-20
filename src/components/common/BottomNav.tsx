@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Search, Grid3X3, Bookmark, User } from 'lucide-react';
+import { Home, Search, Sparkles, Bookmark, User } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 
 interface BottomNavProps {
@@ -13,7 +13,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
   const tabs = [
     { id: 'home', label: 'হোম', icon: Home },
     { id: 'search', label: 'খোঁজ', icon: Search },
-    { id: 'categories', label: 'ক্যাটা', icon: Grid3X3 },
+    { id: 'ai', label: 'AI', icon: Sparkles },
     { id: 'bookmarks', label: 'সেভ', icon: Bookmark },
     { id: 'more', label: 'আরও', icon: User },
   ];

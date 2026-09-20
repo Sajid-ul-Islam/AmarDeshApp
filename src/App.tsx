@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from './components/common/Header';
 import { CategoryTabs } from './components/common/CategoryTabs';
 import { BottomNav } from './components/common/BottomNav';
@@ -7,14 +7,24 @@ import { HomePage } from './pages/HomePage';
 import { SearchPage } from './pages/SearchPage';
 import { BookmarkPage } from './pages/BookmarkPage';
 import { ArticleDetail } from './components/article/ArticleDetail';
+import { AIChat } from './components/ai/AIChat';
+import { AISettings } from './components/ai/AISettings';
 import { Article } from './types';
 import { useAppStore } from './store/useAppStore';
+import { useAIStore } from './store/useAIStore';
 
 function App() {
   const { isDarkMode } = useAppStore();
+  const { loadFromStorage } = useAIStore();
   const [activeTab, setActiveTab] = useState('home');
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+  const [showAISettings, setShowAISettings] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Load AI config from storage on mount
+  useEffect(() => {
+    loadFromStorage();
+  }, [loadFromStorage]);
 
   const handleArticleClick = (article: Article) => {
     setSelectedArticle(article);
@@ -27,13 +37,33 @@ function App() {
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
     setSelectedArticle(null);
+    setShowAISettings(false);
+  };
+
+  // If AI settings is shown
+  if (showAISettings) {
+    return (
+      <div className={`${isDarkMode ? 'dark bg-gray-900' : 'bg-gray-50'} min-h-screen`}>
+        <AISettings onBack={() => setShowAISettings(false)} />
+      </div>
+    );
+  }
+
+  // Handle "Ask AI" from article
+  const handleAskAI = (_article: Article) => {
+    setSelectedArticle(null);
+    setActiveTab('ai');
   };
 
   // If article is selected, show article detail
   if (selectedArticle) {
     return (
       <div className={`${isDarkMode ? 'dark bg-gray-900' : 'bg-white'} min-h-screen`}>
-        <ArticleDetail article={selectedArticle} onBack={handleBackFromArticle} />
+        <ArticleDetail
+          article={selectedArticle}
+          onBack={handleBackFromArticle}
+          onAskAI={handleAskAI}
+        />
       </div>
     );
   }
@@ -52,40 +82,19 @@ function App() {
       )}
 
       {/* Main Content */}
-      <main className="pt-14">
+      <main className={`${activeTab === 'ai' ? 'h-screen pt-14' : 'pt-14'}`}>
         {activeTab === 'home' && <HomePage onArticleClick={handleArticleClick} />}
         {activeTab === 'search' && <SearchPage onArticleClick={handleArticleClick} />}
         {activeTab === 'bookmarks' && <BookmarkPage onArticleClick={handleArticleClick} />}
-        {activeTab === 'categories' && (
-          <div className="px-4 py-4">
-            <h1 className={`text-lg font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-              সকল বিভাগ
-            </h1>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                'জাতীয়', 'রাজনীতি', 'সারা দেশ', 'বাণিজ্য', 'বিনোদন', 'বিশ্ব',
-                'খেলা', 'ইসলাম ও জীবন', 'ফিচার', 'মতামত', 'আইন-আদালত',
-                'ভিডিও', 'সাহিত্য', 'শিক্ষা', 'স্বাস্থ্য', 'তথ্য-প্রযুক্তি',
-                'প্রকৃতি ও পরিবেশ', 'প্রবাস', 'চাকরি', 'কর্পোরেট'
-              ].map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => {
-                    useAppStore.getState().setSelectedCategory(cat);
-                    setActiveTab('home');
-                  }}
-                  className={`p-4 rounded-xl text-left font-medium text-sm transition-all ${
-                    isDarkMode
-                      ? 'bg-gray-800 text-gray-200 hover:bg-gray-700'
-                      : 'bg-white text-gray-800 hover:bg-gray-50 shadow-sm'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
+        {activeTab === 'ai' && (
+          <div className="h-full">
+            <AIChat
+              articleContext={undefined}
+              onSettingsClick={() => setShowAISettings(true)}
+            />
           </div>
         )}
+
         {activeTab === 'more' && (
           <div className="px-4 py-4">
             <h1 className={`text-lg font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -102,6 +111,18 @@ function App() {
                 <div className={`border-t pt-3 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                   <h3 className={`font-bold text-sm mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>সম্পাদক ও প্রকাশক</h3>
                   <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>মাহমুদুর রহমান</p>
+                </div>
+                <div className={`border-t pt-3 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                  <h3 className={`font-bold text-sm mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>AI সহকারী</h3>
+                  <p className={`text-xs mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    BYoak - Bring Your Own API Key
+                  </p>
+                  <button
+                    onClick={() => setShowAISettings(true)}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm ${isDarkMode ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                  >
+                    ⚙️ AI সেটিংস
+                  </button>
                 </div>
                 <div className={`border-t pt-3 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                   <h3 className={`font-bold text-sm mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>লিংকসমূহ</h3>
