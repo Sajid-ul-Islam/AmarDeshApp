@@ -10,12 +10,33 @@ export interface FeatureFlags {
   hyperLocalFeed: boolean;   // A4: District-based filter
   
   // Group B - Multimodal Content
-  groupBMultimodal: boolean; // Master kill switch
-  ttsListenMode: boolean;    // B1: TTS listen mode
-  audioPlaylist: boolean;    // B2: Audio playlist
-  threeMinUpdate: boolean;   // B3: 3-minute update
-  verticalVideo: boolean;    // B4: Vertical video feed
-  miniPlayer: boolean;       // B5: Mini player indicator
+  groupBMultimodal: boolean;
+  ttsListenMode: boolean;
+  audioPlaylist: boolean;
+  threeMinUpdate: boolean;
+  verticalVideo: boolean;
+  miniPlayer: boolean;
+  
+  // Group C - Community & Engagement
+  groupCCommunity: boolean;
+  emojiReactions: boolean;
+  comments: boolean;
+  mostCommented: boolean;
+  readingStreak: boolean;
+  
+  // Group D - Utility & Accessibility
+  groupDUtility: boolean;
+  offlineMode: boolean;
+  continueReading: boolean;
+  fontSizeControl: boolean;
+  enhancedSearch: boolean;
+  smartSummary: boolean;
+  
+  // Group E - Commercial
+  groupECommercial: boolean;
+  giftArticle: boolean;
+  interactiveAds: boolean;
+  customizableNav: boolean;
 }
 
 interface LayoutState {

@@ -20,6 +20,12 @@ import { useLayoutStore } from './store/useLayoutStore';
 import { usePreferencesStore } from './store/usePreferencesStore';
 import { useLocationStore } from './store/useLocationStore';
 import { usePlayerStore } from './store/usePlayerStore';
+import { useReactionsStore } from './store/useReactionsStore';
+import { useOfflineStore } from './store/useOfflineStore';
+import { useReadingStore } from './store/useReadingStore';
+import { useAdsStore } from './store/useAdsStore';
+import { FontSizeControl } from './components/utility/FontSizeControl';
+import { CustomizableNav } from './components/commercial/CustomizableNav';
 
 function App() {
   const { isDarkMode, features, loadFromStorage: loadAppStorage } = useAppStore();
@@ -27,6 +33,10 @@ function App() {
   const { loadFromStorage: loadLayoutStorage } = useLayoutStore();
   const { loadFromStorage: loadPreferencesStorage } = usePreferencesStore();
   const { loadFromStorage: loadLocationStorage } = useLocationStore();
+  const { loadFromStorage: loadReactionsStorage } = useReactionsStore();
+  const { loadFromStorage: loadOfflineStorage } = useOfflineStore();
+  const { loadFromStorage: loadReadingStorage } = useReadingStore();
+  const { loadFromStorage: loadAdsStorage } = useAdsStore();
 
   const [activeTab, setActiveTab] = useState('home');
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
@@ -43,7 +53,11 @@ function App() {
     loadLayoutStorage();
     loadPreferencesStorage();
     loadLocationStorage();
-  }, [loadAppStorage, loadAIStorage, loadLayoutStorage, loadPreferencesStorage, loadLocationStorage]);
+    loadReactionsStorage();
+    loadOfflineStorage();
+    loadReadingStorage();
+    loadAdsStorage();
+  }, [loadAppStorage, loadAIStorage, loadLayoutStorage, loadPreferencesStorage, loadLocationStorage, loadReactionsStorage, loadOfflineStorage, loadReadingStorage, loadAdsStorage]);
 
   const handleArticleClick = (article: Article) => {
     setSelectedArticle(article);
@@ -196,6 +210,20 @@ function App() {
                   </div>
                 )}
 
+                {/* Font Size Control (D3) */}
+                {features.fontSizeControl && (
+                  <div className={`border-t pt-3 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                    <FontSizeControl />
+                  </div>
+                )}
+
+                {/* Customizable Nav (E3) */}
+                {features.customizableNav && (
+                  <div className={`border-t pt-3 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                    <CustomizableNav />
+                  </div>
+                )}
+
                 {/* Feature Flags (Developer) */}
                 <div className={`border-t pt-3 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                   <h3 className={`font-bold text-sm mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -231,7 +259,7 @@ function App() {
                 </div>
                 <div className={`border-t pt-3 text-center ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                   <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                    সংস্করণ ১.১.০ (Group A)
+                    সংস্করণ ১.३.० (Groups A-E)
                   </p>
                 </div>
               </div>

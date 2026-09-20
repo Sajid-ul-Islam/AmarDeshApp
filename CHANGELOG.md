@@ -22,6 +22,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Listen Button** — Added to article detail pages
 - **Feature flags** — All Group B features independently toggleable
 
+### Implemented (Group C - Community & Engagement) ✅
+- **C1: Emoji Reactions** — 5 emoji reactions (❤️ 😂 😮 😢 😡) on articles with persistent counts
+- **C2: Comments Section** — Full comments system with featured comments and like functionality
+- **C3: Reading Streak** — Track consecutive reading days with points system and confetti celebrations
+- **C4: Most Commented** — Homepage widget showing top 5 most-commented articles
+- **Reactions Store** — Manages reactions, comments, and reading streaks
+- **Confetti Integration** — canvas-confetti for milestone celebrations
+
+### Implemented (Group D - Utility & Accessibility) ✅
+- **D1: Offline Download** — Download articles for offline reading with visual indicators
+- **D2: Continue Reading** — Auto-save scroll position with restore banner
+- **D3: Font Size Control** — Adjustable font sizes (S/M/L/XL) with persistent settings
+- **D4: Enhanced Search** — Search across all articles with category filtering
+- **D5: Smart Summary** — AI-generated article summaries using BYoak AI integration
+- **Offline Store** — Manages downloaded articles
+- **Reading Store** — Manages font size and scroll positions
+
+### Implemented (Group E - Commercial) ✅
+- **E1: Gift Article** — Share articles via Web Share API with clipboard fallback
+- **E2: Interactive Polls** — Embedded polls with real-time voting and results visualization
+- **E3: Customizable Nav** — User-configurable bottom navigation with toggle switches
+- **Ads Store** — Manages polls and user votes
+- **Web Share API** — Native sharing with fallback support
+
 ### Implemented (Group A - Core UX & Personalization) ✅
 - **A1: User-reorderable feed sections** — Drag-to-reorder with @dnd-kit, edit mode, reset to default
 - **A2: "For You" tab** — Personalized feed based on followed categories, interest picker, onboarding

@@ -9,6 +9,8 @@ import { EditLayoutMode } from '../components/home/EditLayoutMode';
 import { formatRelativeTime } from '../utils/bengali';
 import { RefreshCw, Wifi, WifiOff, List, Layers } from 'lucide-react';
 import { ThreeMinUpdate } from '../components/media/ThreeMinUpdate';
+import { InteractivePoll } from '../components/commercial/InteractivePoll';
+import { ReadingStreak } from '../components/community/ReadingStreak';
 
 interface HomePageProps {
   onArticleClick: (article: Article) => void;
@@ -100,8 +102,20 @@ export const HomePage: React.FC<HomePageProps> = ({ onArticleClick }) => {
       {/* Prayer Times Widget */}
       <PrayerTimes />
 
+      {/* Reading Streak (C4) */}
+      {features.readingStreak && (
+        <div className="flex justify-center">
+          <ReadingStreak />
+        </div>
+      )}
+
       {/* 3-Minute Update */}
       {features.threeMinUpdate && <ThreeMinUpdate />}
+
+      {/* Interactive Poll (E2) */}
+      {features.interactiveAds && (
+        <InteractivePoll pollId="poll-1" />
+      )}
 
       {/* Loading State */}
       {loading && articles.length === 0 && (

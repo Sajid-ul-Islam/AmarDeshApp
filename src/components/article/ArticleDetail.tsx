@@ -1,8 +1,14 @@
 import React from 'react';
 import { Article } from '../../types';
 import { useAppStore } from '../../store/useAppStore';
+import { useReadingStore } from '../../store/useReadingStore';
 import { formatRelativeTime } from '../../utils/bengali';
 import { ArrowLeft, Clock, Share2, Bookmark, ExternalLink, Sparkles, Headphones } from 'lucide-react';
+import { EmojiReactions } from '../community/EmojiReactions';
+import { CommentsSection } from '../community/CommentsSection';
+import { SmartSummary } from '../utility/SmartSummary';
+import { OfflineDownloadButton } from '../utility/OfflineDownloadButton';
+import { GiftArticle } from '../commercial/GiftArticle';
 
 interface ArticleDetailProps {
   article: Article;
@@ -12,8 +18,13 @@ interface ArticleDetailProps {
 }
 
 export const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onBack, onAskAI, onListen }) => {
-  const { isDarkMode, bookmarks, addBookmark, removeBookmark } = useAppStore();
+  const { isDarkMode, bookmarks, addBookmark, removeBookmark, features } = useAppStore();
+  const { fontSize } = useReadingStore();
   const isBookmarked = bookmarks.includes(article.id);
+
+  // Font size mapping
+  const fontSizeMap = { S: 'text-sm', M: 'text-base', L: 'text-lg', XL: 'text-xl' };
+  const articleFontSize = fontSizeMap[fontSize];
 
   const handleBookmark = () => {
     if (isBookmarked) {
@@ -65,7 +76,7 @@ export const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onBack, o
           </span>
         </div>
 
-        <div className={`mt-4 text-base leading-7 ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+        <div className={`mt-4 ${articleFontSize} leading-7 ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
           <p className="font-medium mb-3">{article.excerpt}</p>
           <p>{article.content}</p>
           <p className="mt-3">
@@ -92,6 +103,38 @@ export const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onBack, o
               এই সংবাদ শুনুন
             </p>
           </div>
+        )}
+
+        {/* Smart Summary (D5) */}
+        {features.smartSummary && (
+          <div className="mt-4">
+            <SmartSummary article={article} />
+          </div>
+        )}
+
+        {/* Action Buttons Row */}
+        <div className="flex flex-wrap gap-2 mt-4">
+          {/* Offline Download (D1) */}
+          {features.offlineMode && (
+            <OfflineDownloadButton article={article} />
+          )}
+          
+          {/* Gift Article (E1) */}
+          {features.giftArticle && (
+            <GiftArticle article={article} />
+          )}
+        </div>
+
+        {/* Emoji Reactions (C1) */}
+        {features.emojiReactions && (
+          <div className="mt-6">
+            <EmojiReactions articleId={article.id} />
+          </div>
+        )}
+
+        {/* Comments Section (C2) */}
+        {features.comments && (
+          <CommentsSection articleId={article.id} />
         )}
 
         {/* Tags */}
