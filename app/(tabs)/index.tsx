@@ -6,6 +6,7 @@ import { articles as mockArticles, Article } from '../../data/mockData';
 import { formatRelativeTime } from '../../utils/bengali';
 import { fetchRSSFeed } from '../../services/rssService';
 import { loadBookmarks, saveBookmarks } from '../../services/storage';
+import { useThemedStyles } from '../../theme';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -13,6 +14,163 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [articles, setArticles] = useState<Article[]>(mockArticles);
   const [bookmarks, setBookmarks] = useState<string[]>([]);
+  
+  // Use themed styles
+  const styles = useThemedStyles((tokens) => StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: tokens.surface.subtle,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      backgroundColor: tokens.surface.base,
+      borderBottomWidth: 1,
+      borderBottomColor: tokens.border.default,
+    },
+    logoContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    logo: {
+      backgroundColor: tokens.brand.primary,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 4,
+    },
+    logoText: {
+      color: tokens.brand.onPrimary,
+      fontSize: 16,
+      fontWeight: 'bold',
+    },
+    appName: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: tokens.text.primary,
+    },
+    categoryContainer: {
+      flexDirection: 'row',
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      backgroundColor: tokens.surface.base,
+      borderBottomWidth: 1,
+      borderBottomColor: tokens.border.default,
+      gap: 8,
+    },
+    categoryTab: {
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 20,
+      backgroundColor: tokens.surface.elevated,
+    },
+    activeCategory: {
+      backgroundColor: tokens.brand.primary,
+    },
+    categoryText: {
+      fontSize: 14,
+      color: tokens.text.secondary,
+    },
+    activeCategoryText: {
+      color: tokens.brand.onPrimary,
+      fontWeight: '600',
+    },
+    listContent: {
+      padding: 16,
+    },
+    heroCard: {
+      borderRadius: 12,
+      overflow: 'hidden',
+      marginBottom: 16,
+      backgroundColor: tokens.surface.base,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
+    },
+    heroImage: {
+      width: '100%',
+      height: 220,
+    },
+    heroOverlay: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      padding: 16,
+      backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    },
+    breakingBadge: {
+      backgroundColor: tokens.status.error,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 4,
+      alignSelf: 'flex-start',
+      marginBottom: 8,
+    },
+    breakingText: {
+      color: tokens.text.inverse,
+      fontSize: 10,
+      fontWeight: 'bold',
+    },
+    heroCategory: {
+      color: tokens.brand.accent,
+      fontSize: 12,
+      fontWeight: '600',
+      marginBottom: 4,
+    },
+    heroTitle: {
+      color: tokens.text.inverse,
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 8,
+    },
+    heroTime: {
+      color: tokens.text.tertiary,
+      fontSize: 12,
+    },
+    articleCard: {
+      flexDirection: 'row',
+      backgroundColor: tokens.surface.base,
+      borderRadius: 12,
+      overflow: 'hidden',
+      marginBottom: 12,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 2,
+      elevation: 2,
+    },
+    articleImage: {
+      width: 100,
+      height: 100,
+    },
+    articleContent: {
+      flex: 1,
+      padding: 12,
+      justifyContent: 'space-between',
+    },
+    articleCategory: {
+      fontSize: 12,
+      color: tokens.brand.primary,
+      fontWeight: '600',
+      marginBottom: 4,
+    },
+    articleTitle: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: tokens.text.primary,
+      marginBottom: 4,
+    },
+    articleTime: {
+      fontSize: 12,
+      color: tokens.text.secondary,
+    },
+  }));
 
   // Load bookmarks on mount
   useEffect(() => {
@@ -140,159 +298,3 @@ export default function HomeScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  logo: {
-    backgroundColor: '#006B3F',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  logoText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  appName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#111827',
-  },
-  categoryContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-    gap: 8,
-  },
-  categoryTab: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    backgroundColor: '#F3F4F6',
-  },
-  activeCategory: {
-    backgroundColor: '#006B3F',
-  },
-  categoryText: {
-    fontSize: 14,
-    color: '#374151',
-  },
-  activeCategoryText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-  },
-  listContent: {
-    padding: 16,
-  },
-  heroCard: {
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginBottom: 16,
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  heroImage: {
-    width: '100%',
-    height: 220,
-  },
-  heroOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 16,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-  },
-  breakingBadge: {
-    backgroundColor: '#DC2626',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-    alignSelf: 'flex-start',
-    marginBottom: 8,
-  },
-  breakingText: {
-    color: '#FFFFFF',
-    fontSize: 10,
-    fontWeight: 'bold',
-  },
-  heroCategory: {
-    color: '#4ADE80',
-    fontSize: 12,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  heroTitle: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  heroTime: {
-    color: '#D1D5DB',
-    fontSize: 12,
-  },
-  articleCard: {
-    flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  articleImage: {
-    width: 100,
-    height: 100,
-  },
-  articleContent: {
-    flex: 1,
-    padding: 12,
-    justifyContent: 'space-between',
-  },
-  articleCategory: {
-    fontSize: 12,
-    color: '#006B3F',
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  articleTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 4,
-  },
-  articleTime: {
-    fontSize: 12,
-    color: '#6B7280',
-  },
-});
