@@ -1,13 +1,30 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 import { useRouter } from 'expo-router';
+import SyncStatus from '../../components/SyncStatus';
+import {
+  isAuthenticated,
+  getCurrentUser,
+  signOut,
+  onAuthStateChange,
+} from '../../services/firebase';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const [darkMode, setDarkMode] = useState(colorScheme === 'dark');
+  const [isAuth, setIsAuth] = useState(false);
+  const [userName, setUserName] = useState<string | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChange((user) => {
+      setIsAuth(!!user);
+      setUserName(user?.displayName || user?.email || null);
+    });
+    return unsubscribe;
+  }, []);
 
   const menuItems = [
     { icon: 'notifications-outline', label: 'নোটিফিকেশন', action: () => router.push('/settings/notifications') },
@@ -37,6 +54,46 @@ export default function ProfileScreen() {
           </View>
         </View>
       </View>
+
+      {/* Sync Status */}
+      <SyncStatus onLoginPress={() => router.push('/auth/login')} />
+
+      {/* Logout Button (if authenticated) */}
+      {isAuth && (
+        <View style={styles.section}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => {
+              Alert.alert(
+                'লগআউট',
+                'আপনি কি লগআউট করতে চান?',
+                [
+                  { text: 'বাতিল', style: 'cancel' },
+                  {
+                    text: 'লগআউট',
+                    style: 'destructive',
+                    onPress: async () => {
+                      try {
+                        await signOut();
+                        Alert.alert('সফল', 'সফলভাবে লগআউট হয়েছে');
+                      } catch (error) {
+                        Alert.alert('ত্রুটি', 'লগআউট করতে সমস্যা হয়েছে');
+                      }
+                    },
+                  },
+                ]
+              );
+            }}
+            activeOpacity={0.7}
+          >
+            <View style={styles.menuLeft}>
+              <Ionicons name="log-out-outline" size={24} color="#DC2626" />
+              <Text style={[styles.menuLabel, { color: '#DC2626' }]}>লগআউট</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* Dark Mode Toggle */}
       <View style={styles.section}>

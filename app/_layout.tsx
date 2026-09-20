@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import { initializeNotifications } from '../services/notificationService';
 import { useUserStore } from '../user';
+import { initializeAuth, isFirebaseConfigured } from '../services/firebase';
 
 export default function RootLayout() {
   const loadFeatureFlags = useAppStore((state) => state.loadFeatureFlags);
@@ -22,6 +23,11 @@ export default function RootLayout() {
     if (features.enableNotifications) {
       initializeNotifications();
     }
+    
+    // Initialize Firebase Auth if configured
+    if (isFirebaseConfigured()) {
+      initializeAuth();
+    }
   }, [loadFeatureFlags, features.enableNotifications, initializeUser]);
 
   return (
@@ -35,6 +41,7 @@ export default function RootLayout() {
           <Stack.Screen name="settings/privacy" options={{ headerShown: false }} />
           <Stack.Screen name="settings/interests" options={{ headerShown: false }} />
           <Stack.Screen name="settings/export" options={{ headerShown: false }} />
+          <Stack.Screen name="auth/login" options={{ headerShown: false }} />
         </Stack>
       </ThemeProvider>
     </SafeAreaProvider>
