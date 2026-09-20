@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,6 +9,7 @@ import { loadBookmarks, saveBookmarks, loadReadingHistory, saveReadingHistory } 
 import { shareToPlatform, SharePlatform } from '../../services/sharingService';
 import { speakArticle, stopSpeaking, isSpeaking } from '../../services/ttsService';
 import { YouTubePlayerComponent } from '../../components/YouTubePlayer';
+import { ArticleHeroImage } from '../../components/OptimizedImage';
 
 export default function ArticleDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -178,7 +179,7 @@ export default function ArticleDetailScreen() {
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Article Image */}
-        <Image source={{ uri: article.imageUrl }} style={styles.articleImage} />
+        <ArticleHeroImage uri={article.imageUrl} style={styles.articleImage} />
 
         {/* Article Content */}
         <View style={styles.articleBody}>

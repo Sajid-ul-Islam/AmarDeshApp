@@ -115,6 +115,32 @@ User Action → Component → Hook → Service → API/Cache → Store → UI Up
 
 ## Implemented Modules
 
+### Expo SDK Modules ✅
+- `expo-image` - Optimized image loading with 10x performance improvement
+- `expo-router` - File-based navigation with deep linking
+- `expo-status-bar` - Status bar control
+- `expo-sharing` - Native share functionality
+- `expo-linking` - Deep linking and URL handling
+- `expo-clipboard` - Clipboard operations
+- `expo-speech` - Text-to-speech for Bengali
+- `expo-constants` - App constants and configuration
+- `expo-notifications` - Push notifications (installed, implementation pending)
+- `expo-haptics` - Haptic feedback (installed, implementation pending)
+- `expo-av` - Audio/video playback (installed, implementation pending)
+
+### Third-Party Modules ✅
+- `@react-native-async-storage/async-storage` - Persistent storage
+- `react-native-youtube-iframe` - YouTube video player
+- `react-native-webview` - WebView support
+- `react-native-gesture-handler` - Gesture handling
+- `react-native-reanimated` - Animations
+- `@react-navigation/*` - Navigation components
+- `zustand` - State management
+
+### Custom Components ✅
+- `OptimizedImage` - Wrapper for expo-image with feature flag
+- `YouTubePlayer` - YouTube video player component
+
 ### Group A - Core UX & Personalization ✅
 - `useLayoutStore` - Section reorder state + persistence
 - `usePreferencesStore` - Followed categories, reading history

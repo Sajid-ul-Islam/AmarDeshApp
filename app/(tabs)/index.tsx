@@ -1,4 +1,4 @@
-import { View, Text, FlatList, StyleSheet, RefreshControl, TouchableOpacity, Image } from 'react-native';
+import { View, Text, FlatList, StyleSheet, RefreshControl, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,6 +7,7 @@ import { formatRelativeTime } from '../../utils/bengali';
 import { fetchRSSFeed } from '../../services/rssService';
 import { loadBookmarks, saveBookmarks } from '../../services/storage';
 import { useThemedStyles } from '../../theme';
+import { ArticleThumbnail, ArticleHeroImage } from '../../components/OptimizedImage';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -220,7 +221,7 @@ export default function HomeScreen() {
           onPress={() => router.push(`/article/${item.id}`)}
           activeOpacity={0.8}
         >
-          <Image source={{ uri: item.imageUrl }} style={styles.heroImage} />
+          <ArticleHeroImage uri={item.imageUrl} style={styles.heroImage} />
           <View style={styles.heroOverlay}>
             {item.isBreaking && (
               <View style={styles.breakingBadge}>
@@ -244,7 +245,7 @@ export default function HomeScreen() {
         onPress={() => router.push(`/article/${item.id}`)}
         activeOpacity={0.8}
       >
-        <Image source={{ uri: item.imageUrl }} style={styles.articleImage} />
+        <ArticleThumbnail uri={item.imageUrl} style={styles.articleImage} recyclingKey={item.id} />
         <View style={styles.articleContent}>
           <Text style={styles.articleCategory}>{item.category}</Text>
           <Text style={styles.articleTitle} numberOfLines={2}>

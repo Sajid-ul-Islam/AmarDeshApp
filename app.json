@@ -24,7 +24,8 @@
       ],
       "infoPlist": {
         "NSCameraUsageDescription": "Allow camera access to share photos",
-        "NSPhotoLibraryUsageDescription": "Allow photo library access to share images"
+        "NSPhotoLibraryUsageDescription": "Allow photo library access to share images",
+        "NSUserNotificationsUsageDescription": "Allow notifications to receive breaking news and daily briefings"
       }
     },
     "android": {
@@ -55,7 +56,10 @@
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "WRITE_EXTERNAL_STORAGE",
+        "POST_NOTIFICATIONS",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE"
       ]
     },
     "web": {
@@ -69,6 +73,14 @@
         {
           "photosPermission": "Allow $(PRODUCT_NAME) to access your photos to share content."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#006B3F",
+          "sounds": []
+        }
       ]
     ],
     "experiments": {
@@ -81,6 +93,15 @@
       "eas": {
         "projectId": "your-project-id"
       }
+    },
+    "updates": {
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/your-project-id"
+    },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
     }
   }
 }

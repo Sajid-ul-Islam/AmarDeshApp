@@ -2,12 +2,15 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch } from 're
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { useColorScheme } from 'react-native';
+import { useRouter } from 'expo-router';
 
 export default function ProfileScreen() {
+  const router = useRouter();
   const colorScheme = useColorScheme();
   const [darkMode, setDarkMode] = useState(colorScheme === 'dark');
 
   const menuItems = [
+    { icon: 'notifications-outline', label: 'নোটিফিকেশন', action: () => router.push('/settings/notifications') },
     { icon: 'newspaper-outline', label: 'ইপেপার', action: () => {} },
     { icon: 'videocam-outline', label: 'ভিডিও', action: () => {} },
     { icon: 'chatbubble-outline', label: 'AI সহকারী', action: () => {} },

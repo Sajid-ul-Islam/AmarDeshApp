@@ -1,8 +1,9 @@
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { articles } from '../../data/mockData';
 import { formatRelativeTime } from '../../utils/bengali';
+import { ArticleThumbnail } from '../../components/OptimizedImage';
 
 export default function BookmarksScreen() {
   const router = useRouter();
@@ -25,7 +26,7 @@ export default function BookmarksScreen() {
               onPress={() => router.push(`/article/${item.id}`)}
               activeOpacity={0.8}
             >
-              <Image source={{ uri: item.imageUrl }} style={styles.articleImage} />
+              <ArticleThumbnail uri={item.imageUrl} style={styles.articleImage} recyclingKey={item.id} />
               <View style={styles.articleContent}>
                 <Text style={styles.articleCategory}>{item.category}</Text>
                 <Text style={styles.articleTitle} numberOfLines={2}>
