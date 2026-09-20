@@ -10,6 +10,7 @@ export interface Article {
   publishedAt: string;
   isBreaking?: boolean;
   isVideo?: boolean;
+  sourceUrl?: string;
 }
 
 export interface Category {

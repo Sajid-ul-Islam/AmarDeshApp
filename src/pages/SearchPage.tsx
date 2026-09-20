@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Search, X } from 'lucide-react';
-import { articles } from '../data/mockData';
 import { useAppStore } from '../store/useAppStore';
+import { useArticles } from '../hooks/useArticles';
 import { NewsCard } from '../components/common/NewsCard';
 import { Article } from '../types';
 
@@ -11,6 +11,7 @@ interface SearchPageProps {
 
 export const SearchPage: React.FC<SearchPageProps> = ({ onArticleClick }) => {
   const { isDarkMode } = useAppStore();
+  const { articles, loading, isLiveData } = useArticles();
   const [query, setQuery] = useState('');
 
   const results = useMemo(() => {
@@ -22,7 +23,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({ onArticleClick }) => {
         a.excerpt.toLowerCase().includes(lowerQuery) ||
         a.category.toLowerCase().includes(lowerQuery)
     );
-  }, [query]);
+  }, [query, articles]);
 
   return (
     <div className="px-4 py-4">
@@ -44,8 +45,23 @@ export const SearchPage: React.FC<SearchPageProps> = ({ onArticleClick }) => {
         )}
       </div>
 
+      {/* Data source indicator */}
+      {!query && (
+        <div className={`text-xs text-center mb-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+          {isLiveData ? '🟢 লাইভ ডেটা থেকে খুঁজছেন' : '🟡 ডেমো ডেটা থেকে খুঁজছেন'} • {articles.length}টি সংবাদ
+        </div>
+      )}
+
+      {/* Loading */}
+      {loading && (
+        <div className="text-center py-8">
+          <div className="animate-spin h-6 w-6 border-2 border-green-600 border-t-transparent rounded-full mx-auto mb-2" />
+          <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>সংবাদ লোড হচ্ছে...</p>
+        </div>
+      )}
+
       {/* Results */}
-      {query && results.length === 0 && (
+      {query && !loading && results.length === 0 && (
         <div className="text-center py-12">
           <p className={`text-lg ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
             কোনো ফলাফল পাওয়া যায়নি
@@ -70,7 +86,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({ onArticleClick }) => {
       )}
 
       {/* Empty State */}
-      {!query && (
+      {!query && !loading && (
         <div className="text-center py-12">
           <Search size={48} className={`mx-auto mb-3 ${isDarkMode ? 'text-gray-600' : 'text-gray-300'}`} />
           <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>

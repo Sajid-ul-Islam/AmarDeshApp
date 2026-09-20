@@ -13,6 +13,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Project skeleton with folder structure
 - Mock data for news articles
 - Type definitions for articles and categories
+- **RSS Feed Integration** - Fetches LIVE data from dailyamardesh.com/feed
+- **Multi-strategy data fetching** - rss2json API + CORS proxy fallbacks
+- **5-minute cache** - Reduces API calls, improves performance
+- **Loading skeletons** - Smooth UX while data loads
+- **Live/Demo indicator** - Shows whether data is live or fallback
+- **Pull to refresh** - Manual refresh button
+- **Source linking** - "Read on website" button links to original article
+- **Error handling** - Graceful fallback to mock data on failure
 
 ### Planned
 - Home page with hero section and news feed

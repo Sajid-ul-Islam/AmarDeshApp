@@ -2,7 +2,7 @@ import React from 'react';
 import { Article } from '../../types';
 import { useAppStore } from '../../store/useAppStore';
 import { formatRelativeTime } from '../../utils/bengali';
-import { ArrowLeft, Clock, Share2, Bookmark } from 'lucide-react';
+import { ArrowLeft, Clock, Share2, Bookmark, ExternalLink } from 'lucide-react';
 
 interface ArticleDetailProps {
   article: Article;
@@ -78,14 +78,31 @@ export const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onBack })
 
         {/* Tags */}
         <div className="flex flex-wrap gap-2 mt-6">
-          {['জাতীয়', 'ব্রেকিং নিউজ', 'গুরুত্বপূর্ণ'].map((tag) => (
-            <span
-              key={tag}
-              className={`text-xs px-2 py-1 rounded-full ${isDarkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600'}`}
-            >
-              #{tag}
+          {article.category && (
+            <span className={`text-xs px-2 py-1 rounded-full ${isDarkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
+              #{article.category}
             </span>
-          ))}
+          )}
+        </div>
+
+        {/* Read Full Article on Website */}
+        {article.sourceUrl && (
+          <div className={`mt-6 p-4 rounded-xl ${isDarkMode ? 'bg-gray-800' : 'bg-green-50'} border ${isDarkMode ? 'border-gray-700' : 'border-green-200'}`}>
+            <a
+              href={article.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full py-3 bg-green-700 hover:bg-green-800 text-white rounded-lg font-medium text-sm transition-colors"
+            >
+              <ExternalLink size={16} />
+              আমার দেশ ওয়েবসাইটে পড়ুন
+            </a>
+          </div>
+        )}
+
+        {/* Source Credit */}
+        <div className={`mt-4 text-center text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+          উৎস: dailyamardesh.com
         </div>
       </article>
     </div>
