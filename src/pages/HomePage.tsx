@@ -4,8 +4,10 @@ import { useAppStore } from '../store/useAppStore';
 import { useArticles } from '../hooks/useArticles';
 import { NewsCard } from '../components/common/NewsCard';
 import { PrayerTimes } from '../components/common/PrayerTimes';
+import { CardFeed } from '../components/home/CardFeed';
+import { EditLayoutMode } from '../components/home/EditLayoutMode';
 import { formatRelativeTime } from '../utils/bengali';
-import { RefreshCw, Wifi, WifiOff } from 'lucide-react';
+import { RefreshCw, Wifi, WifiOff, List, Layers } from 'lucide-react';
 
 interface HomePageProps {
   onArticleClick: (article: Article) => void;
@@ -28,34 +30,70 @@ const SkeletonCard: React.FC = () => {
 };
 
 export const HomePage: React.FC<HomePageProps> = ({ onArticleClick }) => {
-  const { isDarkMode, selectedCategory } = useAppStore();
+  const { isDarkMode, selectedCategory, feedMode, setFeedMode, features } = useAppStore();
   const { articles, loading, error, refresh, isLiveData } = useArticles(selectedCategory);
 
   const heroArticle = articles[0];
   const restArticles = articles.slice(1);
 
-  return (
-    <div className="px-4 py-4 space-y-5">
-      {/* Live Data Indicator */}
-      <div className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs ${
-        isLiveData 
-          ? isDarkMode ? 'bg-green-900/30 text-green-400' : 'bg-green-50 text-green-700'
-          : isDarkMode ? 'bg-yellow-900/30 text-yellow-400' : 'bg-yellow-50 text-yellow-700'
-      }`}>
-        <div className="flex items-center gap-1.5">
-          {isLiveData ? <Wifi size={12} /> : <WifiOff size={12} />}
-          <span>{isLiveData ? 'লাইভ সংবাদ (RSS)' : 'ডেমো ডেটা'}</span>
+  // Card mode view
+  if (feedMode === 'cards' && features.swipeCardFeed) {
+    return (
+      <div className="py-4">
+        {/* Mode Toggle */}
+        <div className="flex items-center justify-between px-4 mb-3">
+          <div className={`flex items-center gap-1.5 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+            <Layers size={12} />
+            <span>কার্ড মোড</span>
+          </div>
+          <button
+            onClick={() => setFeedMode('list')}
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium ${
+              isDarkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            <List size={12} />
+            তালিকা
+          </button>
         </div>
-        <button
-          onClick={refresh}
-          disabled={loading}
-          className={`flex items-center gap-1 px-2 py-1 rounded ${
-            isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-white/50'
-          } ${loading ? 'opacity-50' : ''}`}
-        >
-          <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
-          <span>রিফ্রেশ</span>
-        </button>
+        <CardFeed articles={articles} onArticleClick={onArticleClick} />
+      </div>
+    );
+  }
+
+  // List mode view (with optional edit layout)
+  const homeContent = (
+    <div className="px-4 py-4 space-y-5">
+      {/* Live Data Indicator + Mode Toggle */}
+      <div className="flex items-center justify-between">
+        <div className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs ${
+          isLiveData 
+            ? isDarkMode ? 'bg-green-900/30 text-green-400' : 'bg-green-50 text-green-700'
+            : isDarkMode ? 'bg-yellow-900/30 text-yellow-400' : 'bg-yellow-50 text-yellow-700'
+        }`}>
+          {isLiveData ? <Wifi size={12} /> : <WifiOff size={12} />}
+          <span>{isLiveData ? 'লাইভ' : 'ডেমো'}</span>
+          <button
+            onClick={refresh}
+            disabled={loading}
+            className={`ml-1 p-1 rounded ${loading ? 'opacity-50' : ''}`}
+          >
+            <RefreshCw size={10} className={loading ? 'animate-spin' : ''} />
+          </button>
+        </div>
+
+        {/* Card Mode Toggle */}
+        {features.swipeCardFeed && (
+          <button
+            onClick={() => setFeedMode('cards')}
+            className={`flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-medium ${
+              isDarkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            <Layers size={12} />
+            কার্ড
+          </button>
+        )}
       </div>
 
       {/* Prayer Times Widget */}
@@ -64,11 +102,9 @@ export const HomePage: React.FC<HomePageProps> = ({ onArticleClick }) => {
       {/* Loading State */}
       {loading && articles.length === 0 && (
         <div className="space-y-4">
-          {/* Hero skeleton */}
           <div className={`rounded-xl overflow-hidden ${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow-md animate-pulse`}>
             <div className={`w-full h-56 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`} />
           </div>
-          {/* Grid skeletons */}
           <div className="grid grid-cols-2 gap-3">
             <SkeletonCard />
             <SkeletonCard />
@@ -159,4 +195,11 @@ export const HomePage: React.FC<HomePageProps> = ({ onArticleClick }) => {
       )}
     </div>
   );
+
+  // Wrap in EditLayoutMode if feature is enabled
+  if (features.dragDropReorder) {
+    return <EditLayoutMode>{homeContent}</EditLayoutMode>;
+  }
+
+  return homeContent;
 };

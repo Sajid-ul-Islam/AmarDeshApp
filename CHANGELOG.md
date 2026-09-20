@@ -11,11 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Created `AGENTS.md` - Development guide with commands, style, guardrails
 - Created `docs/prd/group-a-core-ux.md` - PRD for Group A features
 
-### Planned (Group A - Core UX & Personalization)
-- User-reorderable feed sections (drag-to-reorder)
-- "For You" / "My News" tab
-- Dual navigation toggle (scroll list ↔ swipe-card)
-- Hyper-local feed selector (district filter)
+### Implemented (Group A - Core UX & Personalization) ✅
+- **A1: User-reorderable feed sections** — Drag-to-reorder with @dnd-kit, edit mode, reset to default
+- **A2: "For You" tab** — Personalized feed based on followed categories, interest picker, onboarding
+- **A3: Dual navigation toggle** — List ↔ Card mode with framer-motion swipe gestures
+- **A4: Hyper-local feed selector** — District picker with 8 divisions → 64 districts, location badge
+- **Feature flag system** — All features independently toggleable via "আরও" menu
+- **3 new Zustand stores** — useLayoutStore, usePreferencesStore, useLocationStore
+- **7 new components** — SectionBlock, EditLayoutMode, CardFeed, SwipeCard, InterestPicker, DistrictPicker, LocationBadge
+- **1 new page** — ForYouPage
+- **Static district data** — All 64 Bangladesh districts bundled
 
 ### Added
 - Initial project setup with React + Vite + TypeScript + Tailwind CSS

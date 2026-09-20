@@ -6,25 +6,38 @@ import { Footer } from './components/common/Footer';
 import { HomePage } from './pages/HomePage';
 import { SearchPage } from './pages/SearchPage';
 import { BookmarkPage } from './pages/BookmarkPage';
+import { ForYouPage } from './pages/ForYouPage';
 import { ArticleDetail } from './components/article/ArticleDetail';
 import { AIChat } from './components/ai/AIChat';
 import { AISettings } from './components/ai/AISettings';
 import { Article } from './types';
 import { useAppStore } from './store/useAppStore';
 import { useAIStore } from './store/useAIStore';
+import { useLayoutStore } from './store/useLayoutStore';
+import { usePreferencesStore } from './store/usePreferencesStore';
+import { useLocationStore } from './store/useLocationStore';
 
 function App() {
-  const { isDarkMode } = useAppStore();
-  const { loadFromStorage } = useAIStore();
+  const { isDarkMode, features, loadFromStorage: loadAppStorage } = useAppStore();
+  const { loadFromStorage: loadAIStorage } = useAIStore();
+  const { loadFromStorage: loadLayoutStorage } = useLayoutStore();
+  const { loadFromStorage: loadPreferencesStorage } = usePreferencesStore();
+  const { loadFromStorage: loadLocationStorage } = useLocationStore();
+
   const [activeTab, setActiveTab] = useState('home');
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [showAISettings, setShowAISettings] = useState(false);
+  const [showAIChat, setShowAIChat] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // Load AI config from storage on mount
+  // Load all stores from storage on mount
   useEffect(() => {
-    loadFromStorage();
-  }, [loadFromStorage]);
+    loadAppStorage();
+    loadAIStorage();
+    loadLayoutStorage();
+    loadPreferencesStorage();
+    loadLocationStorage();
+  }, [loadAppStorage, loadAIStorage, loadLayoutStorage, loadPreferencesStorage, loadLocationStorage]);
 
   const handleArticleClick = (article: Article) => {
     setSelectedArticle(article);
@@ -38,6 +51,7 @@ function App() {
     setActiveTab(tab);
     setSelectedArticle(null);
     setShowAISettings(false);
+    setShowAIChat(false);
   };
 
   // If AI settings is shown
@@ -49,11 +63,25 @@ function App() {
     );
   }
 
-  // Handle "Ask AI" from article
-  const handleAskAI = (_article: Article) => {
-    setSelectedArticle(null);
-    setActiveTab('ai');
-  };
+  // If AI chat is shown (from More menu)
+  if (showAIChat) {
+    return (
+      <div className={`${isDarkMode ? 'dark bg-gray-900' : 'bg-gray-50'} h-screen flex flex-col`}>
+        <div className="flex items-center gap-3 px-4 py-3 bg-white dark:bg-gray-800 border-b dark:border-gray-700">
+          <button
+            onClick={() => setShowAIChat(false)}
+            className={`p-2 rounded-lg ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
+          >
+            ←
+          </button>
+          <h1 className={`font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>AI সহকারী</h1>
+        </div>
+        <div className="flex-1">
+          <AIChat onSettingsClick={() => setShowAISettings(true)} />
+        </div>
+      </div>
+    );
+  }
 
   // If article is selected, show article detail
   if (selectedArticle) {
@@ -62,7 +90,10 @@ function App() {
         <ArticleDetail
           article={selectedArticle}
           onBack={handleBackFromArticle}
-          onAskAI={handleAskAI}
+          onAskAI={() => {
+            setSelectedArticle(null);
+            setShowAIChat(true);
+          }}
         />
       </div>
     );
@@ -76,25 +107,24 @@ function App() {
         onSearchClick={() => setActiveTab('search')}
       />
 
-      {/* Category Tabs */}
+      {/* Category Tabs (only on home) */}
       {activeTab === 'home' && (
         <CategoryTabs onCategoryClick={() => {}} />
       )}
 
       {/* Main Content */}
-      <main className={`${activeTab === 'ai' ? 'h-screen pt-14' : 'pt-14'}`}>
+      <main className={`${activeTab === 'ai' || activeTab === 'foryou' ? '' : ''} pt-14`}>
         {activeTab === 'home' && <HomePage onArticleClick={handleArticleClick} />}
         {activeTab === 'search' && <SearchPage onArticleClick={handleArticleClick} />}
         {activeTab === 'bookmarks' && <BookmarkPage onArticleClick={handleArticleClick} />}
-        {activeTab === 'ai' && (
-          <div className="h-full">
-            <AIChat
-              articleContext={undefined}
-              onSettingsClick={() => setShowAISettings(true)}
-            />
+        {activeTab === 'foryou' && features.forYouTab && (
+          <ForYouPage onArticleClick={handleArticleClick} />
+        )}
+        {activeTab === 'ai' && !features.forYouTab && (
+          <div className="h-[calc(100vh-120px)]">
+            <AIChat onSettingsClick={() => setShowAISettings(true)} />
           </div>
         )}
-
         {activeTab === 'more' && (
           <div className="px-4 py-4">
             <h1 className={`text-lg font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -108,15 +138,19 @@ function App() {
                     স্বাধীনতার কথা বলে। জনপ্রিয় বাংলা নিউজ পেপার।
                   </p>
                 </div>
-                <div className={`border-t pt-3 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                  <h3 className={`font-bold text-sm mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>সম্পাদক ও প্রকাশক</h3>
-                  <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>মাহমুদুর রহমান</p>
-                </div>
+
+                {/* AI Assistant */}
                 <div className={`border-t pt-3 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                   <h3 className={`font-bold text-sm mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>AI সহকারী</h3>
                   <p className={`text-xs mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                     BYoak - Bring Your Own API Key
                   </p>
+                  <button
+                    onClick={() => setShowAIChat(true)}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm mb-2 ${isDarkMode ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                  >
+                    💬 AI চ্যাট খুলুন
+                  </button>
                   <button
                     onClick={() => setShowAISettings(true)}
                     className={`w-full text-left px-3 py-2 rounded-lg text-sm ${isDarkMode ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
@@ -124,6 +158,29 @@ function App() {
                     ⚙️ AI সেটিংস
                   </button>
                 </div>
+
+                {/* Feature Flags (Developer) */}
+                <div className={`border-t pt-3 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                  <h3 className={`font-bold text-sm mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                    🚩 ফিচার ফ্ল্যাগ
+                  </h3>
+                  <div className="space-y-2">
+                    {Object.entries(features).map(([key, value]) => (
+                      <label key={key} className="flex items-center justify-between">
+                        <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                          {key}
+                        </span>
+                        <input
+                          type="checkbox"
+                          checked={value}
+                          onChange={() => useAppStore.getState().toggleFeature(key as any)}
+                          className="rounded text-green-600"
+                        />
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
                 <div className={`border-t pt-3 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                   <h3 className={`font-bold text-sm mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>লিংকসমূহ</h3>
                   <div className="space-y-2">
@@ -137,7 +194,7 @@ function App() {
                 </div>
                 <div className={`border-t pt-3 text-center ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                   <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                    সংস্করণ ১.০.০
+                    সংস্করণ ১.১.০ (Group A)
                   </p>
                 </div>
               </div>

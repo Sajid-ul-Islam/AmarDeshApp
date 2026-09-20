@@ -8,12 +8,16 @@ interface BottomNavProps {
 }
 
 export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) => {
-  const { isDarkMode } = useAppStore();
+  const { isDarkMode, features } = useAppStore();
 
+  // Determine tabs based on feature flags
   const tabs = [
     { id: 'home', label: 'হোম', icon: Home },
     { id: 'search', label: 'খোঁজ', icon: Search },
-    { id: 'ai', label: 'AI', icon: Sparkles },
+    // Replace AI with For You if feature is enabled
+    ...(features.forYouTab
+      ? [{ id: 'foryou', label: 'আমার জন্য', icon: Sparkles }]
+      : [{ id: 'ai', label: 'AI', icon: Sparkles }]),
     { id: 'bookmarks', label: 'সেভ', icon: Bookmark },
     { id: 'more', label: 'আরও', icon: User },
   ];
