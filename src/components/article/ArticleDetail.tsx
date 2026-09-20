@@ -1,0 +1,187 @@
+import React from 'react';
+import { Article } from '../../types';
+import { useAppStore } from '../../store/useAppStore';
+import { useReadingStore } from '../../store/useReadingStore';
+import { formatRelativeTime } from '../../utils/bengali';
+import { ArrowLeft, Clock, Share2, Bookmark, ExternalLink, Sparkles, Headphones } from 'lucide-react';
+import { EmojiReactions } from '../community/EmojiReactions';
+import { CommentsSection } from '../community/CommentsSection';
+import { SmartSummary } from '../utility/SmartSummary';
+import { OfflineDownloadButton } from '../utility/OfflineDownloadButton';
+import { GiftArticle } from '../commercial/GiftArticle';
+
+interface ArticleDetailProps {
+  article: Article;
+  onBack: () => void;
+  onAskAI?: (article: Article) => void;
+  onListen?: (article: Article) => void;
+}
+
+export const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onBack, onAskAI, onListen }) => {
+  const { isDarkMode, bookmarks, addBookmark, removeBookmark, features } = useAppStore();
+  const { fontSize } = useReadingStore();
+  const isBookmarked = bookmarks.includes(article.id);
+
+  // Font size mapping
+  const fontSizeMap = { S: 'text-sm', M: 'text-base', L: 'text-lg', XL: 'text-xl' };
+  const articleFontSize = fontSizeMap[fontSize];
+
+  const handleBookmark = () => {
+    if (isBookmarked) {
+      removeBookmark(article.id);
+    } else {
+      addBookmark(article.id);
+    }
+  };
+
+  return (
+    <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-white'}`}>
+      {/* Top Bar */}
+      <div className={`sticky top-0 z-50 flex items-center justify-between px-4 h-12 ${isDarkMode ? 'bg-gray-900' : 'bg-white'} border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+        <button onClick={onBack} className={`p-2 rounded-full ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}>
+          <ArrowLeft size={20} className={isDarkMode ? 'text-white' : 'text-gray-800'} />
+        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={handleBookmark} className={`p-2 rounded-full ${isBookmarked ? 'text-green-600' : isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+            <Bookmark size={20} fill={isBookmarked ? 'currentColor' : 'none'} />
+          </button>
+          <button className={`p-2 rounded-full ${isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'}`}>
+            <Share2 size={20} />
+          </button>
+        </div>
+      </div>
+
+      {/* Article Content */}
+      <article className="px-4 py-4">
+        <img
+          src={article.imageUrl}
+          alt={article.title}
+          className="w-full h-52 object-cover rounded-xl mb-4"
+        />
+        
+        <span className={`text-xs font-medium ${isDarkMode ? 'text-green-400' : 'text-green-700'}`}>
+          {article.category}
+        </span>
+        
+        <h1 className={`text-xl font-bold mt-2 leading-tight ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+          {article.title}
+        </h1>
+
+        <div className={`flex items-center gap-3 mt-3 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+          <span>{article.author}</span>
+          <span>•</span>
+          <span className="flex items-center gap-1">
+            <Clock size={12} />
+            {formatRelativeTime(article.publishedAt)}
+          </span>
+        </div>
+
+        <div className={`mt-4 ${articleFontSize} leading-7 ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+          <p className="font-medium mb-3">{article.excerpt}</p>
+          <p>{article.content}</p>
+          <p className="mt-3">
+            সংবাদটি গুরুত্বপূর্ণ কারণ এটি দেশের বর্তমান পরিস্থিতি তুলে ধরে। পাঠকদের এই বিষয়ে সচেতন থাকা জরুরি। 
+            বিভিন্ন মহল থেকে এই ঘটনাকে নিয়ে বিভিন্ন প্রতিক্রিয়া আসছে।
+          </p>
+          <p className="mt-3">
+            বিশেষজ্ঞরা বলছেন, এই ঘটনার প্রভাব দীর্ঘমেয়াদে দেশের রাজনৈতিক ও সামাজিক ক্ষেত্রে পড়বে। 
+            সরকারি পর্যায়ে ইতোমধ্যে পদক্ষেপ নেওয়া শুরু হয়েছে।
+          </p>
+        </div>
+
+        {/* Listen Button */}
+        {onListen && (
+          <div className={`mt-6 p-4 rounded-xl ${isDarkMode ? 'bg-blue-900/20 border-blue-800' : 'bg-blue-50 border-blue-200'} border`}>
+            <button
+              onClick={() => onListen(article)}
+              className="flex items-center justify-center gap-2 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm transition-colors"
+            >
+              <Headphones size={16} />
+              🔊 শুনুন (TTS)
+            </button>
+            <p className={`text-xs text-center mt-2 ${isDarkMode ? 'text-blue-300' : 'text-blue-600'}`}>
+              এই সংবাদ শুনুন
+            </p>
+          </div>
+        )}
+
+        {/* Smart Summary (D5) */}
+        {features.smartSummary && (
+          <div className="mt-4">
+            <SmartSummary article={article} />
+          </div>
+        )}
+
+        {/* Action Buttons Row */}
+        <div className="flex flex-wrap gap-2 mt-4">
+          {/* Offline Download (D1) */}
+          {features.offlineMode && (
+            <OfflineDownloadButton article={article} />
+          )}
+          
+          {/* Gift Article (E1) */}
+          {features.giftArticle && (
+            <GiftArticle article={article} />
+          )}
+        </div>
+
+        {/* Emoji Reactions (C1) */}
+        {features.emojiReactions && (
+          <div className="mt-6">
+            <EmojiReactions articleId={article.id} />
+          </div>
+        )}
+
+        {/* Comments Section (C2) */}
+        {features.comments && (
+          <CommentsSection articleId={article.id} />
+        )}
+
+        {/* Tags */}
+        <div className="flex flex-wrap gap-2 mt-6">
+          {article.category && (
+            <span className={`text-xs px-2 py-1 rounded-full ${isDarkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
+              #{article.category}
+            </span>
+          )}
+        </div>
+
+        {/* Ask AI about this article */}
+        {onAskAI && (
+          <div className={`mt-6 p-4 rounded-xl ${isDarkMode ? 'bg-purple-900/20 border-purple-800' : 'bg-purple-50 border-purple-200'} border`}>
+            <button
+              onClick={() => onAskAI(article)}
+              className="flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg font-medium text-sm transition-all"
+            >
+              <Sparkles size={16} />
+              AI সহকারীকে জিজ্ঞেস করুন
+            </button>
+            <p className={`text-xs text-center mt-2 ${isDarkMode ? 'text-purple-300' : 'text-purple-600'}`}>
+              এই সংবাদ সম্পর্কে প্রশ্ন করুন
+            </p>
+          </div>
+        )}
+
+        {/* Read Full Article on Website */}
+        {article.sourceUrl && (
+          <div className={`mt-4 p-4 rounded-xl ${isDarkMode ? 'bg-gray-800' : 'bg-green-50'} border ${isDarkMode ? 'border-gray-700' : 'border-green-200'}`}>
+            <a
+              href={article.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full py-3 bg-green-700 hover:bg-green-800 text-white rounded-lg font-medium text-sm transition-colors"
+            >
+              <ExternalLink size={16} />
+              আমার দেশ ওয়েবসাইটে পড়ুন
+            </a>
+          </div>
+        )}
+
+        {/* Source Credit */}
+        <div className={`mt-4 text-center text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+          উৎস: dailyamardesh.com
+        </div>
+      </article>
+    </div>
+  );
+};
