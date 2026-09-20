@@ -7,9 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Social & Multimedia Integration ✅
+- **Deep Linking** - URL parameter parsing, PWA manifest, article/category routing from shared links
+- **YouTube Enhancement** - Reusable `<YouTubePlayer>` component with loading/error states
+- **Social Sharing** - Enhanced share sheet with platform icons (WhatsApp, Facebook, Twitter, Telegram, Email)
+- **Story Sharing** - Canvas-based image generation for Instagram/Facebook stories
+- **PWA Support** - Manifest.json for app-like experience
+- New services: `deepLinkService.ts`, `socialShareService.ts`, `shareImageService.ts`
+- New components: `YouTubePlayer.tsx`, `ShareSheet.tsx`
+- Feature flags: `enableDeepLinking`, `enableYouTubePlayer`, `enableSocialSharing`, `enableStorySharing`
+
 ### Documentation
 - Created `AGENTS.md` - Development guide with commands, style, guardrails
 - Created `docs/prd/group-a-core-ux.md` - PRD for Group A features
+- Created `docs/prd/group-b-multimodal.md` - PRD for Group B features
+- Created `docs/prd/groups-c-d-e.md` - PRD for Groups C, D, E features
+- Created `AUDIT_REPORT.md` - Codebase audit for social/multimedia features
+- Created `docs/design/social-integration.md` - Design doc for social integration
 
 ### Implemented (Group B - Multimodal Content) ✅
 - **B1: TTS Listen Mode** — Browser SpeechSynthesis API, Bengali voice support, play/pause/speed controls

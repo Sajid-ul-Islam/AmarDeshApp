@@ -113,28 +113,48 @@ User Action → Component → Hook → Service → API/Cache → Store → UI Up
 6. **BYoak AI** - Bring Your Own API Key for AI features (no server needed)
 7. **Feature Flags** - All new features behind Zustand-managed flags
 
-## Planned Modules (Group A - Core UX)
+## Implemented Modules
 
-### New Stores (Planned)
-| Store | Purpose |
-|-------|---------|
-| `useLayoutStore` | Section reorder state + persistence |
-| `usePreferencesStore` | Followed categories, reading history |
-| `useLocationStore` | District/area selection |
+### Group A - Core UX & Personalization ✅
+- `useLayoutStore` - Section reorder state + persistence
+- `usePreferencesStore` - Followed categories, reading history
+- `useLocationStore` - District/area selection
+- `SectionBlock`, `EditLayoutMode` - Drag-drop reorder
+- `CardFeed`, `SwipeCard` - Swipeable card view
+- `ForYouPage`, `InterestPicker` - Personalized feed
+- `DistrictPicker`, `LocationBadge` - Hyper-local filtering
 
-### New Components (Planned)
-| Component | Purpose |
-|-----------|---------|
-| `SectionBlock` | Draggable wrapper for home sections |
-| `EditLayoutMode` | Layout editing UI overlay |
-| `CardFeed` | Swipeable card view |
-| `SwipeCard` | Individual card in card mode |
-| `ForYouPage` | Personalized feed page |
-| `InterestPicker` | Category follow/unfollow UI |
-| `DistrictPicker` | Division → district selector modal |
-| `LocationBadge` | Selected area indicator |
+### Group B - Multimodal Content ✅
+- `usePlayerStore` - Audio playback + queue management
+- `ttsService` - Text-to-speech with Bengali voice support
+- `MiniPlayer`, `ListenMode` - Audio player UI
+- `ThreeMinUpdate` - News briefing card
+- `VideoFeed`, `YouTubePlayer` - Video feed with YouTube integration
 
-### New Data (Planned)
-| File | Purpose |
-|------|---------|
-| `src/data/districts.ts` | Static Bangladesh division/district data |
+### Group C - Community & Engagement ✅
+- `useReactionsStore` - Emoji reactions, comments, reading streaks
+- `EmojiReactions` - Article reaction buttons
+- `CommentsSection` - Comments with featured comments
+- `ReadingStreak` - Gamified reading tracker with confetti
+
+### Group D - Utility & Accessibility ✅
+- `useOfflineStore` - Offline article downloads
+- `useReadingStore` - Font size + scroll position persistence
+- `FontSizeControl` - Adjustable text size
+- `OfflineDownloadButton` - Download articles for offline reading
+- `ContinueReading` - Auto-save scroll position
+- `SmartSummary` - AI-generated article summaries
+
+### Group E - Commercial ✅
+- `useAdsStore` - Interactive polls + user votes
+- `GiftArticle` - Share articles with enhanced share sheet
+- `InteractivePoll` - Embedded polls with real-time results
+- `CustomizableNav` - User-configurable bottom navigation
+
+### Social & Multimedia Integration ✅
+- `deepLinkService` - URL parameter parsing + deep link handling
+- `socialShareService` - Platform-specific sharing (WhatsApp, Facebook, Twitter, etc.)
+- `shareImageService` - Canvas-based story image generation
+- `YouTubePlayer` - Reusable YouTube embed component with error handling
+- `ShareSheet` - Bottom sheet UI with platform icons + story sharing
+- PWA manifest for app-like experience

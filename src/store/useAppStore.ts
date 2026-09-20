@@ -60,6 +60,11 @@ const DEFAULT_FEATURES: FeatureFlags = {
   giftArticle: true,
   interactiveAds: true,
   customizableNav: true,
+  // Social & Multimedia
+  enableDeepLinking: true,
+  enableYouTubePlayer: true,
+  enableSocialSharing: true,
+  enableStorySharing: true,
 };
 
 export const useAppStore = create<AppState>((set, get) => ({

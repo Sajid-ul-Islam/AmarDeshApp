@@ -37,6 +37,12 @@ export interface FeatureFlags {
   giftArticle: boolean;
   interactiveAds: boolean;
   customizableNav: boolean;
+  
+  // Social & Multimedia Integration
+  enableDeepLinking: boolean;
+  enableYouTubePlayer: boolean;
+  enableSocialSharing: boolean;
+  enableStorySharing: boolean;
 }
 
 interface LayoutState {

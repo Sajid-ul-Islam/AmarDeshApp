@@ -26,6 +26,8 @@ import { useReadingStore } from './store/useReadingStore';
 import { useAdsStore } from './store/useAdsStore';
 import { FontSizeControl } from './components/utility/FontSizeControl';
 import { CustomizableNav } from './components/commercial/CustomizableNav';
+import { parseDeepLink, hasDeepLink, clearDeepLink } from './services/deepLinkService';
+import { articles } from './data/mockData';
 
 function App() {
   const { isDarkMode, features, loadFromStorage: loadAppStorage } = useAppStore();
@@ -58,6 +60,40 @@ function App() {
     loadReadingStorage();
     loadAdsStorage();
   }, [loadAppStorage, loadAIStorage, loadLayoutStorage, loadPreferencesStorage, loadLocationStorage, loadReactionsStorage, loadOfflineStorage, loadReadingStorage, loadAdsStorage]);
+
+  // Handle deep links on mount
+  useEffect(() => {
+    if (!features.enableDeepLinking) return;
+    
+    if (hasDeepLink()) {
+      const params = parseDeepLink();
+      
+      // Handle article deep link
+      if (params.article) {
+        const article = articles.find(a => a.id === params.article);
+        if (article) {
+          setSelectedArticle(article);
+        }
+      }
+      
+      // Handle category deep link
+      else if (params.category) {
+        useAppStore.getState().setSelectedCategory(params.category);
+        setActiveTab('home');
+      }
+      
+      // Handle tab deep link
+      else if (params.tab) {
+        const validTabs = ['home', 'search', 'foryou', 'bookmarks', 'more'];
+        if (validTabs.includes(params.tab)) {
+          setActiveTab(params.tab);
+        }
+      }
+      
+      // Clear deep link from URL after handling
+      clearDeepLink();
+    }
+  }, [features.enableDeepLinking]);
 
   const handleArticleClick = (article: Article) => {
     setSelectedArticle(article);

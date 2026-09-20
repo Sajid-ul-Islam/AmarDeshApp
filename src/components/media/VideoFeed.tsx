@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronUp, ChevronDown, Volume2, VolumeX } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
+import { YouTubePlayer } from './YouTubePlayer';
 
 // Sample video data (would come from API in production)
 const sampleVideos = [
@@ -38,14 +39,15 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, isActive }) => {
 
   return (
     <div className="relative w-full h-full bg-black flex items-center justify-center">
-      {/* YouTube Embed */}
+      {/* YouTube Player */}
       {isActive && (
-        <iframe
-          src={`https://www.youtube.com/embed/${video.youtubeId}?autoplay=1&mute=${isMuted ? 1 : 0}&controls=0&loop=1&playlist=${video.youtubeId}`}
-          className="absolute inset-0 w-full h-full"
-          allow="autoplay; encrypted-media"
-          allowFullScreen
-          title={video.title}
+        <YouTubePlayer
+          videoId={video.youtubeId}
+          autoplay={true}
+          muted={isMuted}
+          controls={false}
+          loop={true}
+          className="absolute inset-0"
         />
       )}
 
