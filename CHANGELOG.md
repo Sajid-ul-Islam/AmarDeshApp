@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Documentation
+- Created `AGENTS.md` - Development guide with commands, style, guardrails
+- Created `docs/prd/group-a-core-ux.md` - PRD for Group A features
+
+### Planned (Group A - Core UX & Personalization)
+- User-reorderable feed sections (drag-to-reorder)
+- "For You" / "My News" tab
+- Dual navigation toggle (scroll list ↔ swipe-card)
+- Hyper-local feed selector (district filter)
+
 ### Added
 - Initial project setup with React + Vite + TypeScript + Tailwind CSS
 - Documentation files (R&D, Architecture, Design, PRD, Rules, Agent, Test Plan)

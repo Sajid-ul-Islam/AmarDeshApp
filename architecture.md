@@ -110,3 +110,31 @@ User Action → Component → Hook → Service → API/Cache → Store → UI Up
 3. **Offline-first** - Cache articles for offline reading
 4. **Bengali UI** - Full Bengali language interface
 5. **Performance** - Lazy loading, image optimization, code splitting
+6. **BYoak AI** - Bring Your Own API Key for AI features (no server needed)
+7. **Feature Flags** - All new features behind Zustand-managed flags
+
+## Planned Modules (Group A - Core UX)
+
+### New Stores (Planned)
+| Store | Purpose |
+|-------|---------|
+| `useLayoutStore` | Section reorder state + persistence |
+| `usePreferencesStore` | Followed categories, reading history |
+| `useLocationStore` | District/area selection |
+
+### New Components (Planned)
+| Component | Purpose |
+|-----------|---------|
+| `SectionBlock` | Draggable wrapper for home sections |
+| `EditLayoutMode` | Layout editing UI overlay |
+| `CardFeed` | Swipeable card view |
+| `SwipeCard` | Individual card in card mode |
+| `ForYouPage` | Personalized feed page |
+| `InterestPicker` | Category follow/unfollow UI |
+| `DistrictPicker` | Division → district selector modal |
+| `LocationBadge` | Selected area indicator |
+
+### New Data (Planned)
+| File | Purpose |
+|------|---------|
+| `src/data/districts.ts` | Static Bangladesh division/district data |
