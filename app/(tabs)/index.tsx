@@ -8,13 +8,17 @@ import { fetchRSSFeed } from '../../services/rssService';
 import { loadBookmarks, saveBookmarks } from '../../services/storage';
 import { useThemedStyles } from '../../theme';
 import { ArticleThumbnail, ArticleHeroImage } from '../../components/OptimizedImage';
+import { useUserStore } from '../../user';
 
 export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
   const [articles, setArticles] = useState<Article[]>(mockArticles);
+  const [personalizedArticles, setPersonalizedArticles] = useState<Article[]>(mockArticles);
   const [bookmarks, setBookmarks] = useState<string[]>([]);
+  const getPersonalizedFeed = useUserStore((state) => state.getPersonalizedFeed);
+  const isUserReady = useUserStore((state) => state.isInitialized);
   
   // Use themed styles
   const styles = useThemedStyles((tokens) => StyleSheet.create({
@@ -195,6 +199,20 @@ export default function HomeScreen() {
     loadRSSFeed();
   }, []);
 
+  // Generate personalized feed when articles change or user is ready
+  useEffect(() => {
+    const generateFeed = async () => {
+      if (isUserReady && articles.length > 0) {
+        const personalized = await getPersonalizedFeed(articles);
+        setPersonalizedArticles(personalized);
+      } else {
+        setPersonalizedArticles(articles);
+      }
+    };
+    
+    generateFeed();
+  }, [articles, isUserReady]);
+
   const onRefresh = async () => {
     setRefreshing(true);
     try {
@@ -287,7 +305,7 @@ export default function HomeScreen() {
 
       {/* Articles List */}
       <FlatList
-        data={articles}
+        data={personalizedArticles}
         renderItem={renderArticle}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}

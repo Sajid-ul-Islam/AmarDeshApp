@@ -1,14 +1,17 @@
 import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { articles } from '../../data/mockData';
 import { formatRelativeTime } from '../../utils/bengali';
 import { ArticleThumbnail } from '../../components/OptimizedImage';
+import { useUserStore } from '../../user';
 
 export default function SearchScreen() {
   const router = useRouter();
   const [query, setQuery] = useState('');
+  const [hasTrackedSearch, setHasTrackedSearch] = useState(false);
+  const trackEvent = useUserStore((state) => state.trackEvent);
 
   const filteredArticles = query.trim()
     ? articles.filter(
@@ -18,6 +21,28 @@ export default function SearchScreen() {
           a.category.toLowerCase().includes(query.toLowerCase())
       )
     : [];
+
+  // Track search performed
+  useEffect(() => {
+    if (query.trim() && filteredArticles.length > 0 && !hasTrackedSearch) {
+      trackEvent('search_performed', 'search', query, {
+        query,
+        result_count: filteredArticles.length,
+      });
+      setHasTrackedSearch(true);
+    } else if (!query.trim()) {
+      setHasTrackedSearch(false);
+    }
+  }, [query, filteredArticles.length]);
+
+  const handleResultClick = (article: typeof articles[0], index: number) => {
+    // Track search result clicked
+    trackEvent('search_result_clicked', 'article', article.id, {
+      query,
+      position: index,
+    });
+    router.push(`/article/${article.id}`);
+  };
 
   return (
     <View style={styles.container}>
@@ -44,10 +69,10 @@ export default function SearchScreen() {
           <FlatList
             data={filteredArticles}
             keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
+            renderItem={({ item, index }) => (
               <TouchableOpacity
                 style={styles.articleCard}
-                onPress={() => router.push(`/article/${item.id}`)}
+                onPress={() => handleResultClick(item, index)}
                 activeOpacity={0.8}
               >
                 <ArticleThumbnail uri={item.imageUrl} style={styles.articleImage} recyclingKey={item.id} />

@@ -4,12 +4,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { articles as mockArticles, Article } from '../../data/mockData';
 import { formatRelativeTime } from '../../utils/bengali';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { loadBookmarks, saveBookmarks, loadReadingHistory, saveReadingHistory } from '../../services/storage';
 import { shareToPlatform, SharePlatform } from '../../services/sharingService';
 import { speakArticle, stopSpeaking, isSpeaking } from '../../services/ttsService';
 import { YouTubePlayerComponent } from '../../components/YouTubePlayer';
 import { ArticleHeroImage } from '../../components/OptimizedImage';
+import { useUserStore } from '../../user';
 
 export default function ArticleDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -18,9 +19,12 @@ export default function ArticleDetailScreen() {
   const [bookmarks, setBookmarks] = useState<string[]>([]);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [showShareSheet, setShowShareSheet] = useState(false);
+  const [scrollDepth, setScrollDepth] = useState(0);
+  const openTimeRef = useRef(Date.now());
+  const trackEvent = useUserStore((state) => state.trackEvent);
 
   const article = mockArticles.find((a) => a.id === id);
-
+  
   // Load bookmarks on mount
   useEffect(() => {
     loadBookmarks().then(setBookmarks);
@@ -31,16 +35,41 @@ export default function ArticleDetailScreen() {
         const newHistory = [article.id, ...history.filter(id => id !== article.id)].slice(0, 50);
         saveReadingHistory(newHistory);
       });
+      
+      // Track article opened
+      trackEvent('article_opened', 'article', article.id, {
+        category: article.category,
+        author: article.author,
+        source: 'feed',
+      });
     }
   }, [id]);
 
-  // Cleanup TTS on unmount
+  // Track scroll depth (throttled)
+  const handleScroll = (event: any) => {
+    const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
+    const depth = (layoutMeasurement.height + contentOffset.y) / contentSize.height;
+    setScrollDepth(Math.min(1, Math.max(0, depth)));
+  };
+
+  // Cleanup on unmount
   useEffect(() => {
+    openTimeRef.current = Date.now();
+    
     return () => {
+      // Track article closed
+      if (article) {
+        const dwellTime = Date.now() - openTimeRef.current;
+        trackEvent('article_closed', 'article', article.id, {
+          dwell_time_ms: dwellTime,
+          max_scroll_depth: scrollDepth,
+        });
+      }
+      
+      // Cleanup TTS
       stopSpeaking();
     };
-  }, []);
-
+  }, [id]);
   if (!article) {
     return (
       <View style={styles.container}>
@@ -56,8 +85,15 @@ export default function ArticleDetailScreen() {
     
     if (isBookmarked) {
       newBookmarks = bookmarks.filter(id => id !== article.id);
+      // Track article unsaved
+      trackEvent('article_unsaved', 'article', article.id);
     } else {
       newBookmarks = [...bookmarks, article.id];
+      // Track article saved
+      trackEvent('article_saved', 'article', article.id, {
+        category: article.category,
+        author: article.author,
+      });
     }
     
     setBookmarks(newBookmarks);
@@ -67,6 +103,11 @@ export default function ArticleDetailScreen() {
   const handleShare = async (platform: SharePlatform) => {
     await shareToPlatform(platform, article);
     setShowShareSheet(false);
+    
+    // Track article shared
+    trackEvent('article_shared', 'article', article.id, {
+      platform,
+    });
   };
 
   const handleTTS = async () => {
@@ -75,9 +116,15 @@ export default function ArticleDetailScreen() {
     if (currentlySpeaking) {
       stopSpeaking();
       setIsSpeaking(false);
+      // Track TTS stopped
+      trackEvent('tts_stopped', 'article', article.id, {
+        listened_duration_ms: Date.now() - openTimeRef.current,
+      });
     } else {
       speakArticle(article, { rate: 1.0 });
       setIsSpeaking(true);
+      // Track TTS started
+      trackEvent('tts_started', 'article', article.id);
     }
   };
 
@@ -177,7 +224,12 @@ export default function ArticleDetailScreen() {
         </View>
       )}
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.content} 
+        showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={500}
+      >
         {/* Article Image */}
         <ArticleHeroImage uri={article.imageUrl} style={styles.articleImage} />
 

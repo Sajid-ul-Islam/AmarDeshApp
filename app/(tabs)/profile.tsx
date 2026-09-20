@@ -11,6 +11,7 @@ export default function ProfileScreen() {
 
   const menuItems = [
     { icon: 'notifications-outline', label: 'নোটিফিকেশন', action: () => router.push('/settings/notifications') },
+    { icon: 'shield-checkmark-outline', label: 'গোপনীয়তা', action: () => router.push('/settings/privacy') },
     { icon: 'newspaper-outline', label: 'ইপেপার', action: () => {} },
     { icon: 'videocam-outline', label: 'ভিডিও', action: () => {} },
     { icon: 'chatbubble-outline', label: 'AI সহকারী', action: () => {} },
