@@ -69,12 +69,6 @@
     "plugins": [
       "expo-router",
       [
-        "expo-sharing",
-        {
-          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos to share content."
-        }
-      ],
-      [
         "expo-notifications",
         {
           "icon": "./assets/icon.png",
