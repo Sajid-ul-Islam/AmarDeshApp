@@ -2,17 +2,54 @@ import { View, Text, FlatList, StyleSheet, RefreshControl, TouchableOpacity, Ima
 import { useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { articles } from '../../data/mockData';
+import { articles as mockArticles, Article } from '../../data/mockData';
 import { formatRelativeTime } from '../../utils/bengali';
+import { fetchRSSFeed } from '../../services/rssService';
+import { loadBookmarks, saveBookmarks } from '../../services/storage';
 
 export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
+  const [articles, setArticles] = useState<Article[]>(mockArticles);
+  const [bookmarks, setBookmarks] = useState<string[]>([]);
+
+  // Load bookmarks on mount
+  useEffect(() => {
+    loadBookmarks().then(setBookmarks);
+  }, []);
+
+  // Fetch RSS feed on mount
+  useEffect(() => {
+    const loadRSSFeed = async () => {
+      try {
+        const rssArticles = await fetchRSSFeed();
+        if (rssArticles.length > 0) {
+          setArticles(rssArticles);
+        }
+      } catch (error) {
+        console.error('Error loading RSS feed:', error);
+        // Keep using mock data
+      }
+    };
+    
+    loadRSSFeed();
+  }, []);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      const rssArticles = await fetchRSSFeed();
+      if (rssArticles.length > 0) {
+        setArticles(rssArticles);
+      } else {
+        // Simulate refresh delay if RSS fails
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    } catch (error) {
+      console.error('Error refreshing:', error);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
     setRefreshing(false);
   };
 
