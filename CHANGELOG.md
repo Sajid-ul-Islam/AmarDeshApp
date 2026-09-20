@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Expo SDK 57 Migration
+- Upgrade Expo, React Native, React, Expo Router, and native dependencies to the SDK 57 versions.
+- Remove unused native Firebase, legacy navigation, and retired `expo-av` dependencies; Firebase uses the existing JavaScript SDK.
+- Let `babel-preset-expo` configure Reanimated/Worklets and remove references to missing icon and splash assets.
+- Add mobile type checking, Android/iOS bundle export, and an explicit Expo Go startup command.
+- Correct Firebase module paths and notification API types; skip remote push token registration in Expo Go.
+- Update native setup instructions for Node.js 22.13+ and SDK 57.
+
 ### Social & Multimedia Integration ✅
 - **Deep Linking** - URL parameter parsing, PWA manifest, article/category routing from shared links
 - **YouTube Enhancement** - Reusable `<YouTubePlayer>` component with loading/error states

@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { articles as mockArticles, Article } from '../../data/mockData';
 import { formatRelativeTime } from '../../utils/bengali';
 import { fetchRSSFeed } from '../../services/rssService';
-import { loadBookmarks, saveBookmarks } from '../../services/storage';
+import { loadBookmarks } from '../../services/storage';
 import { useThemedStyles } from '../../theme';
 import { ArticleThumbnail, ArticleHeroImage } from '../../components/OptimizedImage';
 import { useUserStore } from '../../user';
@@ -221,17 +221,17 @@ export default function HomeScreen() {
       if (rssArticles.length > 0) {
         setArticles(rssArticles);
       } else {
-        // Simulate refresh delay if RSS fails
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
     } catch (error) {
       console.error('Error refreshing:', error);
       await new Promise(resolve => setTimeout(resolve, 1000));
+    } finally {
+      setRefreshing(false);
     }
-    setRefreshing(false);
   };
 
-  const renderArticle = ({ item, index }: { item: any; index: number }) => {
+  const renderArticle = ({ item, index }: { item: Article; index: number }) => {
     if (index === 0) {
       // Hero article
       return (

@@ -1,15 +1,22 @@
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch, Alert } from 'react-native';
+import type { ComponentProps } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useState, useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 import { useRouter } from 'expo-router';
 import SyncStatus from '../../components/SyncStatus';
 import {
-  isAuthenticated,
-  getCurrentUser,
   signOut,
   onAuthStateChange,
 } from '../../services/firebase';
+
+type IoniconName = ComponentProps<typeof Ionicons>['name'];
+
+interface ProfileMenuItem {
+  icon: IoniconName;
+  label: string;
+  action: () => void;
+}
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -26,7 +33,7 @@ export default function ProfileScreen() {
     return unsubscribe;
   }, []);
 
-  const menuItems = [
+  const menuItems: ProfileMenuItem[] = [
     { icon: 'notifications-outline', label: 'নোটিফিকেশন', action: () => router.push('/settings/notifications') },
     { icon: 'shield-checkmark-outline', label: 'গোপনীয়তা', action: () => router.push('/settings/privacy') },
     { icon: 'newspaper-outline', label: 'ইপেপার', action: () => {} },
@@ -124,7 +131,7 @@ export default function ProfileScreen() {
             activeOpacity={0.7}
           >
             <View style={styles.menuLeft}>
-              <Ionicons name={item.icon as any} size={24} color="#006B3F" />
+              <Ionicons name={item.icon} size={24} color="#006B3F" />
               <Text style={styles.menuLabel}>{item.label}</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />

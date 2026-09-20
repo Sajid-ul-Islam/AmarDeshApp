@@ -20,7 +20,7 @@ const BATCH_INTERVAL_MS = 5000; // Flush every 5 seconds
 
 // In-memory event queue
 let eventQueue: Event[] = [];
-let batchTimer: NodeJS.Timeout | null = null;
+let batchTimer: ReturnType<typeof setTimeout> | null = null;
 let isInitialized = false;
 
 /**
@@ -118,8 +118,9 @@ export async function flushEventQueue(): Promise<void> {
     return;
   }
   
+  const eventsToFlush = [...eventQueue];
+
   try {
-    const eventsToFlush = [...eventQueue];
     eventQueue = []; // Clear queue before writing (prevent duplicates)
     
     await insertEvents(eventsToFlush);
@@ -127,7 +128,7 @@ export async function flushEventQueue(): Promise<void> {
   } catch (error) {
     console.error('[EventTracker] Error flushing event queue:', error);
     // Put events back in queue if flush failed
-    eventQueue = [...eventQueue, ...eventQueue];
+    eventQueue = [...eventsToFlush];
   }
 }
 
