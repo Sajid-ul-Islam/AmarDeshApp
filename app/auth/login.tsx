@@ -23,7 +23,15 @@ import {
 
 export default function AuthScreen() {
   const router = useRouter();
-  const { colors } = useTheme();
+  const { tokens } = useTheme();
+  const colors = {
+    background: tokens.surface.base,
+    text: tokens.text.primary,
+    textSecondary: tokens.text.secondary,
+    primary: tokens.brand.primary,
+    border: tokens.border.default,
+    white: '#FFFFFF',
+  };
   
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
@@ -31,6 +39,9 @@ export default function AuthScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  const getErrorMessage = (error: unknown): string =>
+    error instanceof Error ? error.message : 'প্রমাণীকরণ ত্রুটি ঘটেছে';
 
   const handleEmailAuth = async () => {
     // Validation
@@ -66,8 +77,8 @@ export default function AuthScreen() {
       }
       
       router.back();
-    } catch (error: any) {
-      Alert.alert('ত্রুটি', error.message);
+    } catch (error: unknown) {
+      Alert.alert('ত্রুটি', getErrorMessage(error));
     } finally {
       setIsLoading(false);
     }
@@ -80,8 +91,8 @@ export default function AuthScreen() {
       await signInWithGoogle();
       Alert.alert('সফল', 'Google দিয়ে সফলভাবে লগইন হয়েছে');
       router.back();
-    } catch (error: any) {
-      Alert.alert('ত্রুটি', error.message);
+    } catch (error: unknown) {
+      Alert.alert('ত্রুটি', getErrorMessage(error));
     } finally {
       setIsLoading(false);
     }
@@ -94,8 +105,8 @@ export default function AuthScreen() {
       await signInWithApple();
       Alert.alert('সফল', 'Apple দিয়ে সফলভাবে লগইন হয়েছে');
       router.back();
-    } catch (error: any) {
-      Alert.alert('ত্রুটি', error.message);
+    } catch (error: unknown) {
+      Alert.alert('ত্রুটি', getErrorMessage(error));
     } finally {
       setIsLoading(false);
     }

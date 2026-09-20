@@ -2,6 +2,7 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Linking from 'expo-linking';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 
 // Notification channel IDs
 export const CHANNELS = {
@@ -96,6 +97,10 @@ export async function requestNotificationPermissions(): Promise<Notifications.Pe
  * Get push token for remote notifications
  */
 export async function getPushToken(): Promise<string | null> {
+  if (Constants.executionEnvironment === ExecutionEnvironment.StoreClient) {
+    return null;
+  }
+
   try {
     const { status } = await Notifications.getPermissionsAsync();
     
@@ -124,7 +129,7 @@ export async function getPushToken(): Promise<string | null> {
 export async function scheduleLocalNotification(
   title: string,
   body: string,
-  data?: any,
+  data?: Record<string, unknown>,
   channelId: string = CHANNELS.GENERAL,
   trigger?: Notifications.NotificationTriggerInput
 ): Promise<string> {
@@ -160,7 +165,7 @@ export async function scheduleDailyBriefing(time: Date = new Date()): Promise<st
     { type: 'daily-briefing' },
     CHANNELS.DAILY,
     {
-      type: 'daily',
+      type: Notifications.SchedulableTriggerInputTypes.DAILY,
       hour: 8,
       minute: 0,
     }
@@ -277,7 +282,7 @@ export function setupNotificationHandler(): void {
  */
 export function addNotificationResponseListener(
   callback: (response: Notifications.NotificationResponse) => void
-): Notifications.Subscription {
+): ReturnType<typeof Notifications.addNotificationResponseReceivedListener> {
   return Notifications.addNotificationResponseReceivedListener(callback);
 }
 
@@ -286,7 +291,7 @@ export function addNotificationResponseListener(
  */
 export function addNotificationReceivedListener(
   callback: (notification: Notifications.Notification) => void
-): Notifications.Subscription {
+): ReturnType<typeof Notifications.addNotificationReceivedListener> {
   return Notifications.addNotificationReceivedListener(callback);
 }
 
@@ -298,7 +303,7 @@ export async function handleNotificationTap(
 ): Promise<void> {
   const { data } = response.notification.request.content;
   
-  if (data?.url) {
+  if (typeof data?.url === 'string') {
     // Deep link to article
     await Linking.openURL(data.url);
   } else if (data?.articleId) {
@@ -318,11 +323,11 @@ export function isWithinQuietHours(preferences: NotificationPreferences): boolea
   const now = new Date();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
   
-  const [startHours, startMinutes] = preferences.quietHours.start.split(':').map(Number);
-  const [endHours, endMinutes] = preferences.quietHours.end.split(':').map(Number);
+  const [startHour, startMinute] = preferences.quietHours.start.split(':').map(Number);
+  const [endHour, endMinute] = preferences.quietHours.end.split(':').map(Number);
   
-  const startMinutes = startHours * 60 + startMinutes;
-  const endMinutes = endHours * 60 + endMinutes;
+  const startMinutes = startHour * 60 + startMinute;
+  const endMinutes = endHour * 60 + endMinute;
 
   // Handle overnight quiet hours (e.g., 22:00 to 07:00)
   if (startMinutes > endMinutes) {

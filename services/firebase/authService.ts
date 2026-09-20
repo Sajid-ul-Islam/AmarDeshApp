@@ -23,7 +23,7 @@ import {
   OAuthProvider,
 } from 'firebase/auth';
 import { auth, isFirebaseConfigured } from './config';
-import { getAnonymousId, linkToAuthUser } from '../user/anonymousId';
+import { getAnonymousId, linkToAuthUser } from '../../user/anonymousId';
 import { syncToCloud, pullFromCloud } from './cloudSync';
 
 // Auth state callback type

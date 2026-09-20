@@ -23,9 +23,9 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { db, isFirebaseConfigured } from './config';
-import { getEvents, insertEvents, Event } from '../user/db';
-import { getTopAffinities, upsertAffinity, Affinity } from '../user/affinityCalculator';
-import { getUserMetadata, upsertUserMetadata, UserMetadata } from '../user/db';
+import { getEvents, insertEvents, Event, upsertAffinity, Affinity } from '../../user/db';
+import { getTopAffinities } from '../../user/affinityCalculator';
+import { getUserMetadata, upsertUserMetadata, UserMetadata } from '../../user/db';
 
 // Sync state
 let lastSyncTime: number = 0;

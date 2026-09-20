@@ -215,7 +215,7 @@ export default function PrivacySettingsScreen() {
 
         {/* Reading Stats */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle">আপনার পরিসংখ্যান</Text>
+          <Text style={styles.sectionTitle}>আপনার পরিসংখ্যান</Text>
           
           <View style={styles.statsContainer}>
             <View style={styles.statItem}>
@@ -224,7 +224,7 @@ export default function PrivacySettingsScreen() {
             </View>
             <View style={styles.statItem}>
               <Text style={styles.statValue}>{formatTime(totalTimeSpentMs)}</Text>
-              <Text style={styles.statLabel">সময় ব্যয়</Text>
+              <Text style={styles.statLabel}>সময় ব্যয়</Text>
             </View>
             <View style={styles.statItem}>
               <Text style={styles.statValue}>{readingStreakDays}</Text>
@@ -273,13 +273,13 @@ export default function PrivacySettingsScreen() {
               <Text style={styles.settingLabel}>✓ আপনি কতক্ষণ পড়েন</Text>
               <Text style={styles.settingLabel}>✓ আপনি কোন বিষয় পছন্দ করেন</Text>
               <Text style={styles.settingLabel}>✓ আপনার বুকমার্ক</Text>
-              <Text style={styles.settingLabel} style={{ marginTop: 8, color: '#DC2626' }}>
+              <Text style={[styles.settingLabel, { marginTop: 8, color: '#DC2626' }]}>
                 ✗ কোনো ব্যক্তিগত তথ্য নয়
               </Text>
-              <Text style={styles.settingLabel} style={{ color: '#DC2626' }}>
+              <Text style={[styles.settingLabel, { color: '#DC2626' }]}>
                 ✗ কোনো অবস্থান ডেটা নয়
               </Text>
-              <Text style={styles.settingLabel} style={{ color: '#DC2626' }}>
+              <Text style={[styles.settingLabel, { color: '#DC2626' }]}>
                 ✗ কোনো পরিচিতি নয়
               </Text>
             </View>

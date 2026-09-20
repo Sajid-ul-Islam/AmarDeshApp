@@ -119,28 +119,41 @@ export default function NotificationSettingsScreen() {
   }, []);
 
   const loadPreferences = async () => {
-    const prefs = await loadNotificationPreferences();
-    setPreferences(prefs);
+    try {
+      const prefs = await loadNotificationPreferences();
+      setPreferences(prefs);
+    } catch (error) {
+      console.error('Error loading notification preferences:', error);
+    }
   };
 
-  const updatePreference = async (key: keyof NotificationPreferences, value: any) => {
-    const newPrefs = { ...preferences, [key]: value };
-    setPreferences(newPrefs);
-    await saveNotificationPreferences(newPrefs);
+  const updatePreference = async <K extends keyof NotificationPreferences>(
+    key: K,
+    value: NotificationPreferences[K]
+  ) => {
+    try {
+      const newPrefs: NotificationPreferences = { ...preferences, [key]: value };
+      setPreferences(newPrefs);
+      await saveNotificationPreferences(newPrefs);
 
-    // Handle specific preference changes
-    if (key === 'dailyBriefing') {
-      if (value) {
-        await scheduleDailyBriefing();
-      } else {
-        await cancelAllNotifications();
+      if (key === 'dailyBriefing') {
+        if (value) {
+          await scheduleDailyBriefing();
+        } else {
+          await cancelAllNotifications();
+        }
       }
+    } catch (error) {
+      console.error('Error updating notification preferences:', error);
     }
   };
 
   const handleResetNotifications = async () => {
-    await cancelAllNotifications();
-    // Show confirmation (in real app, use Alert)
+    try {
+      await cancelAllNotifications();
+    } catch (error) {
+      console.error('Error resetting notifications:', error);
+    }
   };
 
   return (

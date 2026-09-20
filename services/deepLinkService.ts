@@ -1,5 +1,4 @@
 import * as Linking from 'expo-linking';
-import { Article } from '../data/mockData';
 
 // Deep link prefixes
 const PREFIXES = [
@@ -7,6 +6,9 @@ const PREFIXES = [
   'https://www.dailyamardesh.com',
   'https://dailyamardesh.com',
 ];
+
+const getQueryParam = (value: string | string[] | undefined): string | undefined =>
+  Array.isArray(value) ? value[0] : value;
 
 export interface DeepLinkData {
   type: 'article' | 'category' | 'tab' | 'search' | 'unknown';
@@ -24,7 +26,7 @@ export const parseDeepLink = (url: string): DeepLinkData => {
     
     // Article link: amardesh://article/amd001 or https://dailyamardesh.com/article/amd001
     if (path.includes('article/') || queryParams.article) {
-      const articleId = path.split('article/')[1] || queryParams.article;
+      const articleId = path.split('article/')[1] || getQueryParam(queryParams.article);
       return {
         type: 'article',
         id: articleId,
@@ -33,7 +35,7 @@ export const parseDeepLink = (url: string): DeepLinkData => {
     
     // Category link: amardesh://category/national
     if (path.includes('category/') || queryParams.category) {
-      const category = path.split('category/')[1] || queryParams.category;
+      const category = path.split('category/')[1] || getQueryParam(queryParams.category);
       return {
         type: 'category',
         category: category,
@@ -42,7 +44,7 @@ export const parseDeepLink = (url: string): DeepLinkData => {
     
     // Tab link: amardesh://tab/bookmarks
     if (path.includes('tab/') || queryParams.tab) {
-      const tab = path.split('tab/')[1] || queryParams.tab;
+      const tab = path.split('tab/')[1] || getQueryParam(queryParams.tab);
       return {
         type: 'tab',
         tab: tab,
@@ -53,7 +55,7 @@ export const parseDeepLink = (url: string): DeepLinkData => {
     if (path.includes('search') || queryParams.query) {
       return {
         type: 'search',
-        query: queryParams.query || '',
+        query: getQueryParam(queryParams.query) || '',
       };
     }
     

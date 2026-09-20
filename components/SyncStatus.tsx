@@ -17,7 +17,15 @@ interface SyncStatusProps {
 }
 
 export default function SyncStatus({ onLoginPress }: SyncStatusProps) {
-  const { colors } = useTheme();
+  const { tokens } = useTheme();
+  const colors = {
+    surface: tokens.surface.base,
+    text: tokens.text.primary,
+    textSecondary: tokens.text.secondary,
+    primary: tokens.brand.primary,
+    white: '#FFFFFF',
+    success: tokens.status.success,
+  };
   const [isAuth, setIsAuth] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
   const [lastSync, setLastSync] = useState<number>(0);

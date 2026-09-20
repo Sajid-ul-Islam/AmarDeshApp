@@ -13,7 +13,6 @@
 
 import * as SecureStore from 'expo-secure-store';
 import { v4 as uuidv4 } from 'uuid';
-import { Platform } from 'react-native';
 
 const ANONYMOUS_ID_KEY = 'amar_desh_anonymous_user_id';
 
