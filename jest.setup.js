@@ -34,13 +34,13 @@ jest.mock('uuid', () => ({
   v4: jest.fn(() => 'test-uuid-1234-5678-abcd-efghijklmnop'),
 }));
 
-// Mock AsyncStorage
+// Mock AsyncStorage with promise-returning methods (like the real module)
 jest.mock('@react-native-async-storage/async-storage', () => ({
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn(),
-  multiRemove: jest.fn(),
+  getItem: jest.fn(async () => null),
+  setItem: jest.fn(async () => undefined),
+  removeItem: jest.fn(async () => undefined),
+  clear: jest.fn(async () => undefined),
+  multiRemove: jest.fn(async () => undefined),
 }));
 
 // Suppress console logs in tests

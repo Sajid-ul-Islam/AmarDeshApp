@@ -11,6 +11,7 @@
  * - Thread-safe operations
  */
 
+import { AppState, AppStateStatus, NativeEventSubscription } from 'react-native';
 import { Event, insertEvent, insertEvents } from './db';
 import { getAnonymousId } from './anonymousId';
 
@@ -22,6 +23,38 @@ const BATCH_INTERVAL_MS = 5000; // Flush every 5 seconds
 let eventQueue: Event[] = [];
 let batchTimer: ReturnType<typeof setTimeout> | null = null;
 let isInitialized = false;
+let appStateSubscription: NativeEventSubscription | null = null;
+let sessionStart = Date.now();
+let lastForegroundAt = Date.now();
+
+/**
+ * Handle app foreground/background transitions.
+ *
+ * Backgrounding must flush the in-memory queue immediately (the JS runtime
+ * may be suspended or killed before the 5s batch timer fires, losing queued
+ * events) and record the session duration for the app_backgrounded event.
+ */
+async function handleAppStateChange(nextState: AppStateStatus): Promise<void> {
+  try {
+    if (nextState === 'active') {
+      lastForegroundAt = Date.now();
+      return;
+    }
+
+    // 'background' (or 'inactive' on iOS when interrupted by app switcher)
+    const sessionDurationMs = Date.now() - lastForegroundAt;
+
+    if (nextState === 'background') {
+      // Session-level event first, then persist everything pending
+      await trackAppBackgrounded(sessionDurationMs);
+    }
+
+    await flushEventQueue();
+    sessionStart = Date.now();
+  } catch (error) {
+    console.error('[EventTracker] Error handling app state change:', error);
+  }
+}
 
 /**
  * Initialize the event tracker
@@ -36,9 +69,11 @@ export async function initializeEventTracker(): Promise<void> {
   // Start batch timer
   startBatchTimer();
   
-  // Listen for app state changes
-  // Note: In a real app, you'd use AppState from react-native
-  // For now, we'll rely on manual flush calls
+  // Flush queued events + track session duration when the app backgrounds
+  appStateSubscription = AppState.addEventListener(
+    'change',
+    handleAppStateChange
+  );
   
   isInitialized = true;
   console.log('[EventTracker] Initialized');
@@ -160,10 +195,14 @@ export function stopBatchTimer(): void {
 
 /**
  * Cleanup before app closes
- * Flushes remaining events and stops timer
+ * Flushes remaining events, stops timer, removes AppState listener
  */
 export async function cleanupEventTracker(): Promise<void> {
   stopBatchTimer();
+  if (appStateSubscription) {
+    appStateSubscription.remove();
+    appStateSubscription = null;
+  }
   await flushEventQueue();
   console.log('[EventTracker] Cleaned up');
 }
@@ -177,7 +216,8 @@ export function getQueueSize(): number {
 
 /**
  * Test-only helper: reset the tracker's in-memory state (queue, timer,
- * init flag) so tests don't leak state into each other.
+ * init flag, AppState subscription) so tests don't leak state into each
+ * other.
  */
 export function __resetForTests(): void {
   eventQueue = [];
@@ -185,7 +225,13 @@ export function __resetForTests(): void {
     clearInterval(batchTimer);
     batchTimer = null;
   }
+  if (appStateSubscription) {
+    appStateSubscription.remove();
+    appStateSubscription = null;
+  }
   isInitialized = false;
+  sessionStart = Date.now();
+  lastForegroundAt = Date.now();
 }
 
 // ============================================================================

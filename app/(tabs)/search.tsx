@@ -41,7 +41,11 @@ export default function SearchScreen() {
       query,
       position: index,
     });
-    router.push(`/article/${article.id}`);
+    // Pass source so article_opened attribution records 'search'
+    router.push({
+      pathname: '/article/[id]',
+      params: { id: article.id, source: 'search' },
+    } as const);
   };
 
   return (

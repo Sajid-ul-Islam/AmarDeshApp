@@ -1,8 +1,63 @@
-import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Linking from 'expo-linking';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
+import type * as NotificationsType from 'expo-notifications';
+
+/**
+ * expo-notifications must be loaded lazily.
+ *
+ * Importing it statically triggers a module-level side effect
+ * (DevicePushTokenAutoRegistration registers a push-token listener at import
+ * time) that THROWS on Android inside Expo Go since SDK 53 — crashing the
+ * app at startup before any of our code runs. So we only require() the
+ * module when it is actually usable:
+ *
+ * - Development/production builds: always available
+ * - Expo Go on iOS: available (limited push support, local notifications OK)
+ * - Expo Go on Android: NOT available — every API no-ops via `notifications`
+ *   being null and `isNotificationApiAvailable()` returning false
+ *
+ * NOTE: when `notifications` is null, values typed as Notifications.* are
+ * unobservable at runtime, so consumers see inert behavior instead of a
+ * crash. Full functionality requires a development build.
+ */
+let notificationsModule: typeof NotificationsType | null = null;
+let notificationsLoadAttempted = false;
+
+function loadNotifications(): typeof NotificationsType | null {
+  if (notificationsLoadAttempted) {
+    return notificationsModule;
+  }
+  notificationsLoadAttempted = true;
+
+  const inExpoGo =
+    Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+
+  if (inExpoGo && Platform.OS === 'android') {
+    console.log(
+      '[Notifications] Remote push unavailable in Expo Go on Android; notifications disabled. Use a development build for full support.'
+    );
+    return null;
+  }
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    notificationsModule =
+      require('expo-notifications') as typeof NotificationsType;
+  } catch (error) {
+    console.warn('[Notifications] Failed to load expo-notifications:', error);
+    notificationsModule = null;
+  }
+  return notificationsModule;
+}
+
+/**
+ * Whether the native notification APIs are usable in the current runtime.
+ */
+export function isNotificationApiAvailable(): boolean {
+  return loadNotifications() !== null;
+}
 
 // Notification channel IDs
 export const CHANNELS = {
@@ -46,6 +101,9 @@ const defaultPreferences: NotificationPreferences = {
  * Configure notification channels for Android
  */
 export async function configureNotificationChannels(): Promise<void> {
+  const Notifications = loadNotifications();
+  if (!Notifications) return;
+
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync(CHANNELS.BREAKING, {
       name: 'Breaking News',
@@ -82,7 +140,10 @@ export async function configureNotificationChannels(): Promise<void> {
 /**
  * Request notification permissions
  */
-export async function requestNotificationPermissions(): Promise<Notifications.PermissionStatus> {
+export async function requestNotificationPermissions(): Promise<NotificationsType.PermissionStatus> {
+  const Notifications = loadNotifications();
+  if (!Notifications) return 'denied' as NotificationsType.PermissionStatus;
+
   const { status: existingStatus } = await Notifications.getPermissionsAsync();
   
   if (existingStatus === 'granted') {
@@ -112,6 +173,9 @@ function hasValidProjectId(): boolean {
  * Get push token for remote notifications
  */
 export async function getPushToken(): Promise<string | null> {
+  const Notifications = loadNotifications();
+  if (!Notifications) return null;
+
   if (Constants.executionEnvironment === ExecutionEnvironment.StoreClient) {
     return null;
   }
@@ -151,8 +215,11 @@ export async function scheduleLocalNotification(
   body: string,
   data?: Record<string, unknown>,
   channelId: string = CHANNELS.GENERAL,
-  trigger?: Notifications.NotificationTriggerInput
+  trigger?: NotificationsType.NotificationTriggerInput
 ): Promise<string> {
+  const Notifications = loadNotifications();
+  if (!Notifications) return '';
+
   const notificationId = await Notifications.scheduleNotificationAsync({
     content: {
       title,
@@ -171,6 +238,9 @@ export async function scheduleLocalNotification(
  * Schedule a daily briefing notification (fires every day at 8:00 AM)
  */
 export async function scheduleDailyBriefing(): Promise<string> {
+  const Notifications = loadNotifications();
+  if (!Notifications) return '';
+
   return await scheduleLocalNotification(
     'দৈনিক সংবাদ',
     'আজকের গুরুত্বপূর্ণ সংবাদ পড়ুন',
@@ -229,6 +299,8 @@ export async function sendCategoryUpdateNotification(
  * Cancel all scheduled notifications
  */
 export async function cancelAllNotifications(): Promise<void> {
+  const Notifications = loadNotifications();
+  if (!Notifications) return;
   await Notifications.cancelAllScheduledNotificationsAsync();
 }
 
@@ -236,13 +308,17 @@ export async function cancelAllNotifications(): Promise<void> {
  * Cancel a specific notification
  */
 export async function cancelNotification(notificationId: string): Promise<void> {
+  const Notifications = loadNotifications();
+  if (!Notifications) return;
   await Notifications.cancelScheduledNotificationAsync(notificationId);
 }
 
 /**
  * Get all scheduled notifications
  */
-export async function getScheduledNotifications(): Promise<Notifications.NotificationRequest[]> {
+export async function getScheduledNotifications(): Promise<NotificationsType.NotificationRequest[]> {
+  const Notifications = loadNotifications();
+  if (!Notifications) return [];
   return await Notifications.getAllScheduledNotificationsAsync();
 }
 
@@ -278,6 +354,9 @@ export async function saveNotificationPreferences(
  * Handle notification tap - navigate to article
  */
 export function setupNotificationHandler(): void {
+  const Notifications = loadNotifications();
+  if (!Notifications) return;
+
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
       shouldShowAlert: true,
@@ -293,8 +372,10 @@ export function setupNotificationHandler(): void {
  * Listen for notification responses (taps)
  */
 export function addNotificationResponseListener(
-  callback: (response: Notifications.NotificationResponse) => void
-): ReturnType<typeof Notifications.addNotificationResponseReceivedListener> {
+  callback: (response: NotificationsType.NotificationResponse) => void
+): ReturnType<typeof NotificationsType.addNotificationResponseReceivedListener> | null {
+  const Notifications = loadNotifications();
+  if (!Notifications) return null;
   return Notifications.addNotificationResponseReceivedListener(callback);
 }
 
@@ -302,25 +383,32 @@ export function addNotificationResponseListener(
  * Listen for foreground notifications
  */
 export function addNotificationReceivedListener(
-  callback: (notification: Notifications.Notification) => void
-): ReturnType<typeof Notifications.addNotificationReceivedListener> {
+  callback: (notification: NotificationsType.Notification) => void
+): ReturnType<typeof NotificationsType.addNotificationReceivedListener> | null {
+  const Notifications = loadNotifications();
+  if (!Notifications) return null;
   return Notifications.addNotificationReceivedListener(callback);
 }
 
 /**
  * Handle notification tap and navigate
+ * Appends source=notification so article_opened attribution records
+ * where the user came from.
  */
 export async function handleNotificationTap(
-  response: Notifications.NotificationResponse
+  response: NotificationsType.NotificationResponse
 ): Promise<void> {
   const { data } = response.notification.request.content;
   
   if (typeof data?.url === 'string') {
-    // Deep link to article
-    await Linking.openURL(data.url);
+    // Deep link to article (append attribution param if not present)
+    const url = data.url.includes('source=')
+      ? data.url
+      : `${data.url}${data.url.includes('?') ? '&' : '?'}source=notification`;
+    await Linking.openURL(url);
   } else if (data?.articleId) {
-    // Fallback: construct URL
-    await Linking.openURL(`amardesh://article/${data.articleId}`);
+    // Fallback: construct URL with attribution
+    await Linking.openURL(`amardesh://article/${data.articleId}?source=notification`);
   }
 }
 

@@ -8,7 +8,7 @@ import { fetchRSSFeed } from '../../services/rssService';
 import { loadBookmarks } from '../../services/storage';
 import { useThemedStyles } from '../../theme';
 import { ArticleThumbnail, ArticleHeroImage } from '../../components/OptimizedImage';
-import { useUserStore } from '../../user';
+import { useUserStore, trackCategoryViewed } from '../../user';
 import ReadingStreak from '../../components/ReadingStreak';
 
 export default function HomeScreen() {
@@ -290,16 +290,28 @@ export default function HomeScreen() {
 
       {/* Category Tabs */}
       <View style={styles.categoryContainer}>
-        <TouchableOpacity style={[styles.categoryTab, styles.activeCategory]}>
+        <TouchableOpacity
+          style={[styles.categoryTab, styles.activeCategory]}
+          onPress={() => trackCategoryViewed('সর্বশেষ', 'tab')}
+        >
           <Text style={[styles.categoryText, styles.activeCategoryText]}>সর্বশেষ</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.categoryTab}>
+        <TouchableOpacity
+          style={styles.categoryTab}
+          onPress={() => trackCategoryViewed('জাতীয়', 'tab')}
+        >
           <Text style={styles.categoryText}>জাতীয়</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.categoryTab}>
+        <TouchableOpacity
+          style={styles.categoryTab}
+          onPress={() => trackCategoryViewed('রাজনীতি', 'tab')}
+        >
           <Text style={styles.categoryText}>রাজনীতি</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.categoryTab}>
+        <TouchableOpacity
+          style={styles.categoryTab}
+          onPress={() => trackCategoryViewed('খেলা', 'tab')}
+        >
           <Text style={styles.categoryText}>খেলা</Text>
         </TouchableOpacity>
       </View>

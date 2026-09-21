@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Event Tracking Completion & Expo Go Crash Fix
+- **Fixed Android startup crash in Expo Go** — `expo-notifications` is now loaded lazily; its module-level push-token registration throws in Expo Go since SDK 53. All notification APIs no-op gracefully in Expo Go on Android, and the notifications settings screen shows an explanatory banner (Bengali).
+- **AppState lifecycle** — event tracker now flushes the in-memory queue and records `app_backgrounded` (with session duration) when the app backgrounds, preventing event loss when the JS runtime is suspended.
+- **90-day data retention** — events older than 90 days are purged during user store initialization (design doc §7.1).
+- **article_state aggregation** — new `user/articleState.ts` maintains open count, cumulative dwell time, max scroll depth, and saved/shared flags per article; wired into the article screen's open/close/bookmark/share flows.
+- **Correct source attribution** — `article_opened` now records `search` (passed from search results), `notification` (appended by the notification tap handler), and `deep_link` instead of hardcoded `feed`.
+- **category_viewed tracking** — home screen category tabs now emit `category_viewed` events.
+- **Persisted privacy toggle** — the behavior-tracking opt-out now survives app restarts via AsyncStorage.
+- Test setup: AsyncStorage mock now returns promises like the real module.
+
 ### Expo SDK 57 Migration
 - Upgrade Expo, React Native, React, Expo Router, and native dependencies to the SDK 57 versions.
 - Remove unused native Firebase, legacy navigation, and retired `expo-av` dependencies; Firebase uses the existing JavaScript SDK.

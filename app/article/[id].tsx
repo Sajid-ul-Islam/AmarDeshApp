@@ -9,7 +9,7 @@ import { loadBookmarks, saveBookmarks, loadReadingHistory, saveReadingHistory, l
 import { shareToPlatform, SharePlatform } from '../../services/sharingService';
 import { speakArticle, stopSpeaking, isSpeaking } from '../../services/ttsService';
 import { ArticleHeroImage } from '../../components/OptimizedImage';
-import { useUserStore } from '../../user';
+import { useUserStore, recordArticleOpen, recordArticleClose, setArticleSaved, setArticleShared } from '../../user';
 
 export default function ArticleDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -20,6 +20,10 @@ export default function ArticleDetailScreen() {
   const [isSpeakingArticle, setIsSpeakingArticle] = useState(false);
   const [showShareSheet, setShowShareSheet] = useState(false);
   const [scrollDepth, setScrollDepth] = useState(0);
+  // Refs track whether this session already saved/shared so article_state
+  // flags stay in sync with bookmarks actually created in this session.
+  const savedThisSessionRef = useRef(false);
+  const sharedThisSessionRef = useRef(false);
   // Ref keeps the latest scroll depth readable from the unmount cleanup
   // without re-running the effect (avoids the stale-closure bug where
   // max_scroll_depth was always logged as 0)
@@ -71,14 +75,33 @@ export default function ArticleDetailScreen() {
         saveReadingHistory(newHistory);
       });
       
-      // Track article opened
+      // Track article opened (attribution resolves below once params known)
       trackEvent('article_opened', 'article', article.id, {
         category: article.category,
         author: article.author,
-        source: 'feed',
+        source: resolveSource(),
       });
+
+      // Aggregate per-article reading metrics
+      recordArticleOpen(article.id);
     }
   }, [articleId]);
+
+  // Attribution source for article_opened: where the user came from.
+  // - Search results push with ?source=search
+  // - Notification taps / deep links (amardesh://article/x) navigate with
+  //   ?source=notification|deep_link set by the handler
+  // - Everything else defaults to 'feed'
+  const searchParams = useLocalSearchParams();
+  function resolveSource(): 'feed' | 'search' | 'notification' | 'deep_link' {
+    const s = searchParams.source;
+    if (typeof s === 'string') {
+      if (s === 'search' || s === 'notification' || s === 'deep_link') {
+        return s;
+      }
+    }
+    return 'feed';
+  }
 
   // Track scroll depth (throttled)
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -101,6 +124,9 @@ export default function ArticleDetailScreen() {
           dwell_time_ms: dwellTime,
           max_scroll_depth: scrollDepthRef.current,
         });
+
+        // Aggregate per-article reading metrics
+        recordArticleClose(article.id, dwellTime, scrollDepthRef.current);
       }
       
       // Cleanup TTS
@@ -132,6 +158,8 @@ export default function ArticleDetailScreen() {
       newBookmarks = bookmarks.filter(id => id !== article.id);
       // Track article unsaved
       trackEvent('article_unsaved', 'article', article.id);
+      setArticleSaved(article.id, false);
+      savedThisSessionRef.current = false;
     } else {
       newBookmarks = [...bookmarks, article.id];
       // Track article saved
@@ -139,6 +167,8 @@ export default function ArticleDetailScreen() {
         category: article.category,
         author: article.author,
       });
+      setArticleSaved(article.id, true);
+      savedThisSessionRef.current = true;
     }
     
     setBookmarks(newBookmarks);
@@ -153,6 +183,8 @@ export default function ArticleDetailScreen() {
     trackEvent('article_shared', 'article', article.id, {
       platform,
     });
+    setArticleShared(article.id);
+    sharedThisSessionRef.current = true;
   };
 
   const handleTTS = async () => {

@@ -9,6 +9,7 @@ import {
   saveNotificationPreferences,
   cancelAllNotifications,
   scheduleDailyBriefing,
+  isNotificationApiAvailable,
 } from '../../services/notificationService';
 
 export default function NotificationSettingsScreen() {
@@ -114,6 +115,10 @@ export default function NotificationSettingsScreen() {
     },
   });
 
+  // Notifications are inert in Expo Go on Android (remote push removed in
+  // SDK 53+); show an explanatory banner instead of silent dead switches.
+  const notificationsAvailable = isNotificationApiAvailable();
+
   useEffect(() => {
     loadPreferences();
   }, []);
@@ -170,6 +175,15 @@ export default function NotificationSettingsScreen() {
       </View>
 
       <ScrollView style={styles.content}>
+        {/* Expo Go limitation notice */}
+        {!notificationsAvailable && (
+          <View style={styles.infoBox}>
+            <Text style={styles.infoText}>
+              এক্সপো গো-তে অ্যান্ড্রয়েডে পুশ নোটিফিকেশন সমর্থিত নয়। সম্পূর্ণ নোটিফিকেশন সুবিধা পেতে ডেভেলপমেন্ট বিল্ড ব্যবহার করুন।
+            </Text>
+          </View>
+        )}
+
         {/* General Settings */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>সাধারণ</Text>

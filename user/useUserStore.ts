@@ -18,6 +18,7 @@
 
 import { useEffect } from 'react';
 import { create } from 'zustand';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getAnonymousId, deleteAnonymousId, hasAnonymousId } from './anonymousId';
 import {
   initializeDatabase,
@@ -26,6 +27,7 @@ import {
   getUserMetadata,
   deleteAllUserData,
   deleteAllAffinities,
+  deleteOldEvents,
 } from './db';
 import { 
   initializeEventTracker, 
@@ -42,6 +44,9 @@ import {
   getUserInterests,
 } from './personalizationEngine';
 import { Article } from '../data/mockData';
+
+// Persisted privacy preference: opt-out must survive app restarts.
+const TRACKING_ENABLED_KEY = '@amar_desh_tracking_enabled';
 
 /**
  * Recompute lifetime reading stats from the user metadata table.
@@ -137,13 +142,32 @@ export const useUserStore = create<UserState>((set, get) => ({
       await initializeEventTracker();
       console.log('[UserStore] Event tracker initialized');
       
-      // 4. Track app opened
+      // 4. Load persisted tracking preference (privacy opt-out survives restarts)
+      try {
+        const storedTracking = await AsyncStorage.getItem(TRACKING_ENABLED_KEY);
+        if (storedTracking !== null) {
+          set({ trackingEnabled: JSON.parse(storedTracking) === true });
+        }
+      } catch (prefError) {
+        console.error('[UserStore] Error loading tracking preference:', prefError);
+      }
+
+      // 5. Track app opened
       await trackAppOpened('cold_start');
       
-      // 5. Calculate initial affinities (if needed)
+      // 6. Purge events older than 90 days (design doc: data retention)
+      // Runs non-blocking-safe: failures here must not block init
+      try {
+        const ninetyDaysAgo = Date.now() - 90 * 24 * 60 * 60 * 1000;
+        await deleteOldEvents(ninetyDaysAgo);
+      } catch (cleanupError) {
+        console.error('[UserStore] Old event cleanup failed:', cleanupError);
+      }
+      
+      // 7. Calculate initial affinities (if needed)
       await calculateAffinity(userId);
       
-      // 6. Load lifetime stats so UI shows real values
+      // 8. Load lifetime stats so UI shows real values
       const stats = await computeStats(userId);
       
       set({
@@ -214,10 +238,14 @@ export const useUserStore = create<UserState>((set, get) => ({
   },
   
   /**
-   * Toggle tracking on/off
+   * Toggle tracking on/off (persisted across restarts)
    */
   toggleTracking: (enabled: boolean) => {
     set({ trackingEnabled: enabled });
+    // Persist immediately so the opt-out survives app restarts
+    AsyncStorage.setItem(TRACKING_ENABLED_KEY, JSON.stringify(enabled)).catch(
+      (error) => console.error('[UserStore] Error persisting tracking preference:', error)
+    );
     console.log('[UserStore] Tracking', enabled ? 'enabled' : 'disabled');
   },
   
