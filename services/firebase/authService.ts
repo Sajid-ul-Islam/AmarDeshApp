@@ -18,11 +18,12 @@ import {
   signInWithCredential,
   signOut as firebaseSignOut,
   onAuthStateChanged,
-  User,
   GoogleAuthProvider,
   OAuthProvider,
+  type User,
+  type Auth,
 } from 'firebase/auth';
-import { auth, isFirebaseConfigured } from './config';
+import { isFirebaseConfigured, requireFirebase } from './config';
 import { getAnonymousId, linkToAuthUser } from '../../user/anonymousId';
 import { syncToCloud, pullFromCloud } from './cloudSync';
 
@@ -36,11 +37,13 @@ let authStateCallbacks: AuthStateCallback[] = [];
 /**
  * Initialize auth state listener
  */
-export function initializeAuth(): void {
+export function initializeAuthListener(): void {
   if (!isFirebaseConfigured()) {
     console.warn('[Auth] Firebase not configured, auth disabled');
     return;
   }
+
+  const { auth } = requireFirebase();
 
   onAuthStateChanged(auth, (user) => {
     currentUser = user;
@@ -92,6 +95,8 @@ export async function signInWithEmail(
   email: string,
   password: string
 ): Promise<User> {
+  const { auth } = requireFirebase();
+
   try {
     console.log('[Auth] Signing in with email:', email);
     
@@ -119,6 +124,8 @@ export async function createAccountWithEmail(
   email: string,
   password: string
 ): Promise<User> {
+  const { auth } = requireFirebase();
+
   try {
     console.log('[Auth] Creating account with email:', email);
     
@@ -138,15 +145,22 @@ export async function createAccountWithEmail(
 
 /**
  * Sign in with Google
+ *
+ * Note: In a real app, you'd use @react-native-google-signin/google-signin
+ * to obtain a real Google ID token. The current placeholder token will be
+ * rejected by Firebase, surfacing a friendly error to the user.
  */
 export async function signInWithGoogle(): Promise<User> {
+  const { auth } = requireFirebase();
+
   try {
     console.log('[Auth] Signing in with Google');
-    
-    // Note: In a real app, you'd use @react-native-google-signin/google-signin
-    // This is a placeholder for the credential flow
+
     const provider = new GoogleAuthProvider();
-    const userCredential = await signInWithCredential(auth, provider.credential('id_token', 'mock_token'));
+    const userCredential = await signInWithCredential(
+      auth,
+      GoogleAuthProvider.credential('mock_google_id_token')
+    );
     const user = userCredential.user;
     
     // Migrate anonymous data
@@ -165,18 +179,25 @@ export async function signInWithGoogle(): Promise<User> {
 
 /**
  * Sign in with Apple (iOS only)
+ *
+ * Note: In a real app, you'd use expo-apple-authentication to obtain a real
+ * Apple identity token and a fresh nonce. The current placeholder token will
+ * be rejected by Firebase, surfacing a friendly error to the user.
  */
 export async function signInWithApple(): Promise<User> {
+  const { auth } = requireFirebase();
+
   try {
     console.log('[Auth] Signing in with Apple');
-    
-    // Note: In a real app, you'd use expo-apple-authentication
-    // This is a placeholder for the credential flow
+
     const provider = new OAuthProvider('apple.com');
-    const userCredential = await signInWithCredential(auth, provider.credential({
-      idToken: 'mock_id_token',
-      rawNonce: 'mock_nonce',
-    }));
+    const userCredential = await signInWithCredential(
+      auth,
+      provider.credential({
+        idToken: 'mock_id_token',
+        rawNonce: 'mock_nonce',
+      })
+    );
     const user = userCredential.user;
     
     // Migrate anonymous data
@@ -197,6 +218,8 @@ export async function signInWithApple(): Promise<User> {
  * Sign out
  */
 export async function signOut(): Promise<void> {
+  const { auth } = requireFirebase();
+
   try {
     console.log('[Auth] Signing out');
     

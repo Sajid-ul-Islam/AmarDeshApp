@@ -1,4 +1,11 @@
-import '@testing-library/jest-native/extend-expect';
+/**
+ * Jest setup
+ *
+ * Mocks native modules that are unavailable in the Node test environment.
+ * Note: @testing-library packages are not installed in this project yet;
+ * the current suite is pure TypeScript unit tests, so no DOM extensions
+ * are needed here.
+ */
 
 // Mock expo-secure-store
 jest.mock('expo-secure-store', () => ({
@@ -7,15 +14,18 @@ jest.mock('expo-secure-store', () => ({
   deleteItemAsync: jest.fn(),
 }));
 
-// Mock expo-sqlite
+// Mock expo-sqlite with a functional in-memory stub so database-backed
+// code paths resolve instead of crashing on `undefined` results.
 jest.mock('expo-sqlite', () => ({
-  openDatabaseAsync: jest.fn(() => ({
-    execAsync: jest.fn(),
-    runAsync: jest.fn(),
-    getAllAsync: jest.fn(),
-    getFirstAsync: jest.fn(),
-    withTransactionAsync: jest.fn(),
-    closeAsync: jest.fn(),
+  openDatabaseAsync: jest.fn(async () => ({
+    execAsync: jest.fn(async () => undefined),
+    runAsync: jest.fn(async () => ({ lastInsertRowId: 1, changes: 1 })),
+    getAllAsync: jest.fn(async () => []),
+    getFirstAsync: jest.fn(async () => null),
+    withTransactionAsync: jest.fn(async (fn) => {
+      if (typeof fn === 'function') await fn();
+    }),
+    closeAsync: jest.fn(async () => undefined),
   })),
 }));
 
@@ -30,6 +40,7 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   setItem: jest.fn(),
   removeItem: jest.fn(),
   clear: jest.fn(),
+  multiRemove: jest.fn(),
 }));
 
 // Suppress console logs in tests

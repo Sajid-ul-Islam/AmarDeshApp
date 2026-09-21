@@ -8,6 +8,7 @@
 import React, { createContext, useContext, useMemo } from 'react';
 import { useColorScheme } from 'react-native';
 import { getThemeTokens, ThemeTokens, ThemeMode, brand, social } from './tokens';
+import { useAppStore } from '../store/useAppStore';
 
 // ============================================================================
 // CONTEXT TYPE
@@ -41,9 +42,18 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   forcedMode 
 }) => {
   const systemColorScheme = useColorScheme();
+  const themePreference = useAppStore((state) => state.themePreference);
   
-  // Determine theme mode
-  const mode: ThemeMode = forcedMode || (systemColorScheme === 'dark' ? 'dark' : 'light');
+  // Determine theme mode: explicit prop > user preference > system setting
+  const mode: ThemeMode =
+    forcedMode ||
+    (themePreference === 'dark'
+      ? 'dark'
+      : themePreference === 'light'
+        ? 'light'
+        : systemColorScheme === 'dark'
+          ? 'dark'
+          : 'light');
   
   // Get tokens for current mode
   const tokens = useMemo(() => getThemeTokens(mode), [mode]);

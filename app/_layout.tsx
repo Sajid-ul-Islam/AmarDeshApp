@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import { initializeNotifications } from '../services/notificationService';
 import { useUserStore } from '../user';
-import { initializeAuth, isFirebaseConfigured } from '../services/firebase';
+import { initializeAuthListener, isFirebaseConfigured } from '../services/firebase';
 
 export default function RootLayout() {
   const loadFeatureFlags = useAppStore((state) => state.loadFeatureFlags);
@@ -26,7 +26,7 @@ export default function RootLayout() {
     
     // Initialize Firebase Auth if configured
     if (isFirebaseConfigured()) {
-      initializeAuth();
+      initializeAuthListener();
     }
   }, [loadFeatureFlags, features.enableNotifications, initializeUser]);
 

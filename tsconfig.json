@@ -24,6 +24,7 @@
     "services",
     "store",
     "theme",
+    "types",
     "user",
     "utils",
     ".expo/types/**/*.ts",

@@ -9,6 +9,7 @@ import {
   trackArticleOpened,
   trackArticleSaved,
   getQueueSize,
+  __resetForTests,
 } from '../eventTracker';
 import * as db from '../db';
 import * as anonymousId from '../anonymousId';
@@ -19,6 +20,7 @@ jest.mock('../anonymousId');
 
 describe('Event Tracker Module', () => {
   beforeEach(() => {
+    __resetForTests();
     jest.clearAllMocks();
     (anonymousId.getAnonymousId as jest.Mock).mockResolvedValue('test-user-id');
   });

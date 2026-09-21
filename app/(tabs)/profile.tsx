@@ -1,10 +1,10 @@
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch, Alert } from 'react-native';
 import type { ComponentProps } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { useState, useEffect } from 'react';
-import { useColorScheme } from 'react-native';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import SyncStatus from '../../components/SyncStatus';
+import { useAppStore } from '../../store/useAppStore';
 import {
   signOut,
   onAuthStateChange,
@@ -20,8 +20,9 @@ interface ProfileMenuItem {
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const [darkMode, setDarkMode] = useState(colorScheme === 'dark');
+  const themePreference = useAppStore((state) => state.themePreference);
+  const setThemePreference = useAppStore((state) => state.setThemePreference);
+  const darkMode = themePreference === 'dark';
   const [isAuth, setIsAuth] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
 
@@ -111,7 +112,9 @@ export default function ProfileScreen() {
           </View>
           <Switch
             value={darkMode}
-            onValueChange={setDarkMode}
+            onValueChange={(value) =>
+              setThemePreference(value ? 'dark' : 'light')
+            }
             trackColor={{ false: '#D1D5DB', true: '#006B3F' }}
             thumbColor="#FFFFFF"
           />

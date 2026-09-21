@@ -11,7 +11,7 @@
  * - Efficient batch computation
  */
 
-import { getEvents, upsertAffinity, Affinity, Event } from './db';
+import { getEvents, upsertAffinity, getTopAffinities as dbGetTopAffinities, Affinity, Event } from './db';
 
 export type { Affinity };
 
@@ -269,8 +269,6 @@ export async function getTopAffinities(
   limit: number = 10
 ): Promise<Affinity[]> {
   try {
-    // Import here to avoid circular dependency
-    const { getTopAffinities: dbGetTopAffinities } = await import('./db');
     return await dbGetTopAffinities(entityType, limit);
   } catch (error) {
     console.error('[AffinityCalculator] Error getting top affinities:', error);
@@ -318,6 +316,14 @@ export async function shouldRecalculate(userId: string): Promise<boolean> {
 export function resetRecalculationTimer(): void {
   lastRecalculationTime = 0;
   console.log('[AffinityCalculator] Reset recalculation timer');
+}
+
+/**
+ * Test-only helper: clear the in-memory recalculation cache and the
+ * internal event queue so tests get a clean module state.
+ */
+export function __resetForTests(): void {
+  lastRecalculationTime = 0;
 }
 
 /**

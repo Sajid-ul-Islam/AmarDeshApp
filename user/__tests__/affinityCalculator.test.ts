@@ -2,7 +2,7 @@
  * Unit Tests for Affinity Calculator Module
  */
 
-import { calculateAffinity, getTopAffinities } from '../affinityCalculator';
+import { calculateAffinity, getTopAffinities, __resetForTests } from '../affinityCalculator';
 import * as db from '../db';
 
 // Mock dependencies
@@ -10,6 +10,7 @@ jest.mock('../db');
 
 describe('Affinity Calculator Module', () => {
   beforeEach(() => {
+    __resetForTests();
     jest.clearAllMocks();
   });
 
@@ -41,7 +42,7 @@ describe('Affinity Calculator Module', () => {
 
     it('should apply recency decay to scores', async () => {
       const oldEvent = {
-        event_type: 'article_opened',
+        event_type: 'article_saved',
         entity_type: 'article',
         entity_id: 'amd001',
         metadata: { category: 'জাতীয়' },
@@ -53,6 +54,8 @@ describe('Affinity Calculator Module', () => {
       await calculateAffinity('test-user-id');
 
       const upsertCall = (db.upsertAffinity as jest.Mock).mock.calls[0][0];
+      // article_saved weight 3.0 × 0.5^(30/7) decay ≈ 0.153 raw,
+      // normalized /10 ≈ 0.015 — well below the 0.1 cap
       expect(upsertCall[0].score).toBeLessThan(0.1); // Should be very low due to decay
     });
 
@@ -137,10 +140,15 @@ describe('Affinity Calculator Module', () => {
         { entity_type: 'topic', entity_id: 'বিনোদন', score: 0.4 },
       ];
 
-      (db.getTopAffinities as jest.Mock).mockResolvedValue(mockAffinities);
+      // Mock respects the limit like the real database query would
+      (db.getTopAffinities as jest.Mock).mockImplementation(
+        async (_entityType: string, limit: number = 10) =>
+          mockAffinities.slice(0, limit)
+      );
 
       const result = await getTopAffinities('topic', 2);
 
+      expect(db.getTopAffinities).toHaveBeenCalledWith('topic', 2);
       expect(result).toHaveLength(2);
       expect(result[0].entity_id).toBe('জাতীয়');
       expect(result[1].entity_id).toBe('খেলা');

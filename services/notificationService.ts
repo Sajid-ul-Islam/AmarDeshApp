@@ -94,10 +94,30 @@ export async function requestNotificationPermissions(): Promise<Notifications.Pe
 }
 
 /**
+ * EAS project ID used for Expo push tokens and OTA updates.
+ * Keep in sync with `expo.extra.eas.projectId` in app.json.
+ */
+const EAS_PROJECT_ID = process.env.EXPO_PUBLIC_EAS_PROJECT_ID || 'your-project-id';
+
+/**
+ * Check whether push notifications can actually work.
+ * Placeholder project IDs cause getExpoPushTokenAsync to fail at runtime,
+ * so we skip the call entirely until a real ID is configured.
+ */
+function hasValidProjectId(): boolean {
+  return !!EAS_PROJECT_ID && EAS_PROJECT_ID !== 'your-project-id';
+}
+
+/**
  * Get push token for remote notifications
  */
 export async function getPushToken(): Promise<string | null> {
   if (Constants.executionEnvironment === ExecutionEnvironment.StoreClient) {
+    return null;
+  }
+
+  if (!hasValidProjectId()) {
+    console.log('[Notifications] EAS project ID not configured, skipping push token');
     return null;
   }
 
@@ -110,7 +130,7 @@ export async function getPushToken(): Promise<string | null> {
     }
 
     const token = (await Notifications.getExpoPushTokenAsync({
-      projectId: 'your-project-id', // Replace with actual EAS project ID
+      projectId: EAS_PROJECT_ID,
     })).data;
 
     // Store token for backend registration
@@ -148,17 +168,9 @@ export async function scheduleLocalNotification(
 }
 
 /**
- * Schedule a daily briefing notification
+ * Schedule a daily briefing notification (fires every day at 8:00 AM)
  */
-export async function scheduleDailyBriefing(time: Date = new Date()): Promise<string> {
-  // Set to 8:00 AM tomorrow
-  const trigger = new Date(time);
-  trigger.setHours(8, 0, 0, 0);
-  
-  if (trigger.getTime() < Date.now()) {
-    trigger.setDate(trigger.getDate() + 1);
-  }
-
+export async function scheduleDailyBriefing(): Promise<string> {
   return await scheduleLocalNotification(
     'দৈনিক সংবাদ',
     'আজকের গুরুত্বপূর্ণ সংবাদ পড়ুন',

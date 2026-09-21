@@ -1,29 +1,27 @@
-{
-  "preset": "jest-expo",
-  "transformIgnorePatterns": [
-    "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg)"
+module.exports = {
+  preset: 'jest-expo',
+  transformIgnorePatterns: [
+    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg)',
   ],
-  "collectCoverageFrom": [
-    "user/**/*.{ts,tsx}",
-    "!user/**/*.d.ts",
-    "!user/index.ts"
+  collectCoverageFrom: [
+    'user/**/*.{ts,tsx}',
+    '!user/**/*.d.ts',
+    '!user/index.ts',
   ],
-  "coverageThreshold": {
-    "global": {
-      "branches": 70,
-      "functions": 70,
-      "lines": 70,
-      "statements": 70
-    }
+  coverageThreshold: {
+    global: {
+      branches: 70,
+      functions: 70,
+      lines: 70,
+      statements: 70,
+    },
   },
-  "setupFilesAfterEnv": [
-    "<rootDir>/jest.setup.js"
+  setupFiles: ['<rootDir>/jest.setup.js'],
+  testMatch: [
+    '**/__tests__/**/*.test.ts',
+    '**/__tests__/**/*.test.tsx',
   ],
-  "testMatch": [
-    "**/__tests__/**/*.test.ts",
-    "**/__tests__/**/*.test.tsx"
-  ],
-  "moduleNameMapper": {
-    "^@/(.*)$": "<rootDir>/$1"
-  }
-}
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/$1',
+  },
+};

@@ -5,10 +5,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { articles as mockArticles, Article } from '../../data/mockData';
 import { formatRelativeTime } from '../../utils/bengali';
 import { useState, useEffect, useRef } from 'react';
-import { loadBookmarks, saveBookmarks, loadReadingHistory, saveReadingHistory } from '../../services/storage';
+import { loadBookmarks, saveBookmarks, loadReadingHistory, saveReadingHistory, loadOfflineArticles } from '../../services/storage';
 import { shareToPlatform, SharePlatform } from '../../services/sharingService';
 import { speakArticle, stopSpeaking, isSpeaking } from '../../services/ttsService';
-import { YouTubePlayerComponent } from '../../components/YouTubePlayer';
 import { ArticleHeroImage } from '../../components/OptimizedImage';
 import { useUserStore } from '../../user';
 
@@ -21,10 +20,45 @@ export default function ArticleDetailScreen() {
   const [isSpeakingArticle, setIsSpeakingArticle] = useState(false);
   const [showShareSheet, setShowShareSheet] = useState(false);
   const [scrollDepth, setScrollDepth] = useState(0);
+  // Ref keeps the latest scroll depth readable from the unmount cleanup
+  // without re-running the effect (avoids the stale-closure bug where
+  // max_scroll_depth was always logged as 0)
+  const scrollDepthRef = useRef(0);
   const openTimeRef = useRef(Date.now());
   const trackEvent = useUserStore((state) => state.trackEvent);
 
-  const article = mockArticles.find((a) => a.id === articleId);
+  const mockArticle = mockArticles.find((a) => a.id === articleId);
+  const [rssArticle, setRssArticle] = useState<Article | null>(null);
+  const [isResolving, setIsResolving] = useState(false);
+
+  // RSS articles are not in the static mock list — resolve from the
+  // cached offline feed so deep-linked/recent articles can be opened
+  useEffect(() => {
+    let active = true;
+
+    if (!mockArticle && articleId) {
+      setIsResolving(true);
+      loadOfflineArticles()
+        .then((cached) => {
+          if (!active) return;
+          setRssArticle(cached.find((a) => a.id === articleId) ?? null);
+        })
+        .catch(() => {
+          if (active) setRssArticle(null);
+        })
+        .finally(() => {
+          if (active) setIsResolving(false);
+        });
+    } else {
+      setRssArticle(null);
+    }
+
+    return () => {
+      active = false;
+    };
+  }, [articleId, mockArticle]);
+
+  const article: Article | undefined = mockArticle ?? (rssArticle ?? undefined);
   
   // Load bookmarks on mount
   useEffect(() => {
@@ -50,7 +84,9 @@ export default function ArticleDetailScreen() {
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
     const depth = (layoutMeasurement.height + contentOffset.y) / (contentSize.height || 1);
-    setScrollDepth(Math.min(1, Math.max(0, depth)));
+    const clamped = Math.min(1, Math.max(0, depth));
+    setScrollDepth(clamped);
+    scrollDepthRef.current = clamped;
   };
 
   // Cleanup on unmount
@@ -63,7 +99,7 @@ export default function ArticleDetailScreen() {
         const dwellTime = Date.now() - openTimeRef.current;
         trackEvent('article_closed', 'article', article.id, {
           dwell_time_ms: dwellTime,
-          max_scroll_depth: scrollDepth,
+          max_scroll_depth: scrollDepthRef.current,
         });
       }
       
@@ -71,6 +107,14 @@ export default function ArticleDetailScreen() {
       stopSpeaking();
     };
   }, [articleId]);
+  if (isResolving && !article) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorText}>লোড হচ্ছে...</Text>
+      </View>
+    );
+  }
+
   if (!article) {
     return (
       <View style={styles.container}>

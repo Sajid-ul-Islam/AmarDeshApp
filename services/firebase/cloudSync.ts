@@ -22,15 +22,14 @@ import {
   deleteDoc,
   Timestamp,
 } from 'firebase/firestore';
-import { db, isFirebaseConfigured } from './config';
-import { getEvents, insertEvents, Event, upsertAffinity, Affinity } from '../../user/db';
+import { isFirebaseConfigured, requireFirebase } from './config';
+import { getEvents, insertEvents, Event, upsertAffinity, Affinity, getUserMetadata, upsertUserMetadata, UserMetadata } from '../../user/db';
 import { getTopAffinities } from '../../user/affinityCalculator';
-import { getUserMetadata, upsertUserMetadata, UserMetadata } from '../../user/db';
 
 // Sync state
 let lastSyncTime: number = 0;
 let isSyncing: boolean = false;
-let syncQueue: any[] = [];
+let syncQueue: Array<{ type: 'sync'; userId: string }> = [];
 
 /**
  * Sync all user data to cloud
@@ -74,7 +73,7 @@ export async function syncToCloud(userId: string): Promise<void> {
     // Process queued syncs
     if (syncQueue.length > 0) {
       const nextSync = syncQueue.shift();
-      if (nextSync.type === 'sync') {
+      if (nextSync && nextSync.type === 'sync') {
         await syncToCloud(nextSync.userId);
       }
     }
@@ -114,6 +113,8 @@ export async function pullFromCloud(userId: string): Promise<void> {
  */
 async function syncEventsToCloud(userId: string): Promise<void> {
   try {
+    const { db } = requireFirebase();
+
     // Get events since last sync
     const events = await getEvents(userId, lastSyncTime);
 
@@ -128,11 +129,16 @@ async function syncEventsToCloud(userId: string): Promise<void> {
     const batch = [];
     for (const event of events) {
       const eventDoc = {
-        ...event,
+        user_id: event.user_id,
+        event_type: event.event_type,
+        entity_type: event.entity_type ?? null,
+        entity_id: event.entity_id ?? null,
+        metadata: event.metadata ?? null,
+        created_at: event.created_at,
         synced_at: Timestamp.now(),
       };
       batch.push(
-        setDoc(doc(db, 'users', userId, 'events', event.id?.toString() || `event_${Date.now()}`), eventDoc)
+        setDoc(doc(db, 'users', userId, 'events', event.id?.toString() || `event_${event.created_at}`), eventDoc)
       );
     }
 
@@ -149,6 +155,8 @@ async function syncEventsToCloud(userId: string): Promise<void> {
  */
 async function syncAffinitiesToCloud(userId: string): Promise<void> {
   try {
+    const { db } = requireFirebase();
+
     // Get all affinities
     const topics = await getTopAffinities('topic', 100);
     const authors = await getTopAffinities('author', 100);
@@ -182,6 +190,8 @@ async function syncAffinitiesToCloud(userId: string): Promise<void> {
  */
 async function syncMetadataToCloud(userId: string): Promise<void> {
   try {
+    const { db } = requireFirebase();
+
     // Get user metadata
     const metadata = await getUserMetadata(userId);
 
@@ -198,8 +208,7 @@ async function syncMetadataToCloud(userId: string): Promise<void> {
       updated_at: Timestamp.now(),
     };
 
-    await setDoc(doc(db, 'users', userId, 'profile', 'metadata'), metadataDoc);
-    console.log('[CloudSync] Metadata synced successfully');
+    await setDoc(doc(db, 'users', userId, 'profile', 'metadata'), metadataDoc);    console.log('[CloudSync] Metadata synced successfully');
   } catch (error) {
     console.error('[CloudSync] Error syncing metadata:', error);
     throw error;
@@ -212,6 +221,7 @@ async function syncMetadataToCloud(userId: string): Promise<void> {
 async function pullEventsFromCloud(userId: string): Promise<void> {
   try {
     console.log('[CloudSync] Pulling events from cloud');
+    const { db } = requireFirebase();
 
     // Query events from Firestore
     const eventsQuery = query(
@@ -227,12 +237,22 @@ async function pullEventsFromCloud(userId: string): Promise<void> {
     }
 
     const events: Event[] = [];
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
+    querySnapshot.forEach((docSnapshot) => {
+      const data = docSnapshot.data();
+      if (typeof data.user_id !== 'string' || typeof data.event_type !== 'string') {
+        return; // Skip malformed records
+      }
       events.push({
-        ...data,
-        synced_at: data.synced_at.toMillis(),
-        created_at: data.created_at,
+        user_id: data.user_id,
+        event_type: data.event_type,
+        entity_type: typeof data.entity_type === 'string' ? data.entity_type : undefined,
+        entity_id: typeof data.entity_id === 'string' ? data.entity_id : undefined,
+        metadata:
+          data.metadata && typeof data.metadata === 'object'
+            ? (data.metadata as Record<string, unknown>)
+            : undefined,
+        created_at: typeof data.created_at === 'number' ? data.created_at : Date.now(),
+        synced_at: data.synced_at instanceof Timestamp ? data.synced_at.toMillis() : undefined,
       });
     });
 
@@ -253,6 +273,7 @@ async function pullEventsFromCloud(userId: string): Promise<void> {
 async function pullAffinitiesFromCloud(userId: string): Promise<void> {
   try {
     console.log('[CloudSync] Pulling affinities from cloud');
+    const { db } = requireFirebase();
 
     // Get affinities from Firestore
     const affinityDoc = await getDoc(doc(db, 'users', userId, 'profile', 'affinities'));
@@ -263,7 +284,21 @@ async function pullAffinitiesFromCloud(userId: string): Promise<void> {
     }
 
     const data = affinityDoc.data();
-    const affinities: Affinity[] = data.affinities || [];
+    const affinities: Affinity[] = Array.isArray(data.affinities)
+      ? (data.affinities as Affinity[]).filter(
+          (a) =>
+            a &&
+            typeof a.entity_type === 'string' &&
+            typeof a.entity_id === 'string' &&
+            typeof a.score === 'number' &&
+            typeof a.last_updated === 'number'
+        )
+      : [];
+
+    if (affinities.length === 0) {
+      console.log('[CloudSync] No valid affinities to pull');
+      return;
+    }
 
     console.log(`[CloudSync] Pulled ${affinities.length} affinities from cloud`);
 
@@ -282,6 +317,7 @@ async function pullAffinitiesFromCloud(userId: string): Promise<void> {
 async function pullMetadataFromCloud(userId: string): Promise<void> {
   try {
     console.log('[CloudSync] Pulling metadata from cloud');
+    const { db } = requireFirebase();
 
     // Get metadata from Firestore
     const metadataDoc = await getDoc(doc(db, 'users', userId, 'profile', 'metadata'));
@@ -292,9 +328,20 @@ async function pullMetadataFromCloud(userId: string): Promise<void> {
     }
 
     const data = metadataDoc.data();
+
     const metadata: UserMetadata = {
-      ...data,
-      updated_at: data.updated_at.toMillis(),
+      user_id: typeof data.user_id === 'string' ? data.user_id : userId,
+      created_at: typeof data.created_at === 'number' ? data.created_at : Date.now(),
+      last_active_at: typeof data.last_active_at === 'number' ? data.last_active_at : Date.now(),
+      total_articles_read: typeof data.total_articles_read === 'number' ? data.total_articles_read : 0,
+      total_time_spent_ms: typeof data.total_time_spent_ms === 'number' ? data.total_time_spent_ms : 0,
+      reading_streak_days: typeof data.reading_streak_days === 'number' ? data.reading_streak_days : 0,
+      last_reading_date:
+        typeof data.last_reading_date === 'string' ? data.last_reading_date : undefined,
+      preferences:
+        data.preferences && typeof data.preferences === 'object'
+          ? (data.preferences as Record<string, unknown>)
+          : undefined,
     };
 
     console.log('[CloudSync] Pulled metadata from cloud');
@@ -333,6 +380,7 @@ export async function deleteUserDataFromCloud(userId: string): Promise<void> {
 
   try {
     console.log('[CloudSync] Deleting user data from cloud for user:', userId);
+    const { db } = requireFirebase();
 
     // Delete user document
     await deleteDoc(doc(db, 'users', userId));

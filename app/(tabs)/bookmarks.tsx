@@ -1,14 +1,36 @@
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { articles } from '../../data/mockData';
+import { useCallback, useState } from 'react';
+import { articles, Article } from '../../data/mockData';
 import { formatRelativeTime } from '../../utils/bengali';
+import { loadBookmarks } from '../../services/storage';
 import { ArticleThumbnail } from '../../components/OptimizedImage';
 
 export default function BookmarksScreen() {
   const router = useRouter();
-  // In a real app, this would come from AsyncStorage
-  const bookmarkedArticles = articles.slice(0, 3); // Mock bookmarks
+  const [bookmarkedArticles, setBookmarkedArticles] = useState<Article[]>([]);
+
+  // Reload bookmarks every time the tab is focused (keeps list in sync
+  // with saves/unsaves made on article screens)
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+
+      loadBookmarks().then((bookmarkIds) => {
+        if (!active) return;
+
+        const savedArticles = bookmarkIds
+          .map((id) => articles.find((a) => a.id === id))
+          .filter((a): a is Article => a !== undefined);
+        setBookmarkedArticles(savedArticles);
+      });
+
+      return () => {
+        active = false;
+      };
+    }, [])
+  );
 
   return (
     <View style={styles.container}>

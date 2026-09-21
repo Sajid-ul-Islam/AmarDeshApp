@@ -16,17 +16,25 @@
  * - Easy access to user data
  */
 
+import { useEffect } from 'react';
 import { create } from 'zustand';
 import { getAnonymousId, deleteAnonymousId, hasAnonymousId } from './anonymousId';
-import { initializeDatabase, closeDatabase, getDatabaseStats } from './db';
+import {
+  initializeDatabase,
+  closeDatabase,
+  getDatabaseStats,
+  getUserMetadata,
+  deleteAllUserData,
+  deleteAllAffinities,
+} from './db';
 import { 
   initializeEventTracker, 
   cleanupEventTracker, 
   flushEventQueue,
+  trackEvent as trackEventDefault,
   trackAppOpened,
-  trackAppBackgrounded,
 } from './eventTracker';
-import { calculateAffinity, getTopAffinities, resetRecalculationTimer } from './affinityCalculator';
+import { calculateAffinity, resetRecalculationTimer } from './affinityCalculator';
 import { 
   rankArticles, 
   generateForYouFeed, 
@@ -34,6 +42,25 @@ import {
   getUserInterests,
 } from './personalizationEngine';
 import { Article } from '../data/mockData';
+
+/**
+ * Recompute lifetime reading stats from the user metadata table.
+ * Shared by initialize() and refreshStats() so UI surfaces (privacy
+ * screen, reading streak) stay up to date after events flush.
+ */
+async function computeStats(userId: string): Promise<{
+  totalArticlesRead: number;
+  totalTimeSpentMs: number;
+  readingStreakDays: number;
+}> {
+  const metadata = await getUserMetadata(userId);
+
+  return {
+    totalArticlesRead: metadata?.total_articles_read ?? 0,
+    totalTimeSpentMs: metadata?.total_time_spent_ms ?? 0,
+    readingStreakDays: metadata?.reading_streak_days ?? 0,
+  };
+}
 
 interface UserState {
   // User identity
@@ -65,6 +92,8 @@ interface UserState {
   getUserInterests: (limit?: number) => Promise<Array<{ type: string; id: string; score: number }>>;
   
   // Tracking
+  flushEventQueue: () => Promise<void>;
+  refreshStats: () => Promise<void>;
   trackEvent: (eventType: string, entityType?: string, entityId?: string, metadata?: Record<string, any>) => Promise<void>;
 }
 
@@ -114,10 +143,14 @@ export const useUserStore = create<UserState>((set, get) => ({
       // 5. Calculate initial affinities (if needed)
       await calculateAffinity(userId);
       
+      // 6. Load lifetime stats so UI shows real values
+      const stats = await computeStats(userId);
+      
       set({
         userId,
         isInitialized: true,
         isInitializing: false,
+        ...stats,
       });
       
       console.log('[UserStore] Initialization complete');
@@ -159,9 +192,6 @@ export const useUserStore = create<UserState>((set, get) => ({
       const { userId } = get();
       if (!userId) return;
       
-      // Import database functions
-      const { deleteAllUserData, deleteAllAffinities } = await import('./db');
-      
       // Delete all data
       await deleteAllUserData(userId);
       await deleteAllAffinities();
@@ -200,6 +230,8 @@ export const useUserStore = create<UserState>((set, get) => ({
     
     try {
       console.log('[UserStore] Refreshing affinities');
+      // Persist queued events first so the calculation sees recent activity
+      await flushEventQueue();
       resetRecalculationTimer();
       await calculateAffinity(userId, true);
       console.log('[UserStore] Affinities refreshed');
@@ -254,6 +286,34 @@ export const useUserStore = create<UserState>((set, get) => ({
   },
   
   /**
+   * Flush the event queue to the database, then refresh stats so UI
+   * reflects newly persisted reading activity.
+   */
+  flushEventQueue: async () => {
+    try {
+      await flushEventQueue();
+      await get().refreshStats();
+    } catch (error) {
+      console.error('[UserStore] Error flushing event queue:', error);
+    }
+  },
+
+  /**
+   * Reload reading stats from the database into store state.
+   */
+  refreshStats: async () => {
+    const { userId } = get();
+    if (!userId) return;
+    
+    try {
+      const stats = await computeStats(userId);
+      set(stats);
+    } catch (error) {
+      console.error('[UserStore] Error refreshing stats:', error);
+    }
+  },
+  
+  /**
    * Track an event (wrapper for event tracker)
    */
   trackEvent: async (
@@ -270,9 +330,7 @@ export const useUserStore = create<UserState>((set, get) => ({
     }
     
     try {
-      // Import tracking functions
-      const { trackEvent: track } = await import('./eventTracker');
-      await track(eventType, entityType, entityId, metadata);
+      await trackEventDefault(eventType, entityType, entityId, metadata);
     } catch (error) {
       console.error('[UserStore] Error tracking event:', error);
     }
@@ -280,15 +338,23 @@ export const useUserStore = create<UserState>((set, get) => ({
 }));
 
 /**
- * Hook to access user store with auto-initialization
+ * Hook to access user store with auto-initialization.
+ *
+ * Initialization runs in an effect (not during render — side effects in
+ * render are unsafe with React 18+ concurrent features and re-render loops).
  */
 export function useUser() {
   const store = useUserStore();
-  
+  const initialize = useUserStore((state) => state.initialize);
+  const isInitialized = useUserStore((state) => state.isInitialized);
+  const isInitializing = useUserStore((state) => state.isInitializing);
+
   // Auto-initialize on first use
-  if (!store.isInitialized && !store.isInitializing) {
-    store.initialize();
-  }
+  useEffect(() => {
+    if (!isInitialized && !isInitializing) {
+      initialize();
+    }
+  }, [isInitialized, isInitializing, initialize]);
   
   return store;
 }

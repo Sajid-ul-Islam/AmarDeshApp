@@ -175,6 +175,19 @@ export function getQueueSize(): number {
   return eventQueue.length;
 }
 
+/**
+ * Test-only helper: reset the tracker's in-memory state (queue, timer,
+ * init flag) so tests don't leak state into each other.
+ */
+export function __resetForTests(): void {
+  eventQueue = [];
+  if (batchTimer) {
+    clearInterval(batchTimer);
+    batchTimer = null;
+  }
+  isInitialized = false;
+}
+
 // ============================================================================
 // CONVENIENCE METHODS FOR COMMON EVENTS
 // ============================================================================
