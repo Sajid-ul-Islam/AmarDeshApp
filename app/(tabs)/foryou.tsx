@@ -7,11 +7,18 @@ import { formatRelativeTime } from '../../utils/bengali';
 import { useThemedStyles } from '../../theme';
 import { ArticleThumbnail, ArticleHeroImage } from '../../components/OptimizedImage';
 import { useUserStore } from '../../user';
+import { useSyncExternalStore } from 'react';
+import { loadArticles, getArticles, subscribeToArticles } from '../../services/articleStore';
 
 export default function ForYouScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
+  // Live news from dailyamardesh.com, shared via the article store
+  const liveArticles = useSyncExternalStore(
+    subscribeToArticles,
+    getArticles
+  );
   const [personalizedArticles, setPersonalizedArticles] = useState<Article[]>([]);
   
   const getPersonalizedFeed = useUserStore((state) => state.getPersonalizedFeed);
@@ -79,6 +86,8 @@ export default function ForYouScreen() {
     },
     listContent: {
       padding: 16,
+      // Edge-to-edge: keep last cards clear of the tab bar / gesture bar
+      paddingBottom: 32,
     },
     heroCard: {
       borderRadius: 12,
@@ -180,7 +189,9 @@ export default function ForYouScreen() {
       }
 
       try {
-        const feed = await getPersonalizedFeed(mockArticles);
+        const feed = await getPersonalizedFeed(
+          liveArticles.length > 0 ? liveArticles : mockArticles
+        );
         if (!active) {
           return;
         }
@@ -201,12 +212,20 @@ export default function ForYouScreen() {
     return () => {
       active = false;
     };
-  }, [isUserReady, getPersonalizedFeed, getUserInterests]);
+    // Re-personalize when live articles arrive
+  }, [isUserReady, getPersonalizedFeed, getUserInterests, liveArticles]);
+
+  // Kick off the shared load (no-op if already loaded/loading)
+  useEffect(() => {
+    loadArticles();
+  }, []);
 
   const onRefresh = async () => {
     setRefreshing(true);
     try {
-      const feed = await getPersonalizedFeed(mockArticles);
+      const feed = await getPersonalizedFeed(
+        liveArticles.length > 0 ? liveArticles : mockArticles
+      );
       setPersonalizedArticles(feed);
     } catch (error) {
       console.error('Error refreshing personalized feed:', error);

@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, ScrollView, Switch, TouchableOpacity } from 're
 import { useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemedStyles } from '../../theme';
 import { 
   NotificationPreferences, 
@@ -14,6 +15,8 @@ import {
 
 export default function NotificationSettingsScreen() {
   const router = useRouter();
+  // Edge-to-edge: pad content below the status bar
+  const insets = useSafeAreaInsets();
   const styles = useThemedStyles((tokens) => StyleSheet.create({
     container: {
       flex: 1,
@@ -39,6 +42,8 @@ export default function NotificationSettingsScreen() {
     },
     content: {
       flex: 1,
+      // Edge-to-edge: keep last section clear of the gesture navigation bar
+      paddingBottom: 32,
     },
     section: {
       backgroundColor: tokens.surface.base,
@@ -162,7 +167,7 @@ export default function NotificationSettingsScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity

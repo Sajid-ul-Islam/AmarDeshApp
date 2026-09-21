@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../theme';
 import {
   signInWithEmail,
@@ -23,6 +24,8 @@ import {
 
 export default function AuthScreen() {
   const router = useRouter();
+  // Edge-to-edge: pad content below the status bar
+  const insets = useSafeAreaInsets();
   const { tokens } = useTheme();
   const colors = {
     background: tokens.surface.base,
@@ -114,7 +117,7 @@ export default function AuthScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: colors.background }]}
+      style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>

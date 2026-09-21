@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch, Alert } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ComponentProps } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
@@ -20,6 +21,8 @@ interface ProfileMenuItem {
 
 export default function ProfileScreen() {
   const router = useRouter();
+  // Edge-to-edge: pad content below the status bar
+  const insets = useSafeAreaInsets();
   const themePreference = useAppStore((state) => state.themePreference);
   const setThemePreference = useAppStore((state) => state.setThemePreference);
   const darkMode = themePreference === 'dark';
@@ -45,7 +48,14 @@ export default function ProfileScreen() {
   ];
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{
+        // Edge-to-edge: status bar clearance + keep last items clear of the tab bar
+        paddingTop: insets.top,
+        paddingBottom: 24,
+      }}
+    >
       <View style={styles.header}>
         <Text style={styles.title}>আরও</Text>
       </View>

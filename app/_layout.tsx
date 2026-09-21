@@ -7,6 +7,7 @@ import { useAppStore } from '../store/useAppStore';
 import { initializeNotifications } from '../services/notificationService';
 import { useUserStore } from '../user';
 import { initializeAuthListener, isFirebaseConfigured } from '../services/firebase';
+import { warmArticleStore } from '../services/articleStore';
 
 export default function RootLayout() {
   const loadFeatureFlags = useAppStore((state) => state.loadFeatureFlags);
@@ -15,6 +16,10 @@ export default function RootLayout() {
 
   useEffect(() => {
     loadFeatureFlags();
+
+    // Start fetching live news immediately (shared store; screens read
+    // from it without each firing their own RSS request)
+    warmArticleStore();
     
     // Initialize user profile system
     initializeUser();

@@ -3,9 +3,10 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { articles as mockArticles, Article } from '../../data/mockData';
+import { getArticleById, loadArticles } from '../../services/articleStore';
 import { formatRelativeTime } from '../../utils/bengali';
 import { useState, useEffect, useRef } from 'react';
-import { loadBookmarks, saveBookmarks, loadReadingHistory, saveReadingHistory, loadOfflineArticles } from '../../services/storage';
+import { loadBookmarks, saveBookmarks, loadReadingHistory, saveReadingHistory } from '../../services/storage';
 import { shareToPlatform, SharePlatform } from '../../services/sharingService';
 import { speakArticle, stopSpeaking, isSpeaking } from '../../services/ttsService';
 import { ArticleHeroImage } from '../../components/OptimizedImage';
@@ -31,38 +32,48 @@ export default function ArticleDetailScreen() {
   const openTimeRef = useRef(Date.now());
   const trackEvent = useUserStore((state) => state.trackEvent);
 
-  const mockArticle = mockArticles.find((a) => a.id === articleId);
-  const [rssArticle, setRssArticle] = useState<Article | null>(null);
+  const [resolvedArticle, setResolvedArticle] = useState<Article | null>(null);
   const [isResolving, setIsResolving] = useState(false);
 
-  // RSS articles are not in the static mock list — resolve from the
-  // cached offline feed so deep-linked/recent articles can be opened
+  // Resolve the article by id: live store first, then the offline cache
+  // (deep links / cold starts), then the static mock list. RSS article ids
+  // are stable (hash of the article URL), so lookups succeed across
+  // refreshes and relaunches.
   useEffect(() => {
     let active = true;
 
-    if (!mockArticle && articleId) {
+    // Synchronous hit from the in-memory live store
+    const inStore = articleId ? getArticleById(articleId) : undefined;
+    if (inStore) {
+      setResolvedArticle(inStore);
+      setIsResolving(false);
+      return;
+    }
+
+    if (articleId) {
       setIsResolving(true);
-      loadOfflineArticles()
-        .then((cached) => {
+      loadArticles()
+        .then(() => {
           if (!active) return;
-          setRssArticle(cached.find((a) => a.id === articleId) ?? null);
+          setResolvedArticle(getArticleById(articleId) ?? null);
         })
         .catch(() => {
-          if (active) setRssArticle(null);
+          if (active) setResolvedArticle(null);
         })
         .finally(() => {
           if (active) setIsResolving(false);
         });
     } else {
-      setRssArticle(null);
+      setResolvedArticle(null);
     }
 
     return () => {
       active = false;
     };
-  }, [articleId, mockArticle]);
+  }, [articleId]);
 
-  const article: Article | undefined = mockArticle ?? (rssArticle ?? undefined);
+  const mockArticle = mockArticles.find((a) => a.id === articleId);
+  const article: Article | undefined = mockArticle ?? (resolvedArticle ?? undefined);
   
   // Load bookmarks on mount
   useEffect(() => {
@@ -306,6 +317,10 @@ export default function ArticleDetailScreen() {
         showsVerticalScrollIndicator={false}
         onScroll={handleScroll}
         scrollEventThrottle={500}
+        contentContainerStyle={{
+          // Edge-to-edge: keep source credit clear of the gesture navigation bar
+          paddingBottom: 32,
+        }}
       >
         {/* Article Image */}
         <ArticleHeroImage uri={article.imageUrl} style={styles.articleImage} />

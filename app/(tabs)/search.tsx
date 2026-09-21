@@ -1,20 +1,32 @@
 import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { articles } from '../../data/mockData';
+import { Article } from '../../data/mockData';
 import { formatRelativeTime } from '../../utils/bengali';
 import { ArticleThumbnail } from '../../components/OptimizedImage';
 import { useUserStore } from '../../user';
+import { useSyncExternalStore } from 'react';
+import { loadArticles, getArticles, subscribeToArticles } from '../../services/articleStore';
 
 export default function SearchScreen() {
+  // Edge-to-edge: pad content below the status bar
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const [query, setQuery] = useState('');
   const [hasTrackedSearch, setHasTrackedSearch] = useState(false);
   const trackEvent = useUserStore((state) => state.trackEvent);
 
-  const filteredArticles = query.trim()
-    ? articles.filter(
+  // Live news from dailyamardesh.com (shared store; previously searched
+  // only the static mock list)
+  const liveArticles = useSyncExternalStore(
+    subscribeToArticles,
+    getArticles
+  );
+
+  const filteredArticles: Article[] = query.trim()
+    ? liveArticles.filter(
         (a) =>
           a.title.toLowerCase().includes(query.toLowerCase()) ||
           a.excerpt.toLowerCase().includes(query.toLowerCase()) ||
@@ -35,7 +47,7 @@ export default function SearchScreen() {
     }
   }, [query, filteredArticles.length]);
 
-  const handleResultClick = (article: typeof articles[0], index: number) => {
+  const handleResultClick = (article: Article, index: number) => {
     // Track search result clicked
     trackEvent('search_result_clicked', 'article', article.id, {
       query,
@@ -48,8 +60,13 @@ export default function SearchScreen() {
     } as const);
   };
 
+  // Kick off the shared load (no-op if already loaded/loading)
+  useEffect(() => {
+    loadArticles();
+  }, []);
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Search Input */}
       <View style={styles.searchContainer}>
         <Ionicons name="search" size={20} color="#6B7280" />
@@ -134,6 +151,8 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: 16,
+    // Edge-to-edge: keep last results clear of the tab bar / gesture bar
+    paddingBottom: 24,
   },
   articleCard: {
     flexDirection: 'row',

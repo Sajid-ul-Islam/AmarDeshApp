@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Live News Everywhere (no more hardcoded articles)
+- **Single shared live feed** — new `services/articleStore.ts` is the one source of truth: a single in-flight RSS fetch shared by all screens, cached to AsyncStorage after every successful fetch, with a subscribe API (`useSyncExternalStore`) so screens re-render when fresh data lands.
+- **All screens now read live data** — Search, For You, Bookmarks, and Article Detail previously searched/rendered only the static mock list; they now resolve against the live feed (mock data only as last-resort offline fallback).
+- **Stable article IDs** — RSS articles were re-id'ed `rss-<index>-<timestamp>` on every fetch, breaking bookmarks/deep links across refreshes. IDs are now a deterministic hash of the article URL, and the list is sorted newest-first.
+- **Correct breaking flag** — `isBreaking` was "first 2 feed items" (reshuffled every refresh); it now means published within the last 6 hours.
+- **Warm on launch** — root layout kicks off the fetch before any screen mounts.
+- 12 new unit tests for the store (58 total passing).
+
 ### Event Tracking Completion & Expo Go Crash Fix
 - **Fixed Android startup crash in Expo Go** — `expo-notifications` is now loaded lazily; its module-level push-token registration throws in Expo Go since SDK 53. All notification APIs no-op gracefully in Expo Go on Android, and the notifications settings screen shows an explanatory banner (Bengali).
 - **AppState lifecycle** — event tracker now flushes the in-memory queue and records `app_backgrounded` (with session duration) when the app backgrounds, preventing event loss when the JS runtime is suspended.

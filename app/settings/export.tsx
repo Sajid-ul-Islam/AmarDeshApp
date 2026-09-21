@@ -36,6 +36,8 @@ export default function ExportDataScreen() {
     },
     content: {
       flex: 1,
+      // Edge-to-edge: keep last section clear of the gesture navigation bar
+      paddingBottom: 32,
     },
     section: {
       backgroundColor: tokens.surface.base,

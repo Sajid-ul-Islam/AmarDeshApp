@@ -1,15 +1,28 @@
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useCallback, useState } from 'react';
-import { articles, Article } from '../../data/mockData';
+import { useCallback, useEffect, useState } from 'react';
+import { articles as mockArticles, Article } from '../../data/mockData';
 import { formatRelativeTime } from '../../utils/bengali';
 import { loadBookmarks } from '../../services/storage';
 import { ArticleThumbnail } from '../../components/OptimizedImage';
+import { useSyncExternalStore } from 'react';
+import { loadArticles, getArticles, subscribeToArticles } from '../../services/articleStore';
 
 export default function BookmarksScreen() {
   const router = useRouter();
+  // Edge-to-edge: pad content below the status bar
+  const insets = useSafeAreaInsets();
   const [bookmarkedArticles, setBookmarkedArticles] = useState<Article[]>([]);
+
+  // Live news from dailyamardesh.com — bookmarks saved from the feed carry
+  // rss-* ids that only exist here, not in the static mock list
+  const liveArticles = useSyncExternalStore(
+    subscribeToArticles,
+    getArticles
+  );
+  const allArticles: Article[] = liveArticles.length > 0 ? liveArticles : mockArticles;
 
   // Reload bookmarks every time the tab is focused (keeps list in sync
   // with saves/unsaves made on article screens)
@@ -21,7 +34,7 @@ export default function BookmarksScreen() {
         if (!active) return;
 
         const savedArticles = bookmarkIds
-          .map((id) => articles.find((a) => a.id === id))
+          .map((id) => allArticles.find((a) => a.id === id))
           .filter((a): a is Article => a !== undefined);
         setBookmarkedArticles(savedArticles);
       });
@@ -29,11 +42,17 @@ export default function BookmarksScreen() {
       return () => {
         active = false;
       };
-    }, [])
+      // Re-resolve when live articles arrive
+    }, [allArticles])
   );
 
+  // Kick off the shared load (no-op if already loaded/loading)
+  useEffect(() => {
+    loadArticles();
+  }, []);
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <Text style={styles.title}>সেভ করা সংবাদ</Text>
       </View>
@@ -92,6 +111,8 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 16,
+    // Edge-to-edge: keep last cards clear of the tab bar / gesture bar
+    paddingBottom: 24,
   },
   articleCard: {
     flexDirection: 'row',

@@ -30,6 +30,6 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
   ],
-  "exclude": ["node_modules", "user/__tests__"],
+  "exclude": ["node_modules", "user/__tests__", "services/__tests__"],
   "extends": "expo/tsconfig.base"
 }

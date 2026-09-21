@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { articles as mockArticles, Article } from '../../data/mockData';
 import { formatRelativeTime } from '../../utils/bengali';
-import { fetchRSSFeed } from '../../services/rssService';
+import { useSyncExternalStore } from 'react';
+import { loadArticles, getArticles, subscribeToArticles } from '../../services/articleStore';
 import { loadBookmarks } from '../../services/storage';
 import { useThemedStyles } from '../../theme';
 import { ArticleThumbnail, ArticleHeroImage } from '../../components/OptimizedImage';
@@ -15,7 +16,13 @@ export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
-  const [articles, setArticles] = useState<Article[]>(mockArticles);
+  // Live news from dailyamardesh.com, shared via the article store.
+  // Mock data renders until the first fetch/cache-read completes.
+  const liveArticles = useSyncExternalStore(
+    subscribeToArticles,
+    getArticles
+  );
+  const articles: Article[] = liveArticles.length > 0 ? liveArticles : mockArticles;
   const [personalizedArticles, setPersonalizedArticles] = useState<Article[]>(mockArticles);
   const [bookmarks, setBookmarks] = useState<string[]>([]);
   const getPersonalizedFeed = useUserStore((state) => state.getPersonalizedFeed);
@@ -86,6 +93,8 @@ export default function HomeScreen() {
     },
     listContent: {
       padding: 16,
+      // Edge-to-edge: keep last cards clear of the tab bar / gesture bar
+      paddingBottom: 32,
     },
     heroCard: {
       borderRadius: 12,
@@ -183,21 +192,9 @@ export default function HomeScreen() {
     loadBookmarks().then(setBookmarks);
   }, []);
 
-  // Fetch RSS feed on mount
+  // Fetch live news on mount (shared store; also warmed by root layout)
   useEffect(() => {
-    const loadRSSFeed = async () => {
-      try {
-        const rssArticles = await fetchRSSFeed();
-        if (rssArticles.length > 0) {
-          setArticles(rssArticles);
-        }
-      } catch (error) {
-        console.error('Error loading RSS feed:', error);
-        // Keep using mock data
-      }
-    };
-    
-    loadRSSFeed();
+    loadArticles();
   }, []);
 
   // Generate personalized feed when articles change or user is ready
@@ -217,10 +214,9 @@ export default function HomeScreen() {
   const onRefresh = async () => {
     setRefreshing(true);
     try {
-      const rssArticles = await fetchRSSFeed();
-      if (rssArticles.length > 0) {
-        setArticles(rssArticles);
-      } else {
+      const fresh = await loadArticles(true);
+      if (fresh.length === 0) {
+        // Give the pull-to-refresh spinner a beat when nothing changed
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
     } catch (error) {
