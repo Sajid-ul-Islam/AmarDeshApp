@@ -377,6 +377,9 @@ export const getLocalizedCategoryName = (
     শিক্ষা: 'Education',
     কর্পোরেট: 'Corporate',
     'বিশেষ প্রতিবেদন': 'Special Report',
+    'তাজা খবর': 'Top News',
+    'মতামত ও বিশ্লেষণ': 'Opinion & Analysis',
+    তথ্যপ্রযুক্তি: 'Tech & AI',
   };
 
   return mapping[categoryName] || categoryName;

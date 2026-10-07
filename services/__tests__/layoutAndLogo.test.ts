@@ -27,7 +27,7 @@ describe('Layout and BYOK Direct Link Verification', () => {
   });
 
   it('contains verified auto-working models with recommendations', () => {
-    expect(PROVIDER_METADATA.gemini.defaultModel).toBe('gemini-1.5-flash');
+    expect(PROVIDER_METADATA.gemini.defaultModel).toBe('gemini-2.5-flash');
     expect(PROVIDER_METADATA.gemini.keyHelpUrl).toBe('https://aistudio.google.com/app/apikey');
     expect(PROVIDER_METADATA.gemini.freeTierAvailable).toBe(true);
 

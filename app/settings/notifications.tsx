@@ -28,8 +28,9 @@ export default function NotificationSettingsScreen() {
     header: {
       flexDirection: 'row',
       alignItems: 'center',
+      paddingTop: getSafeHeaderPaddingTop(insets.top, 6),
       paddingHorizontal: 16,
-      paddingVertical: 12,
+      paddingBottom: 12,
       backgroundColor: tokens.surface.base,
       borderBottomWidth: 1,
       borderBottomColor: tokens.border.default,
@@ -170,7 +171,7 @@ export default function NotificationSettingsScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: getSafeHeaderPaddingTop(insets.top, 0) }]}>
+    <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>

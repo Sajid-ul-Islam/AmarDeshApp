@@ -37,26 +37,36 @@ export const PROVIDER_METADATA: Record<
   gemini: {
     name: 'Google Gemini',
     portalName: 'Google AI Studio',
-    defaultModel: 'gemini-1.5-flash',
+    defaultModel: 'gemini-2.5-flash',
     supportedModels: [
       {
-        id: 'gemini-1.5-flash',
-        name: 'Gemini 1.5 Flash (সুপারিশকৃত)',
-        description: 'উচ্চগতির বহুভাষিক মডেল। বিনামূল্যে সর্বাধিক কোটা ও নির্ভুল বাংলা।',
+        id: 'gemini-2.5-flash',
+        name: 'Gemini 2.5 Flash (স্বয়ংক্রিয় / সুপারিশকৃত)',
+        description: 'সর্বাধুনিক উচ্চগতির বহুভাষিক মডেল। বিদ্যুৎগতির প্রতিক্রিয়া ও ১০০% বিনামূল্যে।',
         isRecommended: true,
       },
       {
-        id: 'gemini-2.0-flash',
-        name: 'Gemini 2.0 Flash (সর্বাধুনিক)',
-        description: 'গুগলের অত্যাধুনিক জেমিনি ২.০ ফ্ল্যাশ মডেল। দ্রুততম প্রতিক্রিয়া।',
+        id: 'gemini-flash-latest',
+        name: 'Gemini Flash Latest',
+        description: 'সর্বশেষ ফ্ল্যাশ ভার্সন। যেকোনো আপডেটে সর্বদা কার্যকর।',
       },
       {
-        id: 'gemini-1.5-pro',
-        name: 'Gemini 1.5 Pro (গভীর বিশ্লেষণ)',
+        id: 'gemini-2.0-flash',
+        name: 'Gemini 2.0 Flash',
+        description: 'গুগলের জেমিনি ২.০ ফ্ল্যাশ মডেল। উন্নত বাংলা প্রসেসিং।',
+      },
+      {
+        id: 'gemini-1.5-flash',
+        name: 'Gemini 1.5 Flash',
+        description: 'বহুভাষিক ১.৫ মডেল। সর্বাধিক কোটা সমর্থন।',
+      },
+      {
+        id: 'gemini-2.5-pro',
+        name: 'Gemini 2.5 Pro (গভীর বিশ্লেষণ)',
         description: 'জটিল ও দীর্ঘ সংবাদ বিশ্লেষণের জন্য সবচেয়ে উন্নত বুদ্ধিমত্তা।',
       },
     ],
-    description: 'গুগলের শক্তিশালী বহুভাষিক মডেল। ক্রেডিট কার্ড ছাড়াই আপনার পার্সোনাল জিমেইল দিয়ে বিনামূল্যে API Key তৈরি করা যায়।',
+    description: 'গুগলের শক্তিশালী বহুভাষিক মডেল। ক্রেডিট কার্ড ছাড়াই আপনার পার্সোনাল জিমেইল দিয়ে বিনামূল্যে API Key তৈরি করা যায়। যেকোনো মডেলের কি স্বয়ংক্রিয়ভাবে কাজ করবে।',
     freeTierAvailable: true,
     freeTierNote: 'ক্রেডিট কার্ডের প্রয়োজন নেই — ১০০% ফ্রি রেট লিমিট (১৫ RPM / ১,৫০০ RPD)',
     keyHelpUrl: 'https://aistudio.google.com/app/apikey',
@@ -64,7 +74,7 @@ export const PROVIDER_METADATA: Record<
     steps: [
       'নিচের "সরাসরি API Key পেজে যান" বাটনে ট্যাপ করে Google AI Studio-তে যান।',
       'আপনার গুগল অ্যাকাউন্টে সাইন ইন করে "Create API key" বাটনে ক্লিক করুন।',
-      'উৎপন্ন এপিআই কি কপি করে নিচের বক্সে পেস্ট করে সংরক্ষণ করুন।',
+      'উৎপন্ন এপিআই কি কপি করে নিচের বক্সে পেস্ট করে সংরক্ষণ করুন (মডেল স্বয়ংক্রিয়ভাবে নির্ধারিত হবে)।',
     ],
   },
   groq: {
@@ -153,12 +163,84 @@ export const PROVIDER_METADATA: Record<
   },
 };
 
+export const GEMINI_CANDIDATE_MODELS = [
+  'gemini-2.5-flash',
+  'gemini-flash-latest',
+  'gemini-2.0-flash',
+  'gemini-2.5-flash-lite',
+  'gemini-1.5-flash',
+  'gemini-1.5-flash-latest',
+  'gemini-1.5-flash-8b',
+  'gemini-2.5-pro',
+  'gemini-pro-latest',
+  'gemini-1.5-pro',
+  'gemini-pro',
+];
+
+const ENV_GEMINI_KEY =
+  (typeof process !== 'undefined' &&
+    (process.env?.EXPO_PUBLIC_GEMINI_API_KEY ||
+      process.env?.Gemini_Api_Key ||
+      process.env?.GEMINI_API_KEY)) ||
+  '';
+
 const DEFAULT_CONFIG: ByokAiConfig = {
   provider: 'gemini',
-  apiKey: '',
-  model: 'gemini-1.5-flash',
+  apiKey: ENV_GEMINI_KEY,
+  model: 'gemini-2.5-flash',
   enabled: true,
 };
+
+/**
+ * Dynamically queries Google Generative AI models API to find which models
+ * are supported by this specific user API key.
+ */
+export async function discoverGeminiModels(apiKey: string): Promise<string[]> {
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey.trim()}`;
+    const res = await fetch(url);
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data?.models)) {
+        const supported = data.models
+          .filter((m: any) => {
+            const methods = m?.supportedGenerationMethods || [];
+            return methods.includes('generateContent');
+          })
+          .map((m: any) => (m.name || '').replace(/^models\//, ''))
+          .filter((name: string) => name.length > 0);
+
+        if (supported.length > 0) {
+          const preferredOrder = [
+            'gemini-2.5-flash',
+            'gemini-flash-latest',
+            'gemini-2.0-flash',
+            'gemini-2.5-flash-lite',
+            'gemini-1.5-flash',
+            'gemini-1.5-flash-latest',
+            'gemini-1.5-flash-8b',
+            'gemini-2.5-pro',
+            'gemini-pro-latest',
+            'gemini-1.5-pro',
+            'gemini-pro',
+          ];
+          supported.sort((a: string, b: string) => {
+            const idxA = preferredOrder.indexOf(a);
+            const idxB = preferredOrder.indexOf(b);
+            if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+            if (idxA !== -1) return -1;
+            if (idxB !== -1) return 1;
+            return a.localeCompare(b);
+          });
+          return supported;
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('[Gemini Discovery] Error checking models endpoint:', e);
+  }
+  return [];
+}
 
 /**
  * Get current BYOK AI Configuration from local device storage
@@ -168,7 +250,11 @@ export async function getByokAiConfig(): Promise<ByokAiConfig> {
     const raw = await AsyncStorage.getItem(STORAGE_KEY);
     if (!raw) return DEFAULT_CONFIG;
     const parsed = JSON.parse(raw);
-    return { ...DEFAULT_CONFIG, ...parsed };
+    const config = { ...DEFAULT_CONFIG, ...parsed };
+    if (!config.apiKey && ENV_GEMINI_KEY) {
+      config.apiKey = ENV_GEMINI_KEY;
+    }
+    return config;
   } catch (error) {
     console.error('[BYOK AI] Failed to load config:', error);
     return DEFAULT_CONFIG;
@@ -187,13 +273,13 @@ export async function saveByokAiConfig(config: ByokAiConfig): Promise<void> {
 }
 
 /**
- * Test API Key Connection with the selected provider
+ * Test API Key Connection with the selected provider, auto-detecting working model
  */
 export async function testAiConnection(
   provider: AiProvider,
   apiKey: string,
   model?: string
-): Promise<{ success: boolean; message: string }> {
+): Promise<{ success: boolean; message: string; detectedModel?: string }> {
   if (!apiKey || apiKey.trim().length < 8) {
     return {
       success: false,
@@ -205,26 +291,18 @@ export async function testAiConnection(
 
   try {
     if (provider === 'gemini') {
-      let activeModel = selectedModel;
-      let url = `https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:generateContent?key=${apiKey.trim()}`;
-      let response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [
-            {
-              role: 'user',
-              parts: [{ text: 'একটি শব্দে উত্তর দিন: "সফল"' }],
-            },
-          ],
-        }),
-      });
+      // 1. Try dynamic model discovery first to see what this specific key supports
+      const discovered = await discoverGeminiModels(apiKey);
+      const candidatesToTry = discovered.length > 0
+        ? discovered
+        : [selectedModel, ...GEMINI_CANDIDATE_MODELS].filter(
+            (v, i, a) => a.indexOf(v) === i
+          );
 
-      // Auto-fallback: if selected model returns 404 or not found, try default gemini-1.5-flash
-      if (!response.ok && (response.status === 404 || activeModel !== 'gemini-1.5-flash')) {
-        activeModel = 'gemini-1.5-flash';
-        url = `https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:generateContent?key=${apiKey.trim()}`;
-        response = await fetch(url, {
+      let lastError = '';
+      for (const candidate of candidatesToTry) {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${candidate}:generateContent?key=${apiKey.trim()}`;
+        const response = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -236,17 +314,32 @@ export async function testAiConnection(
             ],
           }),
         });
-      }
 
-      if (!response.ok) {
+        if (response.ok) {
+          // Success! Save working model as preference
+          return {
+            success: true,
+            message: `অভিনন্দন! গুগল জেমিনি এপিআই সফলভাবে সংযুক্ত হয়েছে (${candidate})।`,
+            detectedModel: candidate,
+          };
+        }
+
         const errorData = await response.json().catch(() => ({}));
-        const errMsg = errorData?.error?.message || `HTTP ত্রুটি: ${response.status}`;
-        return { success: false, message: `জেমিনি সংযোগ ব্যর্থ: ${errMsg}` };
+        const errMsg = errorData?.error?.message || `HTTP ${response.status}`;
+        lastError = errMsg;
+
+        // If key is invalid (not a 404 model mismatch), abort immediately
+        if (response.status === 400 && errMsg.toLowerCase().includes('api_key_invalid')) {
+          return { success: false, message: `ভুল এপিআই কি: ${errMsg}` };
+        }
+        if (response.status === 403) {
+          return { success: false, message: `অনুমতি নেই বা কি নিষিদ্ধ: ${errMsg}` };
+        }
       }
 
       return {
-        success: true,
-        message: `অভিনন্দন! গুগল জেমিনি এপিআই সফলভাবে সংযুক্ত হয়েছে (${activeModel})।`,
+        success: false,
+        message: `জেমিনি সংযোগ ব্যর্থ: কোনো সমর্থিত মডেল পাওয়া যায়নি (${lastError})`,
       };
     }
 
@@ -347,6 +440,97 @@ export async function testAiConnection(
 }
 
 /**
+ * Executes a Gemini generateContent call with resilient auto-discovery and candidate model fallback
+ */
+export async function executeGeminiGenerateContent(
+  apiKey: string,
+  contents: any[],
+  preferredModel: string = 'gemini-2.5-flash',
+  generationConfig: { temperature?: number; maxOutputTokens?: number } = {}
+): Promise<{ text: string; workingModel: string } | null> {
+  const cleanKey = apiKey.trim();
+  const modelsToTry = [
+    preferredModel,
+    ...GEMINI_CANDIDATE_MODELS,
+  ].filter((v, i, a) => a.indexOf(v) === i);
+
+  for (const candidate of modelsToTry) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${candidate}:generateContent?key=${cleanKey}`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents,
+          generationConfig: {
+            temperature: generationConfig.temperature ?? 0.2,
+            maxOutputTokens: generationConfig.maxOutputTokens ?? 500,
+          },
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) {
+          if (candidate !== preferredModel) {
+            getByokAiConfig().then((cfg) => {
+              if (cfg.provider === 'gemini') {
+                saveByokAiConfig({ ...cfg, model: candidate });
+              }
+            }).catch(() => {});
+          }
+          return { text, workingModel: candidate };
+        }
+      }
+
+      if (response.status === 400 || response.status === 403) {
+        const errorData = await response.json().catch(() => ({}));
+        const errMsg = errorData?.error?.message || '';
+        if (errMsg.toLowerCase().includes('api_key_invalid')) {
+          break;
+        }
+      }
+    } catch {
+      // Continue to next candidate
+    }
+  }
+
+  // Attempt discovery if not found yet
+  try {
+    const discovered = await discoverGeminiModels(cleanKey);
+    for (const model of discovered) {
+      if (modelsToTry.includes(model)) continue;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${cleanKey}`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents,
+          generationConfig,
+        }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) {
+          getByokAiConfig().then((cfg) => {
+            if (cfg.provider === 'gemini') {
+              saveByokAiConfig({ ...cfg, model });
+            }
+          }).catch(() => {});
+          return { text, workingModel: model };
+        }
+      }
+    }
+  } catch {
+    // Ignore
+  }
+
+  return null;
+}
+
+/**
  * Intelligent Offline Bengali Extractive Fallback Summarizer
  * Provides instant 3-point summary when no BYOK key is configured
  */
@@ -441,25 +625,21 @@ export async function generateArticleSummary(
 ক্যাটাগরি: ${article.category}
 সংবাদ বিবরণ:
 ${textContent.slice(0, 3000)}`;
-
   try {
     let resultText = '';
+    let usedProvider = PROVIDER_METADATA[config.provider].name;
 
     if (config.provider === 'gemini') {
-      const model = config.model || 'gemini-1.5-flash';
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${config.apiKey.trim()}`;
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ role: 'user', parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.2, maxOutputTokens: 500 },
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        resultText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const preferred = config.model || 'gemini-2.5-flash';
+      const geminiRes = await executeGeminiGenerateContent(
+        config.apiKey,
+        [{ role: 'user', parts: [{ text: prompt }] }],
+        preferred,
+        { temperature: 0.2, maxOutputTokens: 500 }
+      );
+      if (geminiRes) {
+        resultText = geminiRes.text;
+        usedProvider = `Google Gemini (${geminiRes.workingModel})`;
       }
     } else {
       // OpenAI, Groq, DeepSeek compatible chat endpoint
@@ -508,7 +688,7 @@ ${textContent.slice(0, 3000)}`;
         const result = {
           points,
           isAiGenerated: true,
-          providerUsed: PROVIDER_METADATA[config.provider].name,
+          providerUsed: usedProvider,
           cachedAt: Date.now(),
         };
 
@@ -543,7 +723,7 @@ export async function askArticleAiQuestion(
   if (!config.enabled || !config.apiKey || config.apiKey.trim().length < 8) {
     return {
       answer:
-        'AI সংবাদ সহকারীর সম্পূর্ণ সুবিধা উপভোগ করতে সেটিংস থেকে আপনার নিজস্ব API কি (যেমন বিনামূল্যে Google Gemini কি) যুক্ত করুন। আপনি অ্যাপের সেটিংস > "AI সহকারী (BYOK)" মেনু থেকে সহজেই এটি যুক্ত করতে পারেন।',
+        'AI সংবাদ সহকারীর সম্পূর্ণ সুবিধা উপভোগ করতে সেটিংস থেকে আপনার নিজস্ব API কি (যেমন বিনামূল্যে Google Gemini কি) যুক্ত করুন। আপনি অ্যাপের সেটিংস > "AI সহকারী" মেনু থেকে সহজেই এটি যুক্ত করতে পারেন।',
       isAiGenerated: false,
     };
   }
@@ -562,31 +742,21 @@ ${textContent.slice(0, 3000)}`;
 
   try {
     if (config.provider === 'gemini') {
-      const model = config.model || 'gemini-1.5-flash';
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${config.apiKey.trim()}`;
+      const preferred = config.model || 'gemini-2.5-flash';
+      const geminiRes = await executeGeminiGenerateContent(
+        config.apiKey,
+        [
+          {
+            role: 'user',
+            parts: [{ text: `${systemInstructions}\n\nপাঠকের প্রশ্ন: ${question}` }],
+          },
+        ],
+        preferred,
+        { temperature: 0.3, maxOutputTokens: 800 }
+      );
 
-      const contents = [
-        {
-          role: 'user',
-          parts: [{ text: `${systemInstructions}\n\nপাঠকের প্রশ্ন: ${question}` }],
-        },
-      ];
-
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents,
-          generationConfig: { temperature: 0.3, maxOutputTokens: 800 },
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (reply) {
-          return { answer: reply.trim(), isAiGenerated: true };
-        }
+      if (geminiRes && geminiRes.text) {
+        return { answer: geminiRes.text.trim(), isAiGenerated: true };
       }
     } else {
       const endpoint =

@@ -114,8 +114,9 @@ export default function ProfileScreen() {
         backgroundColor: tokens.surface.subtle,
       },
       header: {
+        paddingTop: getSafeHeaderPaddingTop(insets.top, 8),
         paddingHorizontal: 16,
-        paddingVertical: 14,
+        paddingBottom: 14,
         backgroundColor: tokens.surface.base,
         borderBottomWidth: 1,
         borderBottomColor: tokens.border.default,
@@ -203,7 +204,6 @@ export default function ProfileScreen() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={{
-        paddingTop: getSafeHeaderPaddingTop(insets.top, 0),
         paddingBottom: 32,
       }}
     >

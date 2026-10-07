@@ -21,6 +21,7 @@ export default function ExportDataScreen() {
     header: {
       flexDirection: 'row',
       alignItems: 'center',
+      paddingTop: getSafeHeaderPaddingTop(insets.top, 6),
       paddingHorizontal: 16,
       paddingVertical: 12,
       backgroundColor: tokens.surface.base,
@@ -192,7 +193,7 @@ export default function ExportDataScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: getSafeHeaderPaddingTop(insets.top, 0) }]}>
+    <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>

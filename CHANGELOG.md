@@ -7,7 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### App Startup Splash, Video Player Fixes & OTA Updates Suite
+### Gemini Dynamic Model Auto-Discovery & Resilient Multi-Model Engine
+- **Dynamic Google Generative AI Model Discovery** (`services/byokAiService.ts`, `app/settings/ai.tsx`):
+  - Implemented `discoverGeminiModels(apiKey)` dynamically querying `/v1beta/models` to discover models permitted for the user's API key.
+  - Created automated candidate fallback sequence (`gemini-2.5-flash`, `gemini-flash-latest`, `gemini-2.0-flash`, `gemini-2.5-pro`, `gemini-1.5-flash`, etc.) ensuring **any valid Gemini API key works automatically** even when `gemini-1.5-flash` is unavailable.
+  - Auto-updates and saves the detected working model in app storage upon connection test or content generation.
+  - Connected project `.env` key (`EXPO_PUBLIC_GEMINI_API_KEY`) verified live with `gemini-2.5-flash` and `gemini-flash-latest`.
+
+### Official Amar Desh YouTube Channel Live Integration
+- **Real YouTube Channel Feed Integration** (`services/youtubeService.ts`, `app/(tabs)/video.tsx`):
+  - Connected directly to the official Daily Amar Desh YouTube channel: `https://www.youtube.com/channel/UCVBUCoStRou7DZtlTxmhAmQ` (`UCVBUCoStRou7DZtlTxmhAmQ`).
+  - Implemented Atom XML RSS feed parser with AsyncStorage caching and 15-minute TTL.
+  - Added automatic Bengali video categorizer (`categorizeAmarDeshVideo`) mapping titles to: তাজা খবর, জুলাই বিপ্লব, মতামত ও বিশ্লেষণ, তথ্যপ্রযুক্তি, খেলাধুলা, আন্তর্জাতিক, সারা দেশ, রাজনীতি, অর্থনীতি.
+  - Included curated offline fallback of genuine Amar Desh news bulletins and analyses.
+
+### Native Edge-to-Edge Status Bar & Canvas Architecture
+- **True Screen Edge-to-Edge Display** (`app/_layout.tsx`, `utils/layout.ts`, screens):
+  - Replaced deprecated `expo-status-bar` with native `react-native` `StatusBar.setTranslucent(true)` and `StatusBar.setBackgroundColor('transparent', true)`.
+  - Applied top insets directly to header backgrounds so broadsheet mastheads stretch from `y = 0` behind the status bar without dead stripes, gaps, or element overlap.
+
 - **Amar Desh Brand Startup Splash Screen** (`components/StartupSplashScreen.tsx`, `app/_layout.tsx`, `app.json`):
   - Created animated startup splash overlay rendering official Amar Desh calligraphy logo (`assets/amardesh_logo.png`) and tagline ("স্বাধীনতার কথা বলে • সত্য ও সাহসের প্রতীক") with smooth entrance and exit transitions.
   - Added native splash configuration in `app.json`.

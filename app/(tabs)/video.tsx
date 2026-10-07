@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,8 @@ import {
   FlatList,
   TouchableOpacity,
   ScrollView,
+  RefreshControl,
+  Linking,
   NativeSyntheticEvent,
   NativeScrollEvent,
 } from 'react-native';
@@ -24,82 +26,51 @@ import {
 } from '../../services/i18n';
 import { getSafeHeaderPaddingTop } from '../../utils/layout';
 import { AmarDeshLogo } from '../../components/AmarDeshLogo';
-
-interface VideoItem {
-  id: string;
-  title: string;
-  duration: string;
-  category: string;
-  publishedAt: string;
-  thumbnailUrl: string;
-  youtubeId: string;
-  views: number;
-}
-
-const SAMPLE_VIDEOS: VideoItem[] = [
-  {
-    id: 'vid-1',
-    title: 'সংস্কার প্রশ্নে সরকার ও রাজনৈতিক দলগুলোর সাম্প্রতিক অবস্থান: বিশেষ বিশ্লেষণ',
-    duration: '০৮:৪৫',
-    category: 'বিশেষ প্রতিবেদন',
-    publishedAt: '২ ঘণ্টা আগে',
-    thumbnailUrl: 'https://images.dailyamardesh.com/original_images/imf-24dba6-720x405.webp',
-    youtubeId: 'M7lc1UVf-VE',
-    views: 42100,
-  },
-  {
-    id: 'vid-2',
-    title: 'জুলাই গণঅভ্যুত্থানের ঐতিহাসিক দিনগুলো: প্রত্যক্ষদর্শীদের জবানবন্দি',
-    duration: '১২:২০',
-    category: 'জুলাই বিপ্লব',
-    publishedAt: '৪ ঘণ্টা আগে',
-    thumbnailUrl: 'https://images.dailyamardesh.com/original_images/আবরার-d8ad6c-256x144.webp',
-    youtubeId: 'jNQXAC9IVRw',
-    views: 89300,
-  },
-  {
-    id: 'vid-3',
-    title: 'আইএমএফ ঋণচুক্তি ও ব্যাংকিং খাতের সার্বিক পরিস্থিতি নিয়ে মুখোমুখি অর্থনীতিবিদরা',
-    duration: '১৫:১০',
-    category: 'অর্থনীতি',
-    publishedAt: '৬ ঘণ্টা আগে',
-    thumbnailUrl: 'https://images.dailyamardesh.com/original_images/bangladesh_bank_P9AlMoN.jpg',
-    youtubeId: 'kJQP7kiw5Fk',
-    views: 31200,
-  },
-  {
-    id: 'vid-4',
-    title: 'রাজশাহী মেডিকেল বিশ্ববিদ্যালয় পরিস্থিতিতে শিক্ষার্থীদের প্রতিক্রিয়া ও দাবি',
-    duration: '০৫:১৫',
-    category: 'সারা দেশ',
-    publishedAt: '১১ ঘণ্টা আগে',
-    thumbnailUrl: 'https://images.dailyamardesh.com/original_images/Amardesh_bfghfg-bbe476-480x270.webp',
-    youtubeId: '9bZkp7q19f0',
-    views: 19500,
-  },
-  {
-    id: 'vid-5',
-    title: '‘এই সবুজ গালিচা ছেড়ে যেতে মন চাইছে না’— মেসির বিদায়ী বক্তব্যের আবেগঘন মুহূর্ত',
-    duration: '০৩:৪০',
-    category: 'খেলা',
-    publishedAt: '১ দিন আগে',
-    thumbnailUrl: 'https://images.dailyamardesh.com/original_images/vbcjsb1s_lionel-messi-speech-afp_625x300_07_October_26-792a22-720x405.webp',
-    youtubeId: 'fJ9rUzIMcZQ',
-    views: 125000,
-  },
-];
-
-const CATEGORIES = ['সব ভিডিও', 'বিশেষ প্রতিবেদন', 'জুলাই বিপ্লব', 'রাজনীতি', 'অর্থনীতি', 'সারা দেশ', 'খেলা'];
+import {
+  getAmarDeshVideos,
+  VIDEO_CATEGORIES,
+  AMAR_DESH_YT_CHANNEL_URL,
+  CURATED_AMAR_DESH_VIDEOS,
+  VideoItem,
+} from '../../services/youtubeService';
 
 export default function VideoScreen() {
   const language = useAppStore((state) => state.language);
   const insets = useSafeAreaInsets();
   const listRef = useRef<FlatList<VideoItem>>(null);
+  const [videos, setVideos] = useState<VideoItem[]>(CURATED_AMAR_DESH_VIDEOS);
   const [selectedCategory, setSelectedCategory] = useState('সব ভিডিও');
-  const [activeVideo, setActiveVideo] = useState<VideoItem>(SAMPLE_VIDEOS[0]);
+  const [activeVideo, setActiveVideo] = useState<VideoItem>(CURATED_AMAR_DESH_VIDEOS[0]);
+  const [refreshing, setRefreshing] = useState(false);
   const [isScrolledPast, setIsScrolledPast] = useState(false);
   const [showMiniPlayer, setShowMiniPlayer] = useState(false);
   const [isMiniDismissed, setIsMiniDismissed] = useState(false);
+
+  // Fetch live videos from official Daily Amar Desh YouTube channel on mount
+  useEffect(() => {
+    let isMounted = true;
+    getAmarDeshVideos().then((items) => {
+      if (isMounted && items.length > 0) {
+        setVideos(items);
+        setActiveVideo(items[0]);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      const live = await getAmarDeshVideos(true);
+      if (live.length > 0) {
+        setVideos(live);
+      }
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const styles = useThemedStyles((tokens) =>
     StyleSheet.create({
@@ -206,6 +177,22 @@ export default function VideoScreen() {
         fontWeight: '700',
         color: tokens.text.primary,
       },
+      ytChannelBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 5,
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 4,
+        backgroundColor: tokens.surface.elevated,
+        borderWidth: 1,
+        borderColor: tokens.border.default,
+      },
+      ytChannelBtnText: {
+        fontSize: 11,
+        fontWeight: '700',
+        color: '#DC2626',
+      },
       activeTitle: {
         fontSize: 16.5,
         fontWeight: '700',
@@ -306,8 +293,8 @@ export default function VideoScreen() {
 
   const filteredVideos =
     selectedCategory === 'সব ভিডিও'
-      ? SAMPLE_VIDEOS
-      : SAMPLE_VIDEOS.filter((v) => v.category === selectedCategory);
+      ? videos
+      : videos.filter((v) => v.category === selectedCategory);
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const scrollY = event.nativeEvent.contentOffset.y;
@@ -342,17 +329,28 @@ export default function VideoScreen() {
               {getLocalizedCategoryName(activeVideo.category, language)}
             </Text>
           </View>
-          <TouchableOpacity
-            style={styles.pipBtn}
-            onPress={() => {
-              setShowMiniPlayer(true);
-              setIsMiniDismissed(false);
-            }}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="copy-outline" size={13} color={styles.activeCatText.color} />
-            <Text style={styles.pipBtnText}>{t('mini_player', language)}</Text>
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <TouchableOpacity
+              style={styles.ytChannelBtn}
+              onPress={() => Linking.openURL(AMAR_DESH_YT_CHANNEL_URL)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="logo-youtube" size={13} color="#DC2626" />
+              <Text style={styles.ytChannelBtnText}>অফিসিয়াল চ্যানেল</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.pipBtn}
+              onPress={() => {
+                setShowMiniPlayer(true);
+                setIsMiniDismissed(false);
+              }}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="copy-outline" size={13} color={styles.activeCatText.color} />
+              <Text style={styles.pipBtnText}>{t('mini_player', language)}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <Text style={styles.activeTitle}>{activeVideo.title}</Text>
@@ -386,7 +384,7 @@ export default function VideoScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.categoryScroll}
         >
-          {CATEGORIES.map((cat) => (
+          {VIDEO_CATEGORIES.map((cat) => (
             <TouchableOpacity
               key={cat}
               style={[
@@ -416,6 +414,14 @@ export default function VideoScreen() {
         data={filteredVideos.filter((v) => v.id !== activeVideo.id)}
         keyExtractor={(item) => item.id}
         ListHeaderComponent={renderHeader}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#ba131a', '#006B3F']}
+            tintColor="#ba131a"
+          />
+        }
         onScroll={handleScroll}
         scrollEventThrottle={16}
         contentContainerStyle={{ paddingBottom: 60 }}

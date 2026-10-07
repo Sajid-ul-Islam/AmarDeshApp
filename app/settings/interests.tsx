@@ -20,8 +20,9 @@ export default function InterestsScreen() {
     header: {
       flexDirection: 'row',
       alignItems: 'center',
+      paddingTop: getSafeHeaderPaddingTop(insets.top, 6),
       paddingHorizontal: 16,
-      paddingVertical: 12,
+      paddingBottom: 12,
       backgroundColor: tokens.surface.base,
       borderBottomWidth: 1,
       borderBottomColor: tokens.border.default,
@@ -187,7 +188,7 @@ export default function InterestsScreen() {
 
   if (loading) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top }]}>
+      <View style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity
             onPress={() => router.back()}
@@ -205,7 +206,7 @@ export default function InterestsScreen() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: getSafeHeaderPaddingTop(insets.top, 0) }]}>
+    <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>

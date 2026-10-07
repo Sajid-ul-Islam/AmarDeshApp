@@ -95,6 +95,9 @@ export default function AiSettingsScreen() {
     const result = await testAiConnection(provider, apiKey.trim(), selectedModel);
     setTesting(false);
     setTestResult(result);
+    if (result.success && result.detectedModel) {
+      setSelectedModel(result.detectedModel);
+    }
   };
 
   const handleSave = async () => {

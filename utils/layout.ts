@@ -10,9 +10,9 @@ import { Platform, StatusBar } from 'react-native';
  * @param extraOffset - Additional breathing room (default: 8px)
  * @returns Safe top padding in pixels
  */
-export function getSafeHeaderPaddingTop(insetsTop: number = 0, extraOffset: number = 8): number {
+export function getSafeHeaderPaddingTop(insetsTop: number = 0, extraOffset: number = 4): number {
   const androidStatusBarHeight =
-    Platform.OS === 'android' ? (StatusBar.currentHeight || 28) : 0;
+    Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 0;
   const iosMinimumStatus = Platform.OS === 'ios' ? 20 : 0;
 
   // Use the largest of the measured safe inset or known platform status bar heights

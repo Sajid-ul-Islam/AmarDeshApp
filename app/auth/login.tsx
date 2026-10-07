@@ -119,10 +119,10 @@ export default function AuthScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: colors.background, paddingTop: getSafeHeaderPaddingTop(insets.top, 0) }]}
+      style={[styles.container, { backgroundColor: colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: getSafeHeaderPaddingTop(insets.top, 8) }]}>
         {/* Header */}
         <View style={styles.header}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>

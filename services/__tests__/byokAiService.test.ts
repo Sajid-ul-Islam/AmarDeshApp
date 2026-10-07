@@ -4,9 +4,12 @@ import {
   saveByokAiConfig,
   testAiConnection,
   PROVIDER_METADATA,
+  discoverGeminiModels,
+  executeGeminiGenerateContent,
 } from '../byokAiService';
 
 describe('ByokAiService', () => {
+
   it('generates 3-point offline Bengali summary from article content', () => {
     const title = 'সংস্কার ও জাতীয় পুনর্গঠনে বিশেষ রোডম্যাপ ঘোষণা';
     const content =
@@ -52,4 +55,67 @@ describe('ByokAiService', () => {
     expect(config.apiKey).toBe('gsk_test123456789');
     expect(config.enabled).toBe(true);
   });
+
+  it('discovers supported models dynamically from Google Gemini API', async () => {
+    const mockFetch = jest.spyOn(global, 'fetch').mockImplementationOnce(async () => ({
+      ok: true,
+      json: async () => ({
+        models: [
+          {
+            name: 'models/gemini-2.5-flash',
+            supportedGenerationMethods: ['generateContent'],
+          },
+          {
+            name: 'models/gemini-1.5-flash',
+            supportedGenerationMethods: ['generateContent'],
+          },
+          {
+            name: 'models/text-embedding-004',
+            supportedGenerationMethods: ['embedContent'],
+          },
+        ],
+      }),
+    } as any));
+
+    const models = await discoverGeminiModels('test_key');
+    expect(models).toContain('gemini-2.5-flash');
+    expect(models).toContain('gemini-1.5-flash');
+    expect(models).not.toContain('text-embedding-004');
+    expect(models[0]).toBe('gemini-2.5-flash'); // Preferred order
+
+    mockFetch.mockRestore();
+  });
+
+  it('executes Gemini content generation and returns working model', async () => {
+    const mockFetch = jest.spyOn(global, 'fetch').mockImplementation(async (url: any) => {
+      if (typeof url === 'string' && url.includes('gemini-2.5-flash:generateContent')) {
+        return {
+          ok: true,
+          json: async () => ({
+            candidates: [
+              {
+                content: {
+                  parts: [{ text: 'পরীক্ষামূলক বাংলা উত্তর' }],
+                },
+              },
+            ],
+          }),
+        } as any;
+      }
+      return { ok: false, status: 404 } as any;
+    });
+
+    const result = await executeGeminiGenerateContent(
+      'valid_test_api_key_12345',
+      'gemini-2.5-flash',
+      [{ role: 'user', parts: [{ text: 'হ্যালো' }] }]
+    );
+
+    expect(result).not.toBeNull();
+    expect(result?.workingModel).toBe('gemini-2.5-flash');
+    expect(result?.text).toBe('পরীক্ষামূলক বাংলা উত্তর');
+
+    mockFetch.mockRestore();
+  });
 });
+
