@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -17,6 +17,14 @@ import { useAppStore } from '../../store/useAppStore';
 import { t, getLocalizedCategoryName, SupportedLanguage } from '../../services/i18n';
 import { getSafeHeaderPaddingTop } from '../../utils/layout';
 import { AmarDeshLogo } from '../../components/AmarDeshLogo';
+import { DistrictPickerModal } from '../../components/DistrictPickerModal';
+import {
+  getSavedPrayerData,
+  requestGpsPrayerTimes,
+  resetToDhakaDefault,
+  PrayerTimeData,
+  getPrayerTimesForDivision,
+} from '../../services/prayerTimesService';
 
 interface CategoryItem {
   id: string;
@@ -51,6 +59,28 @@ export default function MenuScreen() {
   const language = useAppStore((state) => state.language);
   const setLanguage = useAppStore((state) => state.setLanguage);
   const [lowDataMode, setLowDataMode] = useState(false);
+  const [prayerData, setPrayerData] = useState<PrayerTimeData>(
+    getPrayerTimesForDivision('ঢাকা')
+  );
+  const [showLocationModal, setShowLocationModal] = useState(false);
+
+  useEffect(() => {
+    getSavedPrayerData().then(setPrayerData);
+  }, []);
+
+  const handleRequestGps = async () => {
+    const result = await requestGpsPrayerTimes();
+    if (result.success && result.data) {
+      setPrayerData(result.data);
+    } else if (result.error) {
+      Alert.alert('লোকেশন বার্তা', result.error);
+    }
+  };
+
+  const handleResetDhaka = async () => {
+    const defaultData = await resetToDhakaDefault();
+    setPrayerData(defaultData);
+  };
 
   const styles = useThemedStyles((tokens) =>
     StyleSheet.create({
@@ -291,6 +321,63 @@ export default function MenuScreen() {
         color: '#FFFFFF',
         fontWeight: 'bold',
       },
+      dateWeatherCard: {
+        backgroundColor: tokens.surface.base,
+        marginHorizontal: 16,
+        marginTop: 14,
+        marginBottom: 4,
+        paddingHorizontal: 14,
+        paddingVertical: 11,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: tokens.border.default,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+      },
+      dateWeatherLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        flex: 1,
+      },
+      dateWeatherText: {
+        fontSize: 12.5,
+        fontWeight: '600',
+        color: tokens.text.primary,
+      },
+      weatherBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        backgroundColor: tokens.surface.elevated,
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 6,
+        borderWidth: 1,
+        borderColor: tokens.border.default,
+      },
+      weatherText: {
+        fontSize: 11.5,
+        fontWeight: '600',
+        color: tokens.text.secondary,
+      },
+      locationPillBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        backgroundColor: tokens.brand.surface,
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 6,
+        borderWidth: 1,
+        borderColor: tokens.brand.primary,
+      },
+      locationPillText: {
+        fontSize: 12,
+        fontWeight: '700',
+        color: tokens.brand.primary,
+      },
       infoFooter: {
         alignItems: 'center',
         marginTop: 24,
@@ -330,6 +417,26 @@ export default function MenuScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* Date, Weekday & Weather Bar (Moved from Home Top) */}
+        <View style={styles.dateWeatherCard}>
+          <View style={styles.dateWeatherLeft}>
+            <Ionicons name="calendar-outline" size={14} color={tokens.brand.primary} />
+            <Text style={styles.dateWeatherText}>
+              {language === 'bn'
+                ? 'বুধবার, ০৭ অক্টোবর ২০২৬ • ২৩ রবিউস সানি ১৪৪৮'
+                : 'Wednesday, Oct 7, 2026 • 23 Rabi al-Thani 1448'}
+            </Text>
+          </View>
+          <View style={styles.weatherBadge}>
+            <Ionicons name="partly-sunny" size={13} color="#D97706" />
+            <Text style={styles.weatherText}>
+              {language === 'bn'
+                ? `${prayerData.division || 'ঢাকা'} ২৮° সে.`
+                : `${prayerData.division || 'Dhaka'} 28° C`}
+            </Text>
+          </View>
+        </View>
+
         {/* Quick Access Bar */}
         <View style={styles.quickBar}>
           <TouchableOpacity
@@ -503,6 +610,35 @@ export default function MenuScreen() {
             </View>
           </View>
 
+          {/* Edition & Prayer Location Setting (Moved from Top) */}
+          <TouchableOpacity
+            style={styles.utilityRow}
+            onPress={() => setShowLocationModal(true)}
+            activeOpacity={0.7}
+          >
+            <View style={styles.utilityLeft}>
+              <View style={styles.catIconBox}>
+                <Ionicons name="location-outline" size={20} color={tokens.brand.primary} />
+              </View>
+              <View>
+                <Text style={styles.utilityTitle}>
+                  {language === 'bn' ? 'সংস্করণ ও নামাজের অবস্থান' : 'Edition & Prayer Location'}
+                </Text>
+                <Text style={styles.utilitySubtitle}>
+                  {prayerData.isGps
+                    ? `${prayerData.division} (GPS সক্রিয়)`
+                    : `${prayerData.division || 'ঢাকা'} (ডিফল্ট প্রমিত সময়)`}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.locationPillBadge}>
+              <Text style={styles.locationPillText}>
+                {prayerData.isGps ? 'GPS' : 'ডিফল্ট'}
+              </Text>
+              <Ionicons name="chevron-forward" size={14} color={tokens.brand.primary} />
+            </View>
+          </TouchableOpacity>
+
           {/* Dark Mode Toggle */}
           <View style={styles.utilityRow}>
             <View style={styles.utilityLeft}>
@@ -637,6 +773,16 @@ export default function MenuScreen() {
           </Text>
         </View>
       </ScrollView>
+
+      {/* Location / Prayer Settings Modal */}
+      <DistrictPickerModal
+        visible={showLocationModal}
+        selectedDivision={prayerData.division}
+        isGps={Boolean(prayerData.isGps)}
+        onRequestGps={handleRequestGps}
+        onResetDhaka={handleResetDhaka}
+        onClose={() => setShowLocationModal(false)}
+      />
     </View>
   );
 }

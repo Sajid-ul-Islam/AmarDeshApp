@@ -65,7 +65,6 @@ export default function HomeScreen() {
   const [showDistrictModal, setShowDistrictModal] = useState(false);
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
   const language = useAppStore((state) => state.language);
-  const setLanguage = useAppStore((state) => state.setLanguage);
   const [prayerData, setPrayerData] = useState<PrayerTimeData>(
     getPrayerTimesForDivision('ঢাকা')
   );
@@ -149,54 +148,13 @@ export default function HomeScreen() {
         flex: 1,
         backgroundColor: tokens.surface.subtle,
       },
-      topDateBar: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: 16,
-        paddingTop: getSafeHeaderPaddingTop(insets.top, 4),
-        paddingBottom: 6,
-        backgroundColor: tokens.surface.base,
-        borderBottomWidth: 1,
-        borderBottomColor: tokens.border.default,
-      },
-      dateText: {
-        fontSize: 12,
-        color: tokens.text.secondary,
-        fontWeight: '500',
-      },
-      divisionBadge: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-      },
-      divisionBadgeText: {
-        fontSize: 12,
-        color: tokens.brand.primary,
-        fontWeight: '600',
-      },
-      langPill: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 3,
-        paddingHorizontal: 7,
-        paddingVertical: 2,
-        borderRadius: 10,
-        backgroundColor: tokens.brand.surface,
-        borderWidth: 1,
-        borderColor: tokens.brand.primary,
-      },
-      langPillText: {
-        fontSize: 11,
-        fontWeight: 'bold',
-        color: tokens.brand.primary,
-      },
       mainHeader: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 16,
-        paddingVertical: 10,
+        paddingTop: getSafeHeaderPaddingTop(insets.top, 8),
+        paddingBottom: 10,
         backgroundColor: tokens.surface.base,
         borderBottomWidth: 1,
         borderBottomColor: tokens.border.default,
@@ -545,38 +503,6 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Top Date & Weather Bar with Language Switcher */}
-      <View style={styles.topDateBar}>
-        <Text style={styles.dateText}>
-          {language === 'bn'
-            ? 'বুধবার, ০৭ অক্টোবর ২০২৬ • ঢাকা ২৮° সে. ⛅'
-            : 'Wednesday, Oct 7, 2026 • Dhaka 28° C ⛅'}
-        </Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <TouchableOpacity
-            style={styles.langPill}
-            onPress={() => setLanguage(language === 'bn' ? 'en' : 'bn')}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="globe-outline" size={11} color={styles.divisionBadgeText.color} />
-            <Text style={styles.langPillText}>
-              {language === 'bn' ? 'বাংলা' : 'EN'}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.divisionBadge}
-            onPress={() => setShowDistrictModal(true)}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="location-sharp" size={12} color={styles.divisionBadgeText.color} />
-            <Text style={styles.divisionBadgeText}>
-              {prayerData.division} {t('edition_label', language)}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
       {/* Broadsheet Masthead with Official Logo */}
       <View style={styles.mainHeader}>
         <View style={styles.mastheadCol}>

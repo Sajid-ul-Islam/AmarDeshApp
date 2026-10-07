@@ -24,6 +24,14 @@ import {
 import { getSafeHeaderPaddingTop } from '../../utils/layout';
 import { AmarDeshLogo } from '../../components/AmarDeshLogo';
 import { checkForOtaUpdate, applyOtaUpdate } from '../../services/otaUpdateService';
+import { DistrictPickerModal } from '../../components/DistrictPickerModal';
+import {
+  getSavedPrayerData,
+  requestGpsPrayerTimes,
+  resetToDhakaDefault,
+  PrayerTimeData,
+  getPrayerTimesForDivision,
+} from '../../services/prayerTimesService';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -39,10 +47,34 @@ export default function ProfileScreen() {
   const tokens = useThemeTokens();
   const themePreference = useAppStore((state) => state.themePreference);
   const setThemePreference = useAppStore((state) => state.setThemePreference);
+  const language = useAppStore((state) => state.language);
+  const setLanguage = useAppStore((state) => state.setLanguage);
   const darkMode = themePreference === 'dark';
   const [isAuth, setIsAuth] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
   const [checkingUpdate, setCheckingUpdate] = useState(false);
+  const [prayerData, setPrayerData] = useState<PrayerTimeData>(
+    getPrayerTimesForDivision('ঢাকা')
+  );
+  const [showLocationModal, setShowLocationModal] = useState(false);
+
+  useEffect(() => {
+    getSavedPrayerData().then(setPrayerData);
+  }, []);
+
+  const handleRequestGps = async () => {
+    const result = await requestGpsPrayerTimes();
+    if (result.success && result.data) {
+      setPrayerData(result.data);
+    } else if (result.error) {
+      Alert.alert('লোকেশন বার্তা', result.error);
+    }
+  };
+
+  const handleResetDhaka = async () => {
+    const defaultData = await resetToDhakaDefault();
+    setPrayerData(defaultData);
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChange((user) => {
@@ -85,6 +117,20 @@ export default function ProfileScreen() {
   };
 
   const menuItems: ProfileMenuItem[] = [
+    {
+      icon: 'location-outline',
+      label: `সংস্করণ ও নামাজের অবস্থান (${prayerData.isGps ? prayerData.division + ' GPS' : (prayerData.division || 'ঢাকা') + ' ডিফল্ট'})`,
+      action: () => setShowLocationModal(true),
+    },
+    {
+      icon: 'globe-outline',
+      label: `ভাষা পরিবর্তন (${language === 'bn' ? 'বাংলা' : 'English'})`,
+      action: () => {
+        const next = language === 'bn' ? 'en' : 'bn';
+        setLanguage(next);
+        Alert.alert('ভাষা পরিবর্তিত হয়েছে', next === 'bn' ? 'বাংলা সক্রিয় করা হয়েছে।' : 'English has been activated.');
+      },
+    },
     { icon: 'sparkles-outline', label: 'স্মার্ট AI সহকারী সেটিংস', action: () => router.push('/settings/ai' as any) },
     { icon: 'cloud-download-outline', label: 'অ্যাপ আপডেট পরীক্ষা (OTA)', action: handleCheckOtaUpdate },
     { icon: 'notifications-outline', label: 'নোটিফিকেশন ইনবক্স', action: () => router.push('/notifications' as any) },
@@ -341,6 +387,15 @@ export default function ProfileScreen() {
           )}
         </TouchableOpacity>
       </View>
+      {/* Location / Prayer Settings Modal */}
+      <DistrictPickerModal
+        visible={showLocationModal}
+        selectedDivision={prayerData.division}
+        isGps={Boolean(prayerData.isGps)}
+        onRequestGps={handleRequestGps}
+        onResetDhaka={handleResetDhaka}
+        onClose={() => setShowLocationModal(false)}
+      />
     </ScrollView>
   );
 }

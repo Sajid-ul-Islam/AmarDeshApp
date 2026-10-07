@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Clean Broadsheet Masthead & Top Options Relocation
+- **Ultra-Clean Home Masthead & Settings/Menu Relocation** (`app/(tabs)/index.tsx`, `app/(tabs)/menu.tsx`, `app/(tabs)/profile.tsx`):
+  - Completely removed the top date/weekday bar, weather text, language toggle, and edition badge from the top of the Home feed to achieve a clean broadsheet masthead directly behind the transparent status bar.
+  - Relocated today's Gregorian date, weekday, Hijri date, and local weather widget to a dedicated card inside Menu (`menu.tsx`).
+  - Added interactive "সংস্করণ ও নামাজের অবস্থান" (Edition & Location) and "ভাষা পরিবর্তন" (Language) settings into both Menu and Profile/Settings with seamless GPS and Dhaka default configuration.
+
 ### Prayer Timetable Dhaka Default & GPS Local Time Auto-Detection
 - **Dhaka Default & Native GPS Prayer Schedule** (`services/prayerTimesService.ts`, `components/PrayerTimesWidget.tsx`, `components/DistrictPickerModal.tsx`, `app/(tabs)/index.tsx`):
   - Completely removed the "আপনার বিভাগ নির্বাচন করুন" option and 8-division picker list from the application.
