@@ -1,4 +1,4 @@
-import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -79,6 +79,7 @@ export default function BookmarksScreen() {
         fontSize: 18,
         fontWeight: 'bold',
         color: tokens.text.primary,
+        fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' }),
       },
       countBadge: {
         backgroundColor: tokens.brand.surface,
@@ -130,6 +131,7 @@ export default function BookmarksScreen() {
         lineHeight: 21,
         letterSpacing: -0.2,
         marginBottom: 4,
+        fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' }),
       },
       articleTime: {
         fontSize: 11,

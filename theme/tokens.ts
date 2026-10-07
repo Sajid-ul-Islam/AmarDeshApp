@@ -10,6 +10,8 @@
  * - OLED Dark: #0A0A0A (Pure pitch dark mode, off-white reading text #F5F5F7)
  */
 
+import { Platform } from 'react-native';
+
 // ============================================================================
 // BRAND PALETTES
 // ============================================================================
@@ -251,6 +253,10 @@ export const typography = {
       letterSpacing: 0.44,
       fontWeight: '500' as const,
     },
+  },
+  editorial: {
+    serif: Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' }),
+    sans: Platform.select({ ios: 'System', android: 'sans-serif', default: 'sans-serif' }),
   },
 };
 

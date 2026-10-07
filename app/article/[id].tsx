@@ -9,6 +9,7 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
   PanResponder,
+  Platform,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -277,6 +278,7 @@ export default function ArticleDetailScreen() {
         lineHeight: 35 * fontSizeMultiplier,
         letterSpacing: -0.4,
         marginBottom: 16,
+        fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' }),
       },
       authorRow: {
         flexDirection: 'row',
@@ -313,6 +315,7 @@ export default function ArticleDetailScreen() {
         lineHeight: 30 * fontSizeMultiplier,
         marginBottom: 20,
         letterSpacing: 0.1,
+        fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' }),
       },
       sourceCard: {
         backgroundColor: tokens.surface.elevated,
@@ -358,6 +361,7 @@ export default function ArticleDetailScreen() {
         fontWeight: '700',
         color: tokens.text.primary,
         lineHeight: 20,
+        fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' }),
       },
       relatedTime: {
         fontSize: 11,

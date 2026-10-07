@@ -7,6 +7,7 @@ import {
   RefreshControl,
   TouchableOpacity,
   ScrollView,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -189,51 +190,43 @@ export default function HomeScreen() {
         borderBottomWidth: 1,
         borderBottomColor: tokens.border.default,
       },
-      logoArea: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 10,
-      },
-      logoBadge: {
-        backgroundColor: '#DC2626',
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-        borderRadius: 5,
-        elevation: 2,
-        shadowColor: '#DC2626',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.3,
-        shadowRadius: 2,
-      },
-      logoBadgeText: {
-        color: '#FFFFFF',
-        fontSize: 15,
-        fontWeight: 'bold',
-        letterSpacing: 0.5,
-      },
-      mottoCol: {
+      mastheadCol: {
+        flex: 1,
         justifyContent: 'center',
       },
-      appName: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: tokens.text.primary,
-        letterSpacing: -0.3,
+      mastheadTitleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
       },
-      appSlogan: {
-        fontSize: 11,
+      mastheadAccentBar: {
+        width: 3.5,
+        height: 22,
+        backgroundColor: tokens.brand.primary,
+        borderRadius: 1,
+      },
+      mastheadTitle: {
+        fontSize: 22,
+        fontWeight: '800',
+        color: tokens.text.primary,
+        letterSpacing: -0.4,
+        fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' }),
+      },
+      mastheadMotto: {
+        fontSize: 10.5,
         color: tokens.text.secondary,
         fontWeight: '500',
-        marginTop: 1,
+        marginTop: 3,
+        letterSpacing: 0.3,
       },
       headerIcons: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 10,
+        gap: 8,
       },
       iconBtn: {
-        padding: 8,
-        borderRadius: 20,
+        padding: 7,
+        borderRadius: 4,
         backgroundColor: tokens.surface.elevated,
         borderWidth: 1,
         borderColor: tokens.border.default,
@@ -341,6 +334,7 @@ export default function HomeScreen() {
         lineHeight: 30,
         letterSpacing: -0.3,
         marginBottom: 8,
+        fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' }),
       },
       heroSnippet: {
         color: tokens.text.secondary,
@@ -379,6 +373,7 @@ export default function HomeScreen() {
         fontWeight: '700',
         color: tokens.brand.primary,
         letterSpacing: -0.2,
+        fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' }),
       },
       spotlightSub: {
         fontSize: 12,
@@ -413,6 +408,7 @@ export default function HomeScreen() {
         lineHeight: 22,
         letterSpacing: -0.2,
         marginBottom: 6,
+        fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' }),
       },
       articleTime: {
         fontSize: 11,
@@ -570,16 +566,18 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* Main Header */}
+      {/* Broadsheet Masthead */}
       <View style={styles.mainHeader}>
-        <View style={styles.logoArea}>
-          <View style={styles.logoBadge}>
-            <Text style={styles.logoBadgeText}>আমার দেশ</Text>
+        <View style={styles.mastheadCol}>
+          <View style={styles.mastheadTitleRow}>
+            <View style={styles.mastheadAccentBar} />
+            <Text style={styles.mastheadTitle}>
+              {language === 'bn' ? 'দৈনিক আমার দেশ' : 'Daily Amar Desh'}
+            </Text>
           </View>
-          <View style={styles.mottoCol}>
-            <Text style={styles.appName}>{t('app_name', language)}</Text>
-            <Text style={styles.appSlogan}>{t('app_motto', language)}</Text>
-          </View>
+          <Text style={styles.mastheadMotto}>
+            {language === 'bn' ? 'স্বাধীনতার কথা বলে • সত্য ও সাহসের প্রতীক' : 'Speaks of Independence • Voice of Truth'}
+          </Text>
         </View>
 
         <View style={styles.headerIcons}>
@@ -589,7 +587,7 @@ export default function HomeScreen() {
             onPress={() => router.push('/settings/ai' as any)}
             activeOpacity={0.7}
           >
-            <Ionicons name="sparkles" size={17} color="#006B3F" />
+            <Ionicons name="sparkles" size={16} color="#006B3F" />
           </TouchableOpacity>
 
           {/* Notification Center */}
@@ -598,7 +596,7 @@ export default function HomeScreen() {
             onPress={() => router.push('/notifications' as any)}
             activeOpacity={0.7}
           >
-            <Ionicons name="notifications-outline" size={18} color={styles.appName.color} />
+            <Ionicons name="notifications-outline" size={17} color={styles.mastheadTitle.color} />
             {unreadNotifCount > 0 && (
               <View style={styles.notifBadge}>
                 <Text style={styles.notifBadgeText}>
@@ -614,7 +612,7 @@ export default function HomeScreen() {
             onPress={() => router.push('/search' as any)}
             activeOpacity={0.7}
           >
-            <Ionicons name="search" size={18} color={styles.appName.color} />
+            <Ionicons name="search" size={17} color={styles.mastheadTitle.color} />
           </TouchableOpacity>
         </View>
       </View>

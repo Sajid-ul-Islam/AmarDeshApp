@@ -10,6 +10,7 @@ import {
   Alert,
   Modal,
   Share,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -421,6 +422,7 @@ export default function EPaperScreen() {
         color: tokens.text.primary,
         lineHeight: 24,
         marginBottom: 8,
+        fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' }),
       },
       cropSnippet: {
         fontSize: 13.5,
