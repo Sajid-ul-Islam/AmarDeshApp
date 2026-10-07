@@ -150,14 +150,15 @@ export default function BookmarksScreen() {
         alignItems: 'center',
         gap: 4,
         backgroundColor: tokens.surface.elevated,
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 4,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: tokens.radii.pill,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.sm,
       },
       interestsBtnText: {
-        fontSize: 11,
+        fontSize: 11.5,
         fontWeight: '600',
         color: tokens.text.secondary,
       },
@@ -425,9 +426,12 @@ export default function BookmarksScreen() {
               style={styles.interestsBtn}
               onPress={() => router.push('/settings/interests' as any)}
               activeOpacity={0.7}
+              accessibilityLabel={t('customize_interests', language)}
             >
-              <Ionicons name="options-outline" size={13} color={tokens.text.secondary} />
-              <Text style={styles.interestsBtnText}>{t('customize_interests', language)}</Text>
+              <Ionicons name="options-outline" size={15} color={tokens.brand.primary} />
+              <Text style={styles.interestsBtnText}>
+                {language === 'bn' ? 'পছন্দ' : 'Interests'}
+              </Text>
             </TouchableOpacity>
           )}
         </View>

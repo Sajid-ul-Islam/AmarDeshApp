@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Rounded Curvy Design System & Icon-First UI Overhaul
+- **Centralized Border Radius Tokens & Soft Shadows** (`theme/tokens.ts`, `theme/index.ts`):
+  - Defined design tokens for radii: `sm: 8px`, `md: 12px`, `lg: 16px`, `pill: 999px` (as well as `xs: 4px`, `xl: 20px`, `2xl: 24px`).
+  - Added cross-platform soft diffused shadows (`shadows.card`, `shadows.soft`, `shadows.lg`, `shadows.sm`) replacing harsh borders (`borderWidth: 1.5`) with hairline subtle borders (`0.5px`, `border.subtle`).
+  - Exposed `radii` and `shadows` through `getThemeTokens` and `useThemedStyles`, enabling global radius modifications in one central place.
+  - Applied tokens across buttons, cards, inputs, modals, sheets, and lists across all components and screens.
+- **Icon-First UI Transformation**:
+  - Replaced verbose text buttons and prompts with clean icon-driven controls (e.g. icon pill for Bookmarks customization, compact YouTube and PiP action buttons in Video screen, icon-led GPS prompt in PrayerTimesWidget, and close icon button in ReaderSettingsModal).
+  - Maintained strict Bengali text fidelity, complete responsive layouts, and zero test regressions (all 17 test suites, 120 tests passing).
+
 ### Clean Broadsheet Masthead & Top Options Relocation
 - **Ultra-Clean Home Masthead & Settings/Menu Relocation** (`app/(tabs)/index.tsx`, `app/(tabs)/menu.tsx`, `app/(tabs)/profile.tsx`):
   - Completely removed the top date/weekday bar, weather text, language toggle, and edition badge from the top of the Home feed to achieve a clean broadsheet masthead directly behind the transparent status bar.

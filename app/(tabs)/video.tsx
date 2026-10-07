@@ -340,9 +340,10 @@ export default function VideoScreen() {
               style={styles.ytChannelBtn}
               onPress={() => Linking.openURL(AMAR_DESH_YT_CHANNEL_URL)}
               activeOpacity={0.7}
+              accessibilityLabel="অফিসিয়াল ইউটিউব চ্যানেল"
             >
-              <Ionicons name="logo-youtube" size={13} color="#DC2626" />
-              <Text style={styles.ytChannelBtnText}>অফিসিয়াল চ্যানেল</Text>
+              <Ionicons name="logo-youtube" size={15} color="#DC2626" />
+              <Text style={styles.ytChannelBtnText}>চ্যানেল ↗</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -352,9 +353,12 @@ export default function VideoScreen() {
                 setIsMiniDismissed(false);
               }}
               activeOpacity={0.7}
+              accessibilityLabel="ভাসমান প্লেয়ার চালু করুন"
             >
-              <Ionicons name="copy-outline" size={13} color={styles.activeCatText.color} />
-              <Text style={styles.pipBtnText}>{t('mini_player', language)}</Text>
+              <Ionicons name="copy-outline" size={14} color={styles.activeCatText.color} />
+              <Text style={styles.pipBtnText}>
+                {language === 'bn' ? 'ভাসমান' : 'PiP'}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>

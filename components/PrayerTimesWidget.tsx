@@ -181,11 +181,11 @@ export const PrayerTimesWidget: React.FC<PrayerTimesWidgetProps> = ({
           style={styles.gpsPromptBar}
           onPress={onChangeDivision}
           activeOpacity={0.7}
+          accessibilityLabel="সঠিক সময়ের জন্য GPS সক্রিয় করুন"
         >
-          <Ionicons name="navigate-circle-outline" size={14} color={styles.gpsPromptText.color} />
-          <Text style={styles.gpsPromptText}>
-            আপনার এলাকার সঠিক সময়ের জন্য GPS ব্যবহার করুন ↗
-          </Text>
+          <Ionicons name="navigate" size={13} color={styles.gpsPromptText.color} />
+          <Text style={styles.gpsPromptText}>সঠিক সময়ে GPS অন করুন</Text>
+          <Ionicons name="arrow-forward" size={12} color={styles.gpsPromptText.color} />
         </TouchableOpacity>
       )}
     </View>
