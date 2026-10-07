@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemedStyles } from '../theme';
@@ -11,57 +11,102 @@ interface BreakingNewsTickerProps {
 export const BreakingNewsTicker: React.FC<BreakingNewsTickerProps> = ({ headlines }) => {
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
 
   const styles = useThemedStyles((tokens) =>
     StyleSheet.create({
       container: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#FEF2F2',
+        backgroundColor: tokens.brand.crimsonSurface,
         borderBottomWidth: 1,
-        borderBottomColor: '#FECACA',
-        paddingHorizontal: 12,
-        paddingVertical: 8,
+        borderBottomColor: tokens.border.default,
+        paddingHorizontal: 14,
+        paddingVertical: 9,
       },
       badge: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: '#DC2626',
-        paddingHorizontal: 8,
-        paddingVertical: 3,
+        paddingHorizontal: 9,
+        paddingVertical: 4,
         borderRadius: 4,
-        marginRight: 8,
-        gap: 4,
+        marginRight: 10,
+        gap: 5,
+        elevation: 2,
+        shadowColor: '#DC2626',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.3,
+        shadowRadius: 2,
       },
       pulseDot: {
-        width: 6,
-        height: 6,
-        borderRadius: 3,
+        width: 7,
+        height: 7,
+        borderRadius: 3.5,
         backgroundColor: '#FFFFFF',
       },
       badgeText: {
         color: '#FFFFFF',
         fontSize: 11,
         fontWeight: 'bold',
+        letterSpacing: 0.3,
       },
       headlineTouchable: {
         flex: 1,
       },
       headlineText: {
-        fontSize: 13,
-        color: '#991B1B',
+        fontSize: 13.5,
+        color: tokens.text.primary,
         fontWeight: '600',
+        lineHeight: 18,
+      },
+      chevron: {
+        marginLeft: 6,
       },
     })
   );
 
+  // Pulsating dot effect
+  useEffect(() => {
+    const pulseLoop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 0.4,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    pulseLoop.start();
+    return () => pulseLoop.stop();
+  }, [pulseAnim]);
+
+  // Headline cycle animation
   useEffect(() => {
     if (headlines.length <= 1) return;
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % headlines.length);
-    }, 4000);
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }).start(() => {
+        setCurrentIndex((prev) => (prev + 1) % headlines.length);
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 350,
+          useNativeDriver: true,
+        }).start();
+      });
+    }, 4500);
+
     return () => clearInterval(interval);
-  }, [headlines.length]);
+  }, [headlines.length, fadeAnim]);
 
   if (!headlines || headlines.length === 0) return null;
 
@@ -70,7 +115,7 @@ export const BreakingNewsTicker: React.FC<BreakingNewsTickerProps> = ({ headline
   return (
     <View style={styles.container}>
       <View style={styles.badge}>
-        <View style={styles.pulseDot} />
+        <Animated.View style={[styles.pulseDot, { opacity: pulseAnim }]} />
         <Text style={styles.badgeText}>ব্রেকিং</Text>
       </View>
 
@@ -79,12 +124,15 @@ export const BreakingNewsTicker: React.FC<BreakingNewsTickerProps> = ({ headline
         onPress={() => router.push(`/article/${currentStory.id}` as any)}
         activeOpacity={0.7}
       >
-        <Text style={styles.headlineText} numberOfLines={1}>
+        <Animated.Text
+          style={[styles.headlineText, { opacity: fadeAnim }]}
+          numberOfLines={1}
+        >
           {currentStory.title}
-        </Text>
+        </Animated.Text>
       </TouchableOpacity>
 
-      <Ionicons name="chevron-forward" size={16} color="#DC2626" />
+      <Ionicons name="chevron-forward" size={16} color="#DC2626" style={styles.chevron} />
     </View>
   );
 };

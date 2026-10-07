@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemedStyles } from '../theme';
 import { PrayerTimeData } from '../services/prayerTimesService';
@@ -23,12 +23,17 @@ export const PrayerTimesWidget: React.FC<PrayerTimesWidgetProps> = ({
         padding: 14,
         borderWidth: 1,
         borderColor: tokens.border.default,
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.06,
+        shadowRadius: 3,
       },
       headerRow: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: 10,
+        marginBottom: 12,
       },
       titleLeft: {
         flexDirection: 'row',
@@ -49,9 +54,11 @@ export const PrayerTimesWidget: React.FC<PrayerTimesWidgetProps> = ({
         alignItems: 'center',
         gap: 4,
         backgroundColor: tokens.surface.elevated,
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 12,
+        paddingHorizontal: 9,
+        paddingVertical: 5,
+        borderRadius: 14,
+        borderWidth: 1,
+        borderColor: tokens.border.default,
       },
       divisionText: {
         fontSize: 12,
@@ -66,16 +73,29 @@ export const PrayerTimesWidget: React.FC<PrayerTimesWidgetProps> = ({
       },
       timeCol: {
         alignItems: 'center',
+        flex: 1,
+      },
+      activeTimeCol: {
+        backgroundColor: tokens.brand.surface,
+        borderRadius: 8,
+        paddingVertical: 4,
       },
       waqtName: {
         fontSize: 12,
         color: tokens.text.secondary,
-        marginBottom: 2,
+        marginBottom: 3,
+      },
+      activeWaqtName: {
+        color: tokens.brand.primary,
+        fontWeight: 'bold',
       },
       waqtTime: {
         fontSize: 13,
         fontWeight: 'bold',
         color: tokens.text.primary,
+      },
+      activeWaqtTime: {
+        color: tokens.brand.primary,
       },
     })
   );
@@ -92,25 +112,40 @@ export const PrayerTimesWidget: React.FC<PrayerTimesWidgetProps> = ({
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <View style={styles.titleLeft}>
-          <Ionicons name="moon" size={16} color="#006B3F" />
+          <Ionicons name="moon" size={16} color={styles.titleText.color} />
           <Text style={styles.titleText}>নামাজের সময়সূচি</Text>
           <Text style={styles.hijriBadge}>({prayerData.hijriDate})</Text>
         </View>
 
-        <TouchableOpacity style={styles.divisionBtn} onPress={onChangeDivision}>
-          <Ionicons name="location-outline" size={12} color="#006B3F" />
+        <TouchableOpacity
+          style={styles.divisionBtn}
+          onPress={onChangeDivision}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="location-outline" size={12} color={styles.divisionText.color} />
           <Text style={styles.divisionText}>{prayerData.division}</Text>
-          <Ionicons name="chevron-down" size={12} color="#006B3F" />
+          <Ionicons name="chevron-down" size={12} color={styles.divisionText.color} />
         </TouchableOpacity>
       </View>
 
       <View style={styles.timesRow}>
-        {prayers.map((p) => (
-          <View key={p.name} style={styles.timeCol}>
-            <Text style={styles.waqtName}>{p.name}</Text>
-            <Text style={styles.waqtTime}>{p.time}</Text>
-          </View>
-        ))}
+        {prayers.map((p, idx) => {
+          // Highlight second waqt (e.g. current or next)
+          const isHighlight = idx === 1;
+          return (
+            <View
+              key={p.name}
+              style={[styles.timeCol, isHighlight && styles.activeTimeCol]}
+            >
+              <Text style={[styles.waqtName, isHighlight && styles.activeWaqtName]}>
+                {p.name}
+              </Text>
+              <Text style={[styles.waqtTime, isHighlight && styles.activeWaqtTime]}>
+                {p.time}
+              </Text>
+            </View>
+          );
+        })}
       </View>
     </View>
   );

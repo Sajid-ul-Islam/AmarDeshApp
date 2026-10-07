@@ -1,31 +1,68 @@
 /**
- * Brand-Vibe Theme Token System
+ * Daily Amar Desh - Comprehensive Theme Token System
  * 
  * Semantic color tokens for the Daily Amar Desh app
- * Supports light mode (clean white) and deep dark mode (OLED-optimized)
- * 
- * Brand hue: 150° (green/teal spectrum)
+ * Embodying "স্বাধীনতার কথা বলে" brand identity:
+ * - Brand Crimson: #DC2626 (Breaking news, alerts, primary badge)
+ * - Forest Green: #006B3F (National heritage, ePaper, verified icons)
+ * - Editorial Ink: #0F172A (Headlines, typography, light surfaces)
+ * - OLED Dark: #0A0A0A (Pure deep dark mode, off-white reading text)
  */
 
 // ============================================================================
-// BRAND COLORS
+// BRAND PALETTES
 // ============================================================================
 
 export const brand = {
   hue: 150,
   
-  // OKLCH-inspired scale from lightest to darkest
-  50: '#f0fdf4',   // Very light green tint
-  100: '#dcfce7',  // Light green
-  200: '#bbf7d0',  // Lighter green
-  300: '#86efac',  // Soft green
-  400: '#4ade80',  // Medium green
-  500: '#22c55e',  // Base green
-  600: '#006B3F',  // Brand primary (deep green)
-  700: '#15803d',  // Darker green
-  800: '#166534',  // Very dark green
-  900: '#14532d',  // Darkest green
-  950: '#052e16',  // Near-black green
+  // Crimson scale (Amar Desh Masthead & Breaking News)
+  crimson: {
+    50: '#fef2f2',
+    100: '#fee2e2',
+    200: '#fecaca',
+    300: '#fca5a5',
+    400: '#f87171',
+    500: '#ef4444',
+    600: '#dc2626', // Base Crimson
+    700: '#b91c1c',
+    800: '#991b1b',
+    900: '#7f1d1d',
+    950: '#450a0a',
+  },
+
+  // Forest Green scale (National Heritage, ePaper)
+  green: {
+    50: '#f0fdf4',
+    100: '#dcfce7',
+    200: '#bbf7d0',
+    300: '#86efac',
+    400: '#4ade80',
+    500: '#22c55e',
+    600: '#006B3F', // Brand Green
+    700: '#15803d',
+    800: '#166534',
+    900: '#14532d',
+    950: '#052e16',
+  },
+
+  // Editorial Slate scale (Ink & Neutral Surfaces)
+  slate: {
+    50: '#f8fafc',
+    100: '#f1f5f9',
+    200: '#e2e8f0',
+    300: '#cbd5e1',
+    400: '#94a3b8',
+    500: '#64748b',
+    600: '#475569',
+    700: '#334155',
+    800: '#1e293b',
+    900: '#0f172a',
+    950: '#020617',
+  },
+
+  primary: '#006B3F',
+  secondary: '#DC2626',
 };
 
 // ============================================================================
@@ -33,51 +70,47 @@ export const brand = {
 // ============================================================================
 
 export const light = {
-  // Surface colors (backgrounds)
   surface: {
-    base: '#ffffff',        // Main background
-    subtle: '#f9fafb',      // Subtle sections
-    elevated: '#f3f4f6',    // Cards, elevated surfaces
-    overlay: '#e5e7eb',     // Modals, overlays
+    base: '#ffffff',        // Main paper background
+    subtle: '#f8fafc',      // Subtle stream background
+    elevated: '#f1f5f9',    // Cards, pills, elevated surfaces
+    overlay: '#e2e8f0',     // Modals, overlays
   },
   
-  // Text colors
   text: {
-    primary: '#111827',     // Main text (near black)
-    secondary: '#6b7280',   // Secondary text (gray)
-    tertiary: '#9ca3af',    // Tertiary text (light gray)
-    inverse: '#ffffff',     // Text on dark backgrounds
+    primary: '#0f172a',     // High-contrast editorial ink
+    secondary: '#475569',   // Supporting summaries
+    tertiary: '#94a3b8',    // Timestamps, captions
+    inverse: '#ffffff',     // Text on dark badges
   },
   
-  // Brand colors
   brand: {
-    primary: '#006B3F',     // Brand primary
-    onPrimary: '#ffffff',   // Text on brand primary
-    surface: '#f0fdf4',     // Brand-tinted background
-    accent: '#22c55e',      // Brand accent (lighter)
+    primary: '#006B3F',     // Forest Green
+    secondary: '#dc2626',   // Crimson Red
+    onPrimary: '#ffffff',   // Text on primary
+    surface: '#f0fdf4',     // Brand-tinted green background
+    crimsonSurface: '#fef2f2', // Brand-tinted red background
+    accent: '#22c55e',      // Vivid green
   },
   
-  // Border colors
   border: {
-    default: '#e5e7eb',     // Default borders
-    subtle: '#f3f4f6',      // Subtle borders
-    strong: '#d1d5db',      // Strong borders
+    default: '#e2e8f0',     // Default card borders
+    subtle: '#f1f5f9',      // Subtle separators
+    strong: '#cbd5e1',      // Strong borders
   },
   
-  // Status colors
   status: {
-    success: '#22c55e',     // Success/breaking news
-    error: '#dc2626',       // Error/destructive
+    success: '#16a34a',     // Success / live indicator
+    error: '#dc2626',       // Breaking news / critical
     warning: '#f59e0b',     // Warning
-    info: '#3b82f6',        // Informational
+    info: '#2563eb',        // Informational
   },
   
-  // Interactive states
   interactive: {
-    active: '#006B3F',      // Active state
-    inactive: '#6b7280',    // Inactive state
-    hover: '#f3f4f6',       // Hover state
-    pressed: '#e5e7eb',     // Pressed state
+    active: '#006B3F',      // Active tab / chip
+    inactive: '#64748b',    // Inactive state
+    hover: '#f1f5f9',       // Hover state
+    pressed: '#e2e8f0',     // Pressed state
   },
 };
 
@@ -86,57 +119,88 @@ export const light = {
 // ============================================================================
 
 export const dark = {
-  // Surface colors (backgrounds) - Deep blacks for OLED
   surface: {
-    base: '#0a0a0a',        // Main background (near-black, NOT pure #000)
-    subtle: '#18181b',      // Subtle sections (cards)
-    elevated: '#27272a',    // Cards, elevated surfaces
-    overlay: '#3f3f46',     // Modals, overlays
+    base: '#0a0a0a',        // True deep OLED background
+    subtle: '#121214',      // Subtle stream background
+    elevated: '#1a1a1e',    // Elevated cards
+    overlay: '#27272a',     // Modals, overlays
   },
   
-  // Text colors - Off-whites for reduced eye strain
   text: {
-    primary: '#fafafa',     // Main text (off-white)
-    secondary: '#a1a1aa',   // Secondary text (gray)
-    tertiary: '#71717a',    // Tertiary text (dark gray)
-    inverse: '#0a0a0a',     // Text on light backgrounds
+    primary: '#f8fafc',     // Off-white crisp reading text
+    secondary: '#94a3b8',   // Secondary gray
+    tertiary: '#64748b',    // Muted tertiary text
+    inverse: '#0a0a0a',     // Inverted dark text
   },
   
-  // Brand colors - Lighter, desaturated for dark backgrounds
   brand: {
-    primary: '#4ade80',     // Brand primary (lighter green)
-    onPrimary: '#0a0a0a',   // Text on brand primary
-    surface: '#14532d',     // Brand-tinted background (dark green)
-    accent: '#86efac',      // Brand accent (very light green)
+    primary: '#4ade80',     // Lighter accessible green for dark mode
+    secondary: '#f87171',   // Lighter accessible red for dark mode
+    onPrimary: '#052e16',   // Text on green
+    surface: '#14532d',     // Dark green card background
+    crimsonSurface: '#450a0a', // Dark red card background
+    accent: '#86efac',      // Luminous green accent
   },
   
-  // Border colors - Subtle dark borders
   border: {
-    default: '#3f3f46',     // Default borders
-    subtle: '#27272a',      // Subtle borders
-    strong: '#52525b',      // Strong borders
+    default: '#27272a',     // Subtle dark border
+    subtle: '#18181b',      // Micro separators
+    strong: '#3f3f46',      // Focused borders
   },
   
-  // Status colors - Adjusted for dark backgrounds
   status: {
-    success: '#4ade80',     // Success (lighter green)
-    error: '#f87171',       // Error (lighter red)
-    warning: '#fbbf24',     // Warning (lighter amber)
-    info: '#60a5fa',        // Informational (lighter blue)
+    success: '#4ade80',     // Luminous success green
+    error: '#f87171',       // High-contrast breaking red
+    warning: '#fbbf24',     // Warning amber
+    info: '#60a5fa',        // Info blue
   },
   
-  // Interactive states
   interactive: {
-    active: '#4ade80',      // Active state (lighter green)
-    inactive: '#71717a',    // Inactive state (dark gray)
-    hover: '#27272a',       // Hover state (elevated surface)
-    pressed: '#3f3f46',     // Pressed state (overlay)
+    active: '#4ade80',      // Active pill
+    inactive: '#71717a',    // Inactive text
+    hover: '#1a1a1e',       // Hover surface
+    pressed: '#27272a',     // Pressed surface
   },
 };
 
 // ============================================================================
-// SEMANTIC TOKENS
+// TYPOGRAPHY & SPACING TOKENS
 // ============================================================================
+
+export const typography = {
+  fontSizes: {
+    xs: 11,
+    sm: 13,
+    base: 15,
+    md: 17,
+    lg: 20,
+    xl: 24,
+    '2xl': 28,
+  },
+  lineHeights: {
+    tight: 1.25,
+    normal: 1.5,
+    relaxed: 1.75,
+  },
+};
+
+export const spacing = {
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
+  '2xl': 24,
+  '3xl': 32,
+};
+
+export const radii = {
+  sm: 4,
+  md: 8,
+  lg: 12,
+  xl: 16,
+  full: 9999,
+};
 
 export type ThemeMode = 'light' | 'dark';
 
@@ -149,16 +213,10 @@ export interface ThemeTokens {
   interactive: typeof light.interactive;
 }
 
-/**
- * Get theme tokens based on mode
- */
 export const getThemeTokens = (mode: ThemeMode): ThemeTokens => {
   return mode === 'dark' ? dark : light;
 };
 
-/**
- * Social media brand colors (constant across themes)
- */
 export const social = {
   whatsapp: '#25D366',
   facebook: '#1877F2',
@@ -168,13 +226,13 @@ export const social = {
   youtube: '#FF0000',
 };
 
-/**
- * Export all tokens
- */
 export const tokens = {
   brand,
   light,
   dark,
+  typography,
+  spacing,
+  radii,
   social,
   getThemeTokens,
 };

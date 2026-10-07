@@ -7,6 +7,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 2026 Advanced Mobile Newspaper Capabilities & Backend Newsroom Suite
+- **Article Swipe & Next-Previous Navigation** (`app/article/[id].tsx`):
+  - Category-scoped bidirectional article switcher ("← পূর্ববর্তী সংবাদ" / "পরবর্তী সংবাদ →") with rich headline preview cards.
+  - Native gesture PanResponder allowing readers to swipe left or right to flip between news stories effortlessly.
+- **Interactive ePaper Column Hotspot & Crop Reader** (`app/(tabs)/epaper.tsx`):
+  - Interactive column hotspots on print replica newspaper pages with distinct Bengali badges ("কলাম পাঠ").
+  - Rich bottom sheet modal displaying cropped article clipping, headline, snippet, social share, and 1-tap deep link to digitized full-text reading view.
+  - Floating toolbar toggle to show or hide hotspots dynamically.
+- **Floating Video Mini-Player / PiP Mode** (`components/FloatingVideoPlayer.tsx`, `app/(tabs)/video.tsx`):
+  - Floating mini-player overlay in bottom-right corner when scrolling through video playlists or tapping "মিনি প্লেয়ার".
+  - Allows browsing multimedia stories without interrupting active video playback context, with 1-tap expand and dismiss controls.
+- **Native Editorial Ad & Sponsorship Unit** (`components/AdBanner.tsx`):
+  - Dignified editorial sponsorship card with authentic Bengali badge ("বিজ্ঞাপন • SPONSORED"), sponsor partner attribution, custom blurb, and call-to-action button.
+  - Seamlessly embedded in home feed (`app/(tabs)/index.tsx`) and article footer (`app/article/[id].tsx`).
+- **Bidirectional Cloud Account Sync Service** (`services/cloudSyncService.ts`):
+  - Cloud synchronization engine for bookmarks (set union merge), reading streaks (max streak merge), reader reactions, and preferences.
+  - Offline queuing with retry handler and real-time state subscription listener.
+- **Backend CMS Webhook & Push Notification Server Worker** (`server/cmsWebhookHandler.ts`, `server/pushNotificationWorker.ts`):
+  - HMAC-SHA256 authenticated webhook listener for newsroom CMS publishing events (`article.published`, `breaking.alert`, `article.updated`).
+  - Batch push notification dispatcher supporting Expo and FCM delivery with Bengali breaking news alert formatting.
+- **Testing & Typecheck Verification**:
+  - 13 test suites passing (86 / 86 unit and integration tests passing).
+  - 0 TypeScript compiler errors (`npm run typecheck`).
+- **BYOK (Bring Your Own Key) Multi-Provider AI Engine** (`services/byokAiService.ts`, `app/settings/ai.tsx`):
+  - Client-side direct integration supporting Google Gemini (1.5/2.0 Flash), Groq (Llama 3.3 70B), DeepSeek AI (V3), and OpenAI (GPT-4o-mini).
+  - Keys stored exclusively in local device storage (`@amar_desh_byok_ai_config`) with zero third-party relay.
+  - Interactive test connection tool verifying provider status with instant Bengali diagnostic feedback.
+  - Offline Bengali extractive fallback summarizer ensuring summary cards always display even without an active key.
+- **AI 3-Point Smart Summary Card** (`components/AiSummaryCard.tsx`):
+  - Integrated into article reader screens providing 3 concise, high-impact Bengali takeaway bullet points with quick expand/collapse and regeneration.
+- **Interactive AI News Assistant Modal** (`components/AiAssistantModal.tsx`):
+  - Q&A chat assistant on every article screen enabling readers to ask contextual questions (background, economic impact, jargon explanation) with pre-filled question chips.
+- **Notification Center & Persistent Inbox** (`services/notificationInboxService.ts`, `app/notifications/index.tsx`):
+  - Full-featured notification inbox with channel filtering (Breaking, Daily Briefing, Category, General), read/unread status tracking, unread count badge, and deep linking to target articles.
+  - Live notification bell icon with badge count integrated into the home screen masthead header.
+  - Push alert simulator allowing instant testing of breaking news alerts directly from the app.
+- **Modern Newspaper Reader Engagement Suite**:
+  - **Article Emoji Reactions** (`components/ArticleReactions.tsx`): Interactive 5-reaction bar (❤️ পছন্দ, 👍 গুরুত্বপূর্ণ, 💡 তথ্যবহুল, 😢 দুঃখজনক, 😡 ক্ষোভ) with local count aggregation in Bengali numerals.
+  - **Continue Reading Shelf** (`components/ContinueReadingCard.tsx`): Persistent home feed card tracking articles read between 10% and 90% with dynamic percentage bar.
+  - **Live Weather Chip** in Home masthead ("ঢাকা ২৮° সে. ⛅").
+- **Test & Type Verification**:
+  - 11 test suites passing, 78 / 78 tests passing (`npm test`).
+  - 0 TypeScript type errors (`npm run typecheck`).
+
+### Complete UI/UX Brand Polish & CybrCraft Enterprise Proposal Suite
+- **Universal Theme Token Migration** (`theme/tokens.ts`, `theme/useThemedStyles.ts`) — Unified Brand Crimson (`#DC2626`), Forest Green (`#006B3F`), Editorial Slate (`#0F172A`), and OLED dark mode (`#0A0A0A`). Upgraded bottom tab layout, bookmarks, search, profile, menu, category, and settings screens with dynamic token-driven styling and high-contrast dark theme.
+- **Enhanced Article Detail & Reader Experience** (`app/article/[id].tsx`) — Live 0–100% reading progress indicator, floating Bengali TTS audio player bar, and reader font customization.
+- **Enterprise Proposal & Outreach Package for Daily Amar Desh** (`docs/`):
+  - `Daily_Amar_Desh_Mobile_App_Proposal_CybrCraft.docx` (985 KB native Word document with official logos, KPI charts, timeline, and two-phase official CMS integration narrative).
+  - `Daily_Amar_Desh_Mobile_App_Proposal_CybrCraft.html` (Interactive HTML document with base64 embedded visual assets, printable to PDF).
+  - `AMAR_DESH_PROPOSAL_BENGALI.md` (Dignified formal Bengali letter to Editor Mahmudur Rahman).
+  - `AMAR_DESH_MOBILE_APP_PROPOSAL.md` (10-section Master Technical Proposal in English).
+  - `MODERN_NEWSPAPER_APP_INDUSTRY_REPORT.md` (2026 Industry Benchmark Report covering 10 pillars of modern news apps).
+  - `PROPOSAL_STRATEGY_PLAN.md` & `OUTREACH_KIT_CONTACT_US.md` (Strategic multi-channel pitch plan with ready-to-send payloads).
+  - `AMAR_DESH_UI_UX_BRAND_GUIDE.md` (UI/UX design system specification).
+- **Test & Type Verification** — 0 TypeScript compiler errors (`npm run typecheck`), 100% pass rate across all 9 test suites (70/70 unit and integration tests).
+
 ### Modern Industry-Standard Expo Android App & dailyamardesh.com Content Mirroring
 - **5-Tab Native Android Navigation** — Upgraded navigation structure to 5 core tabs: হোম (Home), ই-পেপার (ePaper Gallery), ভিডিও (Multimedia Hub), সেভ (Saved & Offline), and মেনু (Full 14-category catalog, search & settings).
 - **ePaper Static Image Gallery Edition** (`app/(tabs)/epaper.tsx`) — Native daily print replica reader with page switching (১ম পাতা, ২য় পাতা, সম্পাদকীয়, ইত্যাদি), pinch-to-zoom, and one-tap offline download manager.

@@ -44,6 +44,8 @@ export default function RootLayout() {
           <Stack.Screen name="article/[id]" options={{ headerShown: false }} />
           <Stack.Screen name="category/[slug]" options={{ headerShown: false }} />
           <Stack.Screen name="july-revolution/index" options={{ headerShown: false }} />
+          <Stack.Screen name="notifications/index" options={{ headerShown: false }} />
+          <Stack.Screen name="settings/ai" options={{ headerShown: false }} />
           <Stack.Screen name="settings/notifications" options={{ headerShown: false }} />
           <Stack.Screen name="settings/privacy" options={{ headerShown: false }} />
           <Stack.Screen name="settings/interests" options={{ headerShown: false }} />

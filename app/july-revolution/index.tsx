@@ -106,7 +106,7 @@ export default function JulyRevolutionScreen() {
         overflow: 'hidden',
         marginBottom: 16,
         borderWidth: 1,
-        borderColor: '#FCA5A5',
+        borderColor: tokens.border.default,
         elevation: 3,
       },
       heroBadge: {
@@ -151,7 +151,7 @@ export default function JulyRevolutionScreen() {
       },
       metaAuthor: {
         fontSize: 11,
-        color: '#DC2626',
+        color: tokens.brand.secondary,
         fontWeight: '600',
       },
       metaTime: {

@@ -1,19 +1,21 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useColorScheme } from 'react-native';
+import { useThemeTokens } from '../../theme';
+import { useAppStore } from '../../store/useAppStore';
+import { t } from '../../services/i18n';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const tokens = useThemeTokens();
+  const language = useAppStore((state) => state.language);
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#006B3F',
-        tabBarInactiveTintColor: isDark ? '#9CA3AF' : '#6B7280',
+        tabBarActiveTintColor: tokens.brand.primary,
+        tabBarInactiveTintColor: tokens.interactive.inactive,
         tabBarStyle: {
-          backgroundColor: isDark ? '#111827' : '#FFFFFF',
-          borderTopColor: isDark ? '#1F2937' : '#E5E7EB',
+          backgroundColor: tokens.surface.base,
+          borderTopColor: tokens.border.default,
           height: 60,
           paddingBottom: 8,
           paddingTop: 6,
@@ -23,16 +25,16 @@ export default function TabLayout() {
           fontWeight: '600',
         },
         headerStyle: {
-          backgroundColor: isDark ? '#111827' : '#FFFFFF',
+          backgroundColor: tokens.surface.base,
         },
-        headerTintColor: isDark ? '#FFFFFF' : '#000000',
+        headerTintColor: tokens.text.primary,
       }}
     >
       {/* 1. হোম (Home) */}
       <Tabs.Screen
         name="index"
         options={{
-          title: 'হোম',
+          title: t('tab_home', language),
           headerShown: false,
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
@@ -48,7 +50,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="epaper"
         options={{
-          title: 'ই-পেপার',
+          title: t('tab_epaper', language),
           headerShown: false,
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
@@ -64,7 +66,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="video"
         options={{
-          title: 'ভিডিও',
+          title: t('tab_video', language),
           headerShown: false,
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
@@ -80,9 +82,9 @@ export default function TabLayout() {
       <Tabs.Screen
         name="bookmarks"
         options={{
-          title: 'সেভ',
+          title: t('tab_saved', language),
           headerShown: true,
-          headerTitle: 'সংরক্ষিত সংবাদ',
+          headerTitle: t('saved_articles', language),
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
               name={focused ? 'bookmark' : 'bookmark-outline'}
@@ -97,7 +99,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="menu"
         options={{
-          title: 'মেনু',
+          title: t('tab_menu', language),
           headerShown: false,
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
@@ -114,21 +116,17 @@ export default function TabLayout() {
         name="search"
         options={{
           href: null,
-          title: 'অনুসন্ধান',
+          title: 'Search',
+          headerShown: false,
         }}
       />
-      <Tabs.Screen
-        name="foryou"
-        options={{
-          href: null,
-          title: 'আপনার জন্য',
-        }}
-      />
+
       <Tabs.Screen
         name="profile"
         options={{
           href: null,
-          title: 'প্রোফাইল',
+          title: 'Profile',
+          headerShown: false,
         }}
       />
     </Tabs>

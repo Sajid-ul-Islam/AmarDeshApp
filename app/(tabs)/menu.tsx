@@ -11,8 +11,9 @@ import {
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useThemedStyles } from '../../theme';
+import { useThemedStyles, useThemeTokens } from '../../theme';
 import { useAppStore } from '../../store/useAppStore';
+import { t, getLocalizedCategoryName, SupportedLanguage } from '../../services/i18n';
 
 interface CategoryItem {
   id: string;
@@ -41,8 +42,11 @@ const ALL_CATEGORIES: CategoryItem[] = [
 export default function MenuScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const tokens = useThemeTokens();
   const themePreference = useAppStore((state) => state.themePreference);
   const setThemePreference = useAppStore((state) => state.setThemePreference);
+  const language = useAppStore((state) => state.language);
+  const setLanguage = useAppStore((state) => state.setLanguage);
   const [lowDataMode, setLowDataMode] = useState(false);
 
   const styles = useThemedStyles((tokens) =>
@@ -82,16 +86,47 @@ export default function MenuScreen() {
         paddingVertical: 8,
         borderRadius: 20,
         gap: 6,
+        borderWidth: 1,
+        borderColor: tokens.border.default,
       },
       searchPillText: {
         fontSize: 13,
         color: tokens.text.secondary,
+        fontWeight: '500',
       },
       scrollContent: {
         paddingBottom: 40,
       },
+      quickBar: {
+        flexDirection: 'row',
+        marginHorizontal: 16,
+        marginTop: 16,
+        backgroundColor: tokens.surface.base,
+        borderRadius: 12,
+        padding: 12,
+        justifyContent: 'space-around',
+        borderWidth: 1,
+        borderColor: tokens.border.default,
+      },
+      quickItem: {
+        alignItems: 'center',
+        gap: 6,
+      },
+      quickIconCircle: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: tokens.brand.surface,
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      quickText: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: tokens.text.primary,
+      },
       sectionTitle: {
-        fontSize: 14,
+        fontSize: 13.5,
         fontWeight: 'bold',
         color: tokens.text.tertiary,
         textTransform: 'uppercase',
@@ -131,7 +166,7 @@ export default function MenuScreen() {
         alignItems: 'center',
       },
       specialIconBox: {
-        backgroundColor: '#FEF2F2',
+        backgroundColor: tokens.brand.crimsonSurface,
       },
       categoryText: {
         fontSize: 15,
@@ -139,7 +174,7 @@ export default function MenuScreen() {
         color: tokens.text.primary,
       },
       specialCategoryText: {
-        color: '#DC2626',
+        color: tokens.brand.secondary,
         fontWeight: 'bold',
       },
       utilityRow: {
@@ -155,16 +190,43 @@ export default function MenuScreen() {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 12,
+        flex: 1,
+        marginRight: 8,
       },
       utilityTitle: {
-        fontSize: 15,
+        fontSize: 14.5,
         color: tokens.text.primary,
-        fontWeight: '500',
+        fontWeight: '600',
       },
       utilitySubtitle: {
         fontSize: 12,
         color: tokens.text.secondary,
         marginTop: 2,
+      },
+      langSegment: {
+        flexDirection: 'row',
+        backgroundColor: tokens.surface.subtle,
+        borderRadius: 8,
+        padding: 3,
+        borderWidth: 1,
+        borderColor: tokens.border.default,
+      },
+      langBtn: {
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: 6,
+      },
+      langBtnActive: {
+        backgroundColor: tokens.brand.primary,
+      },
+      langBtnText: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: tokens.text.secondary,
+      },
+      langBtnTextActive: {
+        color: '#FFFFFF',
+        fontWeight: 'bold',
       },
       infoFooter: {
         alignItems: 'center',
@@ -192,22 +254,74 @@ export default function MenuScreen() {
       <View style={styles.header}>
         <View style={styles.brandRow}>
           <View>
-            <Text style={styles.brandTitle}>দৈনিক আমার দেশ</Text>
-            <Text style={styles.motto}>স্বাধীনতার কথা বলে • সংস্করণ ১.৩</Text>
+            <Text style={styles.brandTitle}>{t('app_name', language)}</Text>
+            <Text style={styles.motto}>
+              {t('app_motto', language)} • {language === 'bn' ? 'সংস্করণ ১.৩' : 'v1.3'}
+            </Text>
           </View>
           <TouchableOpacity
             style={styles.searchPill}
-            onPress={() => router.push('/search')}
+            onPress={() => router.push('/search' as any)}
+            activeOpacity={0.7}
           >
-            <Ionicons name="search" size={16} color="#006B3F" />
-            <Text style={styles.searchPillText}>অনুসন্ধান</Text>
+            <Ionicons name="search" size={16} color={tokens.brand.primary} />
+            <Text style={styles.searchPillText}>
+              {language === 'bn' ? 'অনুসন্ধান' : 'Search'}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* Quick Access Bar */}
+        <View style={styles.quickBar}>
+          <TouchableOpacity
+            style={styles.quickItem}
+            onPress={() => router.push('/epaper' as any)}
+          >
+            <View style={styles.quickIconCircle}>
+              <Ionicons name="newspaper" size={20} color={tokens.brand.primary} />
+            </View>
+            <Text style={styles.quickText}>{t('tab_epaper', language)}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.quickItem}
+            onPress={() => router.push('/video' as any)}
+          >
+            <View style={styles.quickIconCircle}>
+              <Ionicons name="play-circle" size={20} color={tokens.brand.primary} />
+            </View>
+            <Text style={styles.quickText}>{t('tab_video', language)}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.quickItem}
+            onPress={() => router.push('/bookmarks' as any)}
+          >
+            <View style={styles.quickIconCircle}>
+              <Ionicons name="bookmark" size={20} color={tokens.brand.primary} />
+            </View>
+            <Text style={styles.quickText}>{t('tab_saved', language)}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.quickItem}
+            onPress={() => router.push('/july-revolution' as any)}
+          >
+            <View style={[styles.quickIconCircle, { backgroundColor: tokens.brand.crimsonSurface }]}>
+              <Ionicons name="flame" size={20} color={tokens.brand.secondary} />
+            </View>
+            <Text style={[styles.quickText, { color: tokens.brand.secondary }]}>
+              {language === 'bn' ? 'জুলাই বিপ্লব' : 'July Revolution'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         {/* News Categories Section */}
-        <Text style={styles.sectionTitle}>সকল বিভাগ ও সংবাদ তালিকা</Text>
+        <Text style={styles.sectionTitle}>
+          {language === 'bn' ? 'সকল বিভাগ ও সংবাদ তালিকা' : 'All Sections & News Catalog'}
+        </Text>
         <View style={styles.gridCard}>
           {ALL_CATEGORIES.map((cat, idx) => (
             <TouchableOpacity
@@ -236,7 +350,7 @@ export default function MenuScreen() {
                   <Ionicons
                     name={cat.icon}
                     size={20}
-                    color={cat.isSpecial ? '#DC2626' : '#006B3F'}
+                    color={cat.isSpecial ? tokens.brand.secondary : tokens.brand.primary}
                   />
                 </View>
                 <Text
@@ -245,17 +359,62 @@ export default function MenuScreen() {
                     cat.isSpecial && styles.specialCategoryText,
                   ]}
                 >
-                  {cat.name}
+                  {getLocalizedCategoryName(cat.name, language)}
                 </Text>
               </View>
-              <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
+              <Ionicons name="chevron-forward" size={18} color={tokens.interactive.inactive} />
             </TouchableOpacity>
           ))}
         </View>
 
         {/* Quick Utilities & Settings */}
-        <Text style={styles.sectionTitle}>সেটিংস ও প্রয়োজনীয় সেবা</Text>
+        <Text style={styles.sectionTitle}>{t('settings_title', language)}</Text>
         <View style={styles.gridCard}>
+          {/* Language Selection Segmented Control */}
+          <View style={styles.utilityRow}>
+            <View style={styles.utilityLeft}>
+              <View style={[styles.catIconBox, { backgroundColor: tokens.brand.surface }]}>
+                <Ionicons name="language" size={20} color={tokens.brand.primary} />
+              </View>
+              <View>
+                <Text style={styles.utilityTitle}>{t('language_select', language)}</Text>
+                <Text style={styles.utilitySubtitle}>
+                  {language === 'bn' ? 'বাংলা নির্বাচিত' : 'English Selected'}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.langSegment}>
+              <TouchableOpacity
+                style={[styles.langBtn, language === 'bn' && styles.langBtnActive]}
+                onPress={() => setLanguage('bn')}
+                activeOpacity={0.7}
+              >
+                <Text
+                  style={[
+                    styles.langBtnText,
+                    language === 'bn' && styles.langBtnTextActive,
+                  ]}
+                >
+                  বাংলা
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.langBtn, language === 'en' && styles.langBtnActive]}
+                onPress={() => setLanguage('en')}
+                activeOpacity={0.7}
+              >
+                <Text
+                  style={[
+                    styles.langBtnText,
+                    language === 'en' && styles.langBtnTextActive,
+                  ]}
+                >
+                  English
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
           {/* Dark Mode Toggle */}
           <View style={styles.utilityRow}>
             <View style={styles.utilityLeft}>
@@ -263,20 +422,22 @@ export default function MenuScreen() {
                 <Ionicons
                   name={themePreference === 'dark' ? 'moon' : 'sunny'}
                   size={20}
-                  color="#006B3F"
+                  color={tokens.brand.primary}
                 />
               </View>
               <View>
-                <Text style={styles.utilityTitle}>ডার্ক মোড</Text>
+                <Text style={styles.utilityTitle}>{t('dark_mode', language)}</Text>
                 <Text style={styles.utilitySubtitle}>
-                  {themePreference === 'dark' ? 'চালু আছে' : 'বন্ধ আছে'}
+                  {themePreference === 'dark'
+                    ? t('dark_mode_active', language)
+                    : t('dark_mode_inactive', language)}
                 </Text>
               </View>
             </View>
             <Switch
               value={themePreference === 'dark'}
               onValueChange={(val) => setThemePreference(val ? 'dark' : 'light')}
-              trackColor={{ false: '#D1D5DB', true: '#006B3F' }}
+              trackColor={{ false: tokens.border.strong, true: tokens.brand.primary }}
               thumbColor="#FFFFFF"
             />
           </View>
@@ -285,38 +446,72 @@ export default function MenuScreen() {
           <View style={styles.utilityRow}>
             <View style={styles.utilityLeft}>
               <View style={styles.catIconBox}>
-                <Ionicons name="cellular-outline" size={20} color="#006B3F" />
+                <Ionicons name="cellular-outline" size={20} color={tokens.brand.primary} />
               </View>
               <View>
-                <Text style={styles.utilityTitle}>কম ডেটা মোড (Data Saver)</Text>
+                <Text style={styles.utilityTitle}>{t('data_saver', language)}</Text>
                 <Text style={styles.utilitySubtitle}>
-                  স্লো বা ২জি/৩জি ইন্টারনেটে দ্রুত লোড
+                  {t('data_saver_sub', language)}
                 </Text>
               </View>
             </View>
             <Switch
               value={lowDataMode}
               onValueChange={setLowDataMode}
-              trackColor={{ false: '#D1D5DB', true: '#006B3F' }}
+              trackColor={{ false: tokens.border.strong, true: tokens.brand.primary }}
               thumbColor="#FFFFFF"
             />
           </View>
 
-          {/* Notification Settings */}
+          {/* AI Settings (BYOK) */}
           <TouchableOpacity
             style={styles.utilityRow}
-            onPress={() => router.push('/settings/notifications')}
+            onPress={() => router.push('/settings/ai' as any)}
+          >
+            <View style={styles.utilityLeft}>
+              <View style={[styles.catIconBox, { backgroundColor: tokens.brand.surface }]}>
+                <Ionicons name="sparkles" size={20} color={tokens.brand.primary} />
+              </View>
+              <View>
+                <Text style={styles.utilityTitle}>{t('ai_settings_title', language)}</Text>
+                <Text style={styles.utilitySubtitle}>{t('ai_settings_sub', language)}</Text>
+              </View>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={tokens.interactive.inactive} />
+          </TouchableOpacity>
+
+          {/* Notification Inbox */}
+          <TouchableOpacity
+            style={styles.utilityRow}
+            onPress={() => router.push('/notifications' as any)}
           >
             <View style={styles.utilityLeft}>
               <View style={styles.catIconBox}>
-                <Ionicons name="notifications-outline" size={20} color="#006B3F" />
+                <Ionicons name="notifications-outline" size={20} color={tokens.brand.primary} />
               </View>
               <View>
-                <Text style={styles.utilityTitle}>নোটিফিকেশন অ্যালার্ট</Text>
-                <Text style={styles.utilitySubtitle}>ব্রেকিং নিউজ ও দৈনিক সারসংক্ষেপ</Text>
+                <Text style={styles.utilityTitle}>{t('notification_inbox', language)}</Text>
+                <Text style={styles.utilitySubtitle}>{t('notification_inbox_sub', language)}</Text>
               </View>
             </View>
-            <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
+            <Ionicons name="chevron-forward" size={18} color={tokens.interactive.inactive} />
+          </TouchableOpacity>
+
+          {/* Notification Settings */}
+          <TouchableOpacity
+            style={styles.utilityRow}
+            onPress={() => router.push('/settings/notifications' as any)}
+          >
+            <View style={styles.utilityLeft}>
+              <View style={styles.catIconBox}>
+                <Ionicons name="options-outline" size={20} color={tokens.brand.primary} />
+              </View>
+              <View>
+                <Text style={styles.utilityTitle}>{t('notification_control', language)}</Text>
+                <Text style={styles.utilitySubtitle}>{t('notification_control_sub', language)}</Text>
+              </View>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={tokens.interactive.inactive} />
           </TouchableOpacity>
 
           {/* About Us */}
@@ -324,30 +519,33 @@ export default function MenuScreen() {
             style={[styles.utilityRow, { borderBottomWidth: 0 }]}
             onPress={() => {
               Alert.alert(
-                'আমার দেশ সম্পর্কে',
-                'দৈনিক আমার দেশ বাংলাদেশসহ বিশ্বের শীর্ষস্থানীয় বাংলা নিউজ পোর্টাল ও জাতীয় দৈনিক।\n\nসম্পাদক ও প্রকাশক: মাহমুদুর রহমান\nকারওয়ান বাজার, ঢাকা-১২১৫।'
+                t('about_us', language),
+                language === 'bn'
+                  ? 'দৈনিক আমার দেশ বাংলাদেশসহ বিশ্বের শীর্ষস্থানীয় বাংলা নিউজ পোর্টাল ও জাতীয় দৈনিক।\n\nসম্পাদক ও প্রকাশক: মাহমুদুর রহমান\nকারওয়ান বাজার, ঢাকা-১২১৫।'
+                  : 'Daily Amar Desh is a leading national newspaper and digital news portal.\n\nEditor & Publisher: Mahmudur Rahman\nKarwan Bazar, Dhaka-1215, Bangladesh.'
               );
             }}
           >
             <View style={styles.utilityLeft}>
               <View style={styles.catIconBox}>
-                <Ionicons name="information-circle-outline" size={20} color="#006B3F" />
+                <Ionicons name="information-circle-outline" size={20} color={tokens.brand.primary} />
               </View>
               <View>
-                <Text style={styles.utilityTitle}>আমার দেশ সম্পর্কে</Text>
-                <Text style={styles.utilitySubtitle}>যোগাযোগ ও সম্পাদকীয় নীতিমালা</Text>
+                <Text style={styles.utilityTitle}>{t('about_us', language)}</Text>
+                <Text style={styles.utilitySubtitle}>{t('about_us_sub', language)}</Text>
               </View>
             </View>
-            <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
+            <Ionicons name="chevron-forward" size={18} color={tokens.interactive.inactive} />
           </TouchableOpacity>
         </View>
 
-        {/* Corporate / Office Footer info */}
+        {/* Footer Attribution */}
         <View style={styles.infoFooter}>
-          <Text style={styles.editorText}>সম্পাদক ও প্রকাশক: মাহমুদুর রহমান</Text>
           <Text style={styles.footerText}>
-            ঢাকা ট্রেড সেন্টার, ৯৯ কাজী নজরুল ইসলাম অ্যাভিনিউ, কারওয়ান বাজার, ঢাকা-১২১৫{'\n'}
-            স্বত্ব © ২০২৪-২০২৬ দৈনিক আমার দেশ
+            {t('copyright_notice', language)}
+          </Text>
+          <Text style={styles.editorText}>
+            {language === 'bn' ? 'সম্পাদক: মাহমুদুর রহমান' : 'Editor: Mahmudur Rahman'}
           </Text>
         </View>
       </ScrollView>

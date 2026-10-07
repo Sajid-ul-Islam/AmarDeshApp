@@ -8,6 +8,7 @@ import {
   Alert,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  PanResponder,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -34,10 +35,22 @@ import {
 import { scrapeFullArticle, ScrapedArticleData } from '../../services/articleScraper';
 import { ReaderSettingsModal } from '../../components/ReaderSettingsModal';
 import { AudioNewsBar } from '../../components/AudioNewsBar';
+import { AiSummaryCard } from '../../components/AiSummaryCard';
+import { AiAssistantModal } from '../../components/AiAssistantModal';
+import { ArticleReactions } from '../../components/ArticleReactions';
+import { AdBanner } from '../../components/AdBanner';
 import { getArticlesByCategory } from '../../services/contentService';
 import { useThemedStyles } from '../../theme';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAppStore } from '../../store/useAppStore';
+import {
+  t,
+  getLocalizedCategoryName,
+  formatLocalizedRelativeTime,
+} from '../../services/i18n';
 
 export default function ArticleDetailScreen() {
+  const language = useAppStore((state) => state.language);
   const { id } = useLocalSearchParams();
   const articleId = Array.isArray(id) ? id[0] : id;
   const router = useRouter();
@@ -45,8 +58,10 @@ export default function ArticleDetailScreen() {
   const [bookmarks, setBookmarks] = useState<string[]>([]);
   const [showShareSheet, setShowShareSheet] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showAiAssistant, setShowAiAssistant] = useState(false);
   const [fontSizeMultiplier, setFontSizeMultiplier] = useState(1.0);
   const [showAudioBar, setShowAudioBar] = useState(false);
+  const [readingProgress, setReadingProgress] = useState(0);
 
   const savedThisSessionRef = useRef(false);
   const sharedThisSessionRef = useRef(false);
@@ -137,6 +152,20 @@ export default function ArticleDetailScreen() {
       (layoutMeasurement.height + contentOffset.y) / (contentSize.height || 1);
     const clamped = Math.min(1, Math.max(0, depth));
     scrollDepthRef.current = clamped;
+    setReadingProgress(clamped);
+
+    if (article && clamped >= 0.1 && clamped < 0.95) {
+      AsyncStorage.setItem(
+        '@amar_desh_last_read',
+        JSON.stringify({
+          id: article.id,
+          title: article.title,
+          category: article.category,
+          progress: clamped,
+          updatedAt: Date.now(),
+        })
+      ).catch(() => {});
+    }
   };
 
   useEffect(() => {
@@ -171,138 +200,163 @@ export default function ArticleDetailScreen() {
         borderBottomColor: tokens.border.default,
       },
       backButton: {
-        padding: 4,
+        padding: 6,
+        borderRadius: 20,
+        backgroundColor: tokens.surface.elevated,
       },
       headerActions: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 10,
+        gap: 8,
       },
       iconButton: {
-        padding: 6,
-        borderRadius: 8,
+        padding: 7,
+        borderRadius: 20,
         backgroundColor: tokens.surface.elevated,
+        borderWidth: 1,
+        borderColor: tokens.border.default,
+      },
+      activeIconButton: {
+        backgroundColor: tokens.brand.surface,
+        borderColor: tokens.brand.primary,
+      },
+      progressBarTrack: {
+        height: 2.5,
+        backgroundColor: tokens.surface.elevated,
+        width: '100%',
+      },
+      progressBarFill: {
+        height: '100%',
+        backgroundColor: '#DC2626',
       },
       content: {
         flex: 1,
       },
       articleImage: {
         width: '100%',
-        height: 230,
+        height: 235,
       },
       captionBox: {
         paddingHorizontal: 16,
-        paddingVertical: 6,
+        paddingVertical: 7,
         backgroundColor: tokens.surface.elevated,
+        borderBottomWidth: 1,
+        borderBottomColor: tokens.border.default,
       },
       captionText: {
         fontSize: 12,
         color: tokens.text.secondary,
         fontStyle: 'italic',
+        lineHeight: 16,
       },
       articleBody: {
-        padding: 16,
-        paddingBottom: 80,
+        padding: 18,
+        paddingBottom: 100,
       },
       categoryBadge: {
         alignSelf: 'flex-start',
-        backgroundColor: tokens.brand.surface,
+        backgroundColor: tokens.brand.crimsonSurface,
         paddingHorizontal: 10,
         paddingVertical: 4,
         borderRadius: 4,
-        marginBottom: 8,
+        marginBottom: 10,
       },
       categoryText: {
         fontSize: 12,
-        color: tokens.brand.primary,
+        color: '#DC2626',
         fontWeight: 'bold',
       },
       title: {
         fontSize: 22 * fontSizeMultiplier,
         fontWeight: 'bold',
         color: tokens.text.primary,
-        lineHeight: 30 * fontSizeMultiplier,
-        marginBottom: 12,
+        lineHeight: 31 * fontSizeMultiplier,
+        marginBottom: 14,
       },
       authorRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 10,
+        gap: 12,
         paddingBottom: 14,
-        marginBottom: 16,
+        marginBottom: 18,
         borderBottomWidth: 1,
         borderBottomColor: tokens.border.default,
       },
       avatar: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
         backgroundColor: tokens.surface.elevated,
       },
       authorName: {
-        fontSize: 13,
+        fontSize: 14,
         fontWeight: 'bold',
         color: tokens.text.primary,
       },
       pubTime: {
-        fontSize: 11,
+        fontSize: 11.5,
         color: tokens.text.tertiary,
         marginTop: 2,
       },
       paragraph: {
         fontSize: 16 * fontSizeMultiplier,
         color: tokens.text.primary,
-        lineHeight: 26 * fontSizeMultiplier,
-        marginBottom: 16,
+        lineHeight: 27 * fontSizeMultiplier,
+        marginBottom: 18,
         textAlign: 'justify',
       },
       sourceCard: {
         backgroundColor: tokens.surface.elevated,
-        padding: 12,
-        borderRadius: 8,
-        marginTop: 16,
-        marginBottom: 24,
+        padding: 14,
+        borderRadius: 10,
+        marginTop: 18,
+        marginBottom: 28,
         alignItems: 'center',
+        borderWidth: 1,
+        borderColor: tokens.border.default,
       },
       sourceCardText: {
         fontSize: 12,
         color: tokens.text.secondary,
+        fontWeight: '500',
       },
       relatedHeader: {
-        fontSize: 17,
+        fontSize: 18,
         fontWeight: 'bold',
         color: tokens.text.primary,
-        marginBottom: 12,
-        borderLeftWidth: 3,
-        borderLeftColor: tokens.brand.primary,
-        paddingLeft: 8,
+        marginBottom: 14,
+        borderLeftWidth: 3.5,
+        borderLeftColor: '#DC2626',
+        paddingLeft: 10,
       },
       relatedCard: {
         flexDirection: 'row',
         backgroundColor: tokens.surface.elevated,
-        borderRadius: 8,
+        borderRadius: 10,
         padding: 10,
         marginBottom: 10,
-        gap: 10,
+        gap: 12,
+        borderWidth: 1,
+        borderColor: tokens.border.default,
       },
       relatedContent: {
         flex: 1,
         justifyContent: 'space-between',
       },
       relatedTitle: {
-        fontSize: 13,
+        fontSize: 13.5,
         fontWeight: '600',
         color: tokens.text.primary,
-        lineHeight: 18,
+        lineHeight: 19,
       },
       relatedTime: {
         fontSize: 11,
         color: tokens.text.tertiary,
       },
       relatedThumb: {
-        width: 70,
-        height: 52,
-        borderRadius: 4,
+        width: 75,
+        height: 56,
+        borderRadius: 6,
       },
       // Share Sheet
       shareSheetOverlay: {
@@ -311,54 +365,100 @@ export default function ArticleDetailScreen() {
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backgroundColor: 'rgba(0, 0, 0, 0.55)',
         justifyContent: 'flex-end',
         zIndex: 1000,
       },
       shareSheet: {
         backgroundColor: tokens.surface.base,
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
-        padding: 20,
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        padding: 22,
         paddingBottom: 40,
+        borderWidth: 1,
+        borderColor: tokens.border.default,
       },
       shareSheetTitle: {
         fontSize: 17,
         fontWeight: 'bold',
         color: tokens.text.primary,
-        marginBottom: 16,
+        marginBottom: 18,
         textAlign: 'center',
       },
       shareOptions: {
         flexDirection: 'row',
         justifyContent: 'space-around',
-        marginBottom: 20,
+        marginBottom: 22,
       },
       shareOption: {
         alignItems: 'center',
       },
       shareIcon: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
+        width: 50,
+        height: 50,
+        borderRadius: 25,
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 6,
       },
       shareLabel: {
-        fontSize: 11,
+        fontSize: 11.5,
         color: tokens.text.secondary,
+        fontWeight: '500',
       },
       shareSheetClose: {
         backgroundColor: tokens.surface.elevated,
         padding: 12,
-        borderRadius: 8,
+        borderRadius: 10,
         alignItems: 'center',
+        borderWidth: 1,
+        borderColor: tokens.border.default,
       },
       shareSheetCloseText: {
         fontSize: 14,
         color: tokens.text.primary,
         fontWeight: '600',
+      },
+      articleNavRow: {
+        flexDirection: 'row',
+        gap: 10,
+        marginVertical: 18,
+      },
+      navCard: {
+        flex: 1,
+        backgroundColor: tokens.surface.elevated,
+        borderRadius: 10,
+        padding: 12,
+        borderWidth: 1,
+        borderColor: tokens.border.default,
+      },
+      navCardHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        marginBottom: 4,
+      },
+      navCardLabel: {
+        fontSize: 11,
+        fontWeight: 'bold',
+        color: tokens.brand.primary,
+      },
+      navCardTitle: {
+        fontSize: 12.5,
+        color: tokens.text.primary,
+        lineHeight: 17,
+      },
+      swipeHintRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 6,
+        paddingVertical: 8,
+        marginTop: 4,
+      },
+      swipeHintText: {
+        fontSize: 11,
+        color: tokens.text.tertiary,
       },
     })
   );
@@ -366,7 +466,7 @@ export default function ArticleDetailScreen() {
   if (isResolving && !article) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={{ color: '#6B7280' }}>সংবাদ লোড হচ্ছে...</Text>
+        <Text style={{ color: '#6B7280' }}>{t('loading_article', language)}</Text>
       </View>
     );
   }
@@ -374,7 +474,7 @@ export default function ArticleDetailScreen() {
   if (!article) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={{ color: '#6B7280' }}>সংবাদ পাওয়া যায়নি</Text>
+        <Text style={{ color: '#6B7280' }}>{t('article_not_found', language)}</Text>
       </View>
     );
   }
@@ -410,31 +510,68 @@ export default function ArticleDetailScreen() {
     .filter((a) => a.id !== article.id)
     .slice(0, 3);
 
+  const categoryArticles = article ? getArticlesByCategory(article.category) : [];
+  const currentIndex = article ? categoryArticles.findIndex((a) => a.id === article.id) : -1;
+  const prevArticle = currentIndex > 0 ? categoryArticles[currentIndex - 1] : null;
+  const nextArticle =
+    currentIndex >= 0 && currentIndex < categoryArticles.length - 1
+      ? categoryArticles[currentIndex + 1]
+      : null;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        return (
+          Math.abs(gestureState.dx) > 35 &&
+          Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 2
+        );
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dx < -55 && nextArticle) {
+          router.push(`/article/${nextArticle.id}` as any);
+        } else if (gestureState.dx > 55 && prevArticle) {
+          router.push(`/article/${prevArticle.id}` as any);
+        }
+      },
+    })
+  ).current;
+
   const fullTextToSpeak = `${article.title}. ${
     scrapedData ? scrapedData.paragraphs.join(' ') : article.content
   }`;
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} {...panResponder.panHandlers}>
       {/* Header Bar */}
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => router.back()}
           style={styles.backButton}
+          activeOpacity={0.7}
         >
-          <Ionicons name="arrow-back" size={24} color="#111827" />
+          <Ionicons name="arrow-back" size={22} color={styles.title.color} />
         </TouchableOpacity>
 
         <View style={styles.headerActions}>
-          {/* TTS Audio Bar Toggle */}
+          {/* AI Assistant */}
           <TouchableOpacity
             style={styles.iconButton}
+            onPress={() => setShowAiAssistant(true)}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="sparkles" size={18} color="#006B3F" />
+          </TouchableOpacity>
+
+          {/* TTS Audio Bar Toggle */}
+          <TouchableOpacity
+            style={[styles.iconButton, showAudioBar && styles.activeIconButton]}
             onPress={() => setShowAudioBar((prev) => !prev)}
+            activeOpacity={0.7}
           >
             <Ionicons
               name={showAudioBar ? 'volume-high' : 'volume-medium-outline'}
-              size={20}
-              color={showAudioBar ? '#006B3F' : '#6B7280'}
+              size={19}
+              color={showAudioBar ? '#006B3F' : styles.authorName.color}
             />
           </TouchableOpacity>
 
@@ -442,16 +579,21 @@ export default function ArticleDetailScreen() {
           <TouchableOpacity
             style={styles.iconButton}
             onPress={() => setShowSettingsModal(true)}
+            activeOpacity={0.7}
           >
-            <Ionicons name="text-outline" size={20} color="#6B7280" />
+            <Ionicons name="text-outline" size={19} color={styles.authorName.color} />
           </TouchableOpacity>
 
           {/* Bookmark */}
-          <TouchableOpacity style={styles.iconButton} onPress={toggleBookmark}>
+          <TouchableOpacity
+            style={[styles.iconButton, isBookmarked && styles.activeIconButton]}
+            onPress={toggleBookmark}
+            activeOpacity={0.7}
+          >
             <Ionicons
               name={isBookmarked ? 'bookmark' : 'bookmark-outline'}
-              size={20}
-              color={isBookmarked ? '#006B3F' : '#6B7280'}
+              size={19}
+              color={isBookmarked ? '#006B3F' : styles.authorName.color}
             />
           </TouchableOpacity>
 
@@ -459,17 +601,25 @@ export default function ArticleDetailScreen() {
           <TouchableOpacity
             style={styles.iconButton}
             onPress={() => setShowShareSheet(true)}
+            activeOpacity={0.7}
           >
-            <Ionicons name="share-social-outline" size={20} color="#6B7280" />
+            <Ionicons name="share-social-outline" size={19} color={styles.authorName.color} />
           </TouchableOpacity>
         </View>
+      </View>
+
+      {/* Reading Progress Bar */}
+      <View style={styles.progressBarTrack}>
+        <View
+          style={[styles.progressBarFill, { width: `${Math.round(readingProgress * 100)}%` }]}
+        />
       </View>
 
       <ScrollView
         style={styles.content}
         showsVerticalScrollIndicator={false}
         onScroll={handleScroll}
-        scrollEventThrottle={500}
+        scrollEventThrottle={300}
       >
         {/* Hero Image */}
         <ArticleHeroImage
@@ -486,7 +636,9 @@ export default function ArticleDetailScreen() {
         <View style={styles.articleBody}>
           {/* Category */}
           <View style={styles.categoryBadge}>
-            <Text style={styles.categoryText}>{article.category}</Text>
+            <Text style={styles.categoryText}>
+              {getLocalizedCategoryName(article.category, language)}
+            </Text>
           </View>
 
           {/* Title */}
@@ -508,10 +660,19 @@ export default function ArticleDetailScreen() {
                 {scrapedData?.author || article.author}
               </Text>
               <Text style={styles.pubTime}>
-                প্রকাশিত: {formatRelativeTime(article.publishedAt)}
+                {t('published_prefix', language)}
+                {formatLocalizedRelativeTime(article.publishedAt, language)}
               </Text>
             </View>
           </View>
+
+          {/* AI 3-Point Smart Summary */}
+          <AiSummaryCard
+            article={article}
+            fullText={scrapedData ? scrapedData.paragraphs.join(' ') : article.content}
+            onOpenAssistant={() => setShowAiAssistant(true)}
+            onOpenSettings={() => router.push('/settings/ai' as any)}
+          />
 
           {/* Body Paragraphs */}
           {scrapedData && scrapedData.paragraphs.length > 0 ? (
@@ -524,22 +685,94 @@ export default function ArticleDetailScreen() {
             <Text style={styles.paragraph}>{article.content}</Text>
           )}
 
+          {/* Reader Emoji Reactions Bar */}
+          <ArticleReactions articleId={article.id} />
+
+          {/* Next / Previous Article Navigation */}
+          <View style={styles.articleNavRow}>
+            {prevArticle ? (
+              <TouchableOpacity
+                style={styles.navCard}
+                onPress={() => router.push(`/article/${prevArticle.id}` as any)}
+                activeOpacity={0.75}
+              >
+                <View style={styles.navCardHeader}>
+                  <Ionicons name="arrow-back" size={14} color="#006B3F" />
+                  <Text style={styles.navCardLabel}>{t('prev_article', language)}</Text>
+                </View>
+                <Text style={styles.navCardTitle} numberOfLines={2}>
+                  {prevArticle.title}
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <View style={[styles.navCard, { opacity: 0.45 }]}>
+                <View style={styles.navCardHeader}>
+                  <Ionicons name="arrow-back" size={14} color={styles.authorName.color} />
+                  <Text style={[styles.navCardLabel, { color: styles.authorName.color }]}>
+                    {t('start_of_category', language)}
+                  </Text>
+                </View>
+                <Text style={[styles.navCardTitle, { color: styles.authorName.color }]}>
+                  {t('no_prev_article', language)}
+                </Text>
+              </View>
+            )}
+
+            {nextArticle ? (
+              <TouchableOpacity
+                style={[styles.navCard, { alignItems: 'flex-end' }]}
+                onPress={() => router.push(`/article/${nextArticle.id}` as any)}
+                activeOpacity={0.75}
+              >
+                <View style={[styles.navCardHeader, { flexDirection: 'row-reverse' }]}>
+                  <Ionicons name="arrow-forward" size={14} color="#006B3F" />
+                  <Text style={styles.navCardLabel}>{t('next_article', language)}</Text>
+                </View>
+                <Text style={[styles.navCardTitle, { textAlign: 'right' }]} numberOfLines={2}>
+                  {nextArticle.title}
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <View style={[styles.navCard, { opacity: 0.45, alignItems: 'flex-end' }]}>
+                <View style={[styles.navCardHeader, { flexDirection: 'row-reverse' }]}>
+                  <Ionicons name="arrow-forward" size={14} color={styles.authorName.color} />
+                  <Text style={[styles.navCardLabel, { color: styles.authorName.color }]}>
+                    {t('end_of_category', language)}
+                  </Text>
+                </View>
+                <Text style={[styles.navCardTitle, { textAlign: 'right', color: styles.authorName.color }]}>
+                  {t('no_next_article', language)}
+                </Text>
+              </View>
+            )}
+          </View>
+
+          {/* Swipe Hint */}
+          <View style={styles.swipeHintRow}>
+            <Ionicons name="swap-horizontal" size={14} color={styles.swipeHintText.color} />
+            <Text style={styles.swipeHintText}>{t('swipe_hint', language)}</Text>
+          </View>
+
+          {/* Editorial Sponsored Card */}
+          <AdBanner variant="articleFooter" />
+
           {/* Source Credit */}
           <View style={styles.sourceCard}>
             <Text style={styles.sourceCardText}>
-              স্বত্ব © ২০২৪-২০২৬ দৈনিক আমার দেশ • dailyamardesh.com
+              {t('copyright_notice', language)}
             </Text>
           </View>
 
           {/* Related Stories */}
           {relatedStories.length > 0 && (
             <View>
-              <Text style={styles.relatedHeader}>সম্পর্কিত সংবাদ</Text>
+              <Text style={styles.relatedHeader}>{t('related_news', language)}</Text>
               {relatedStories.map((rel) => (
                 <TouchableOpacity
                   key={rel.id}
                   style={styles.relatedCard}
-                  onPress={() => router.push(`/article/${rel.id}`)}
+                  onPress={() => router.push(`/article/${rel.id}` as any)}
+                  activeOpacity={0.75}
                 >
                   <View style={styles.relatedContent}>
                     <Text style={styles.relatedTitle} numberOfLines={2}>
@@ -549,10 +782,7 @@ export default function ArticleDetailScreen() {
                       {formatRelativeTime(rel.publishedAt)}
                     </Text>
                   </View>
-                  <ArticleThumbnail
-                    uri={rel.imageUrl}
-                    style={styles.relatedThumb}
-                  />
+                  <ArticleThumbnail uri={rel.imageUrl} style={styles.relatedThumb} />
                 </TouchableOpacity>
               ))}
             </View>
@@ -563,13 +793,13 @@ export default function ArticleDetailScreen() {
       {/* Floating Audio News Bar */}
       {showAudioBar && (
         <AudioNewsBar
-          title={article.title}
+          title={scrapedData?.title || article.title}
           textToSpeak={fullTextToSpeak}
           onClose={() => setShowAudioBar(false)}
         />
       )}
 
-      {/* Reader Font Sizing Modal */}
+      {/* Reader Settings Modal */}
       <ReaderSettingsModal
         visible={showSettingsModal}
         fontSizeMultiplier={fontSizeMultiplier}
@@ -581,16 +811,16 @@ export default function ArticleDetailScreen() {
       {showShareSheet && (
         <View style={styles.shareSheetOverlay}>
           <View style={styles.shareSheet}>
-            <Text style={styles.shareSheetTitle}>সংবাদটি শেয়ার করুন</Text>
+            <Text style={styles.shareSheetTitle}>{t('share_news', language)}</Text>
             <View style={styles.shareOptions}>
               <TouchableOpacity
                 style={styles.shareOption}
                 onPress={() => handleShare('whatsapp')}
               >
                 <View style={[styles.shareIcon, { backgroundColor: '#25D366' }]}>
-                  <Ionicons name="logo-whatsapp" size={24} color="#fff" />
+                  <Ionicons name="logo-whatsapp" size={24} color="#FFFFFF" />
                 </View>
-                <Text style={styles.shareLabel}>WhatsApp</Text>
+                <Text style={styles.shareLabel}>হোয়াটসঅ্যাপ</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -598,29 +828,31 @@ export default function ArticleDetailScreen() {
                 onPress={() => handleShare('facebook')}
               >
                 <View style={[styles.shareIcon, { backgroundColor: '#1877F2' }]}>
-                  <Ionicons name="logo-facebook" size={24} color="#fff" />
+                  <Ionicons name="logo-facebook" size={24} color="#FFFFFF" />
                 </View>
-                <Text style={styles.shareLabel}>Facebook</Text>
+                <Text style={styles.shareLabel}>ফেসবুক</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.shareOption}
-                onPress={() => handleShare('telegram')}
+                onPress={() => handleShare('twitter')}
               >
-                <View style={[styles.shareIcon, { backgroundColor: '#0088cc' }]}>
-                  <Ionicons name="send" size={22} color="#fff" />
+                <View style={[styles.shareIcon, { backgroundColor: '#000000' }]}>
+                  <Ionicons name="logo-twitter" size={24} color="#FFFFFF" />
                 </View>
-                <Text style={styles.shareLabel}>Telegram</Text>
+                <Text style={styles.shareLabel}>এক্স (টুইটার)</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.shareOption}
-                onPress={() => handleShare('copy')}
+                onPress={() => handleShare('native')}
               >
                 <View style={[styles.shareIcon, { backgroundColor: '#6B7280' }]}>
-                  <Ionicons name="link" size={22} color="#fff" />
+                  <Ionicons name="share-outline" size={24} color="#FFFFFF" />
                 </View>
-                <Text style={styles.shareLabel}>কপি লিংক</Text>
+                <Text style={styles.shareLabel}>
+                  {language === 'bn' ? 'অন্যান্য' : 'More'}
+                </Text>
               </TouchableOpacity>
             </View>
 
@@ -628,11 +860,19 @@ export default function ArticleDetailScreen() {
               style={styles.shareSheetClose}
               onPress={() => setShowShareSheet(false)}
             >
-              <Text style={styles.shareSheetCloseText}>বন্ধ করুন</Text>
+              <Text style={styles.shareSheetCloseText}>{t('close', language)}</Text>
             </TouchableOpacity>
           </View>
         </View>
       )}
+
+      {/* Interactive AI News Assistant Modal */}
+      <AiAssistantModal
+        visible={showAiAssistant}
+        article={article}
+        onClose={() => setShowAiAssistant(false)}
+        onOpenSettings={() => router.push('/settings/ai' as any)}
+      />
     </View>
   );
 }

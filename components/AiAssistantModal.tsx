@@ -1,0 +1,345 @@
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Modal,
+  TouchableOpacity,
+  TextInput,
+  ScrollView,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useThemedStyles, useThemeTokens } from '../theme';
+import { Article } from '../data/mockData';
+import { askArticleAiQuestion } from '../services/byokAiService';
+
+interface AiAssistantModalProps {
+  visible: boolean;
+  article: Article;
+  onClose: () => void;
+  onOpenSettings: () => void;
+}
+
+interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  text: string;
+  timestamp: number;
+}
+
+const SUGGESTED_QUESTIONS = [
+  'এই ঘটনার মূল পটভূমি কী?',
+  'এর ফলে অর্থনীতি বা রাজনীতিতে কী প্রভাব পড়বে?',
+  'সাধারণ মানুষের বোঝার সুবিধার্থে সহজ ভাষায় বলুন',
+  'এই বিষয়ের সাথে সম্পর্কিত ঐতিহাসিক প্রেক্ষাপট কী?',
+];
+
+export const AiAssistantModal: React.FC<AiAssistantModalProps> = ({
+  visible,
+  article,
+  onClose,
+  onOpenSettings,
+}) => {
+  const tokens = useThemeTokens();
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    {
+      id: 'welcome',
+      role: 'assistant',
+      text: `আসসালামু আলাইকুম! আমি দৈনিক আমার দেশ-এর এআই সংবাদ সহকারী। "${article.title.slice(0, 45)}..." প্রতিবেদনটি নিয়ে আপনার কোনো প্রশ্ন বা বিশদ জানার থাকলে নির্দ্বিধায় আমাকে জিজ্ঞাসা করুন।`,
+      timestamp: Date.now(),
+    },
+  ]);
+  const [inputText, setInputText] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSend = async (questionText?: string) => {
+    const textToSend = (questionText || inputText).trim();
+    if (!textToSend || loading) return;
+
+    const userMsg: ChatMessage = {
+      id: `user-${Date.now()}`,
+      role: 'user',
+      text: textToSend,
+      timestamp: Date.now(),
+    };
+
+    setMessages((prev) => [...prev, userMsg]);
+    setInputText('');
+    setLoading(true);
+
+    try {
+      const chatHistory = messages
+        .filter((m) => m.id !== 'welcome')
+        .map((m) => ({ role: m.role, text: m.text }));
+
+      const res = await askArticleAiQuestion(article, textToSend, chatHistory);
+
+      const aiMsg: ChatMessage = {
+        id: `ai-${Date.now()}`,
+        role: 'assistant',
+        text: res.answer,
+        timestamp: Date.now(),
+      };
+
+      setMessages((prev) => [...prev, aiMsg]);
+    } catch (err: any) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `ai-err-${Date.now()}`,
+          role: 'assistant',
+          text: 'দুঃখিত, কোনো একটি ত্রুটির কারণে উত্তর দেওয়া সম্ভব হয়নি। অনুগ্রহ করে আপনার নেটওয়ার্ক বা এপিআই কি যাচাই করুন।',
+          timestamp: Date.now(),
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const styles = useThemedStyles((tokens) =>
+    StyleSheet.create({
+      modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'flex-end',
+      },
+      sheetContainer: {
+        backgroundColor: tokens.surface.base,
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        maxHeight: '85%',
+        minHeight: '65%',
+        paddingBottom: Platform.OS === 'ios' ? 24 : 12,
+      },
+      header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        borderBottomWidth: 1,
+        borderBottomColor: tokens.border.default,
+      },
+      headerLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+      },
+      headerTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: tokens.brand.primary,
+      },
+      headerActions: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+      },
+      iconButton: {
+        padding: 6,
+      },
+      messageScroll: {
+        flex: 1,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+      },
+      suggestedContainer: {
+        marginBottom: 12,
+      },
+      suggestedLabel: {
+        fontSize: 11,
+        fontWeight: 'bold',
+        color: tokens.text.secondary,
+        marginBottom: 8,
+      },
+      suggestedRow: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 6,
+      },
+      suggestedChip: {
+        backgroundColor: tokens.brand.surface,
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 14,
+        borderWidth: 1,
+        borderColor: tokens.brand.primary,
+      },
+      suggestedChipText: {
+        fontSize: 12,
+        color: tokens.brand.primary,
+        fontWeight: '500',
+      },
+      msgBubble: {
+        maxWidth: '85%',
+        paddingHorizontal: 14,
+        paddingVertical: 10,
+        borderRadius: 14,
+        marginBottom: 10,
+      },
+      userBubble: {
+        alignSelf: 'flex-end',
+        backgroundColor: tokens.brand.primary,
+        borderBottomRightRadius: 2,
+      },
+      aiBubble: {
+        alignSelf: 'flex-start',
+        backgroundColor: tokens.surface.elevated,
+        borderBottomLeftRadius: 2,
+        borderWidth: 1,
+        borderColor: tokens.border.default,
+      },
+      userMsgText: {
+        color: '#FFFFFF',
+        fontSize: 14,
+        lineHeight: 20,
+      },
+      aiMsgText: {
+        color: tokens.text.primary,
+        fontSize: 14,
+        lineHeight: 21,
+      },
+      inputBar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderTopWidth: 1,
+        borderTopColor: tokens.border.default,
+        backgroundColor: tokens.surface.base,
+        gap: 8,
+      },
+      input: {
+        flex: 1,
+        backgroundColor: tokens.surface.elevated,
+        borderRadius: 20,
+        paddingHorizontal: 14,
+        paddingVertical: 8,
+        fontSize: 14,
+        color: tokens.text.primary,
+        borderWidth: 1,
+        borderColor: tokens.border.default,
+      },
+      sendBtn: {
+        width: 38,
+        height: 38,
+        borderRadius: 19,
+        backgroundColor: tokens.brand.primary,
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+    })
+  );
+
+  return (
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent
+      onRequestClose={onClose}
+    >
+      <KeyboardAvoidingView
+        style={styles.modalOverlay}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <View style={styles.sheetContainer}>
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.headerLeft}>
+              <Ionicons name="sparkles" size={18} color={tokens.brand.primary} />
+              <Text style={styles.headerTitle}>আমার দেশ এআই সহকারী</Text>
+            </View>
+
+            <View style={styles.headerActions}>
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={() => {
+                  onClose();
+                  onOpenSettings();
+                }}
+              >
+                <Ionicons name="settings-outline" size={18} color={tokens.text.secondary} />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.iconButton} onPress={onClose}>
+                <Ionicons name="close" size={20} color={tokens.text.primary} />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Chat Messages */}
+          <ScrollView
+            style={styles.messageScroll}
+            contentContainerStyle={{ paddingBottom: 16 }}
+            keyboardShouldPersistTaps="handled"
+          >
+            {/* Suggested quick prompt chips */}
+            {messages.length <= 2 && (
+              <View style={styles.suggestedContainer}>
+                <Text style={styles.suggestedLabel}>প্রস্তাবিত প্রশ্নাবলী:</Text>
+                <View style={styles.suggestedRow}>
+                  {SUGGESTED_QUESTIONS.map((q, idx) => (
+                    <TouchableOpacity
+                      key={idx}
+                      style={styles.suggestedChip}
+                      onPress={() => handleSend(q)}
+                    >
+                      <Text style={styles.suggestedChipText}>{q}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {messages.map((m) => (
+              <View
+                key={m.id}
+                style={[
+                  styles.msgBubble,
+                  m.role === 'user' ? styles.userBubble : styles.aiBubble,
+                ]}
+              >
+                <Text
+                  style={
+                    m.role === 'user' ? styles.userMsgText : styles.aiMsgText
+                  }
+                >
+                  {m.text}
+                </Text>
+              </View>
+            ))}
+
+            {loading && (
+              <View style={[styles.msgBubble, styles.aiBubble]}>
+                <ActivityIndicator size="small" color={tokens.brand.primary} />
+              </View>
+            )}
+          </ScrollView>
+
+          {/* Input Bar */}
+          <View style={styles.inputBar}>
+            <TextInput
+              style={styles.input}
+              placeholder="এই খবর নিয়ে প্রশ্ন করুন..."
+              placeholderTextColor={tokens.text.tertiary}
+              value={inputText}
+              onChangeText={setInputText}
+              onSubmitEditing={() => handleSend()}
+              returnKeyType="send"
+            />
+            <TouchableOpacity
+              style={styles.sendBtn}
+              onPress={() => handleSend()}
+              disabled={loading || !inputText.trim()}
+            >
+              <Ionicons name="arrow-up" size={20} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
+    </Modal>
+  );
+};

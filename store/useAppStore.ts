@@ -1,5 +1,10 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  SupportedLanguage,
+  LANGUAGE_STORAGE_KEY,
+  setAppLanguage,
+} from '../services/i18n';
 
 interface FeatureFlags {
   enableExpoImage: boolean;
@@ -17,8 +22,13 @@ interface AppState {
    * `null` means follow the system setting.
    */
   themePreference: 'system' | 'light' | 'dark' | null;
+  /**
+   * User's app language: 'bn' (Bengali) or 'en' (English).
+   */
+  language: SupportedLanguage;
   setFeatureFlag: (key: keyof FeatureFlags, value: boolean) => void;
   setThemePreference: (pref: 'system' | 'light' | 'dark') => void;
+  setLanguage: (lang: SupportedLanguage) => void;
   loadFeatureFlags: () => Promise<void>;
   saveFeatureFlags: () => Promise<void>;
 }
@@ -39,6 +49,7 @@ const THEME_KEY = '@amar_desh_theme_preference';
 export const useAppStore = create<AppState>((set, get) => ({
   features: defaultFeatures,
   themePreference: null,
+  language: 'bn',
 
   setFeatureFlag: (key, value) => {
     set((state) => ({
@@ -52,6 +63,13 @@ export const useAppStore = create<AppState>((set, get) => ({
     // Persist (fire-and-forget)
     AsyncStorage.setItem(THEME_KEY, JSON.stringify(pref)).catch((error) =>
       console.error('Error saving theme preference:', error)
+    );
+  },
+
+  setLanguage: (lang: SupportedLanguage) => {
+    set({ language: lang });
+    setAppLanguage(lang).catch((error) =>
+      console.error('Error saving language preference:', error)
     );
   },
 
@@ -71,8 +89,15 @@ export const useAppStore = create<AppState>((set, get) => ({
           set({ themePreference: pref });
         }
       }
+
+      // Load language preference
+      const langStored = await AsyncStorage.getItem(LANGUAGE_STORAGE_KEY);
+      if (langStored === 'en' || langStored === 'bn') {
+        set({ language: langStored });
+        await setAppLanguage(langStored);
+      }
     } catch (error) {
-      console.error('Error loading feature flags:', error);
+      console.error('Error loading feature flags & preferences:', error);
     }
   },
 

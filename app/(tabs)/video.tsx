@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -6,13 +6,22 @@ import {
   FlatList,
   TouchableOpacity,
   ScrollView,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useThemedStyles } from '../../theme';
 import { YouTubePlayerComponent } from '../../components/YouTubePlayer';
+import { FloatingVideoPlayer } from '../../components/FloatingVideoPlayer';
 import { toBengaliNumeral } from '../../utils/bengali';
+import { useAppStore } from '../../store/useAppStore';
+import {
+  t,
+  getLocalizedCategoryName,
+  formatLocalizedNumeral,
+} from '../../services/i18n';
 
 interface VideoItem {
   id: string;
@@ -33,7 +42,7 @@ const SAMPLE_VIDEOS: VideoItem[] = [
     category: 'বিশেষ প্রতিবেদন',
     publishedAt: '২ ঘণ্টা আগে',
     thumbnailUrl: 'https://images.dailyamardesh.com/original_images/imf-24dba6-720x405.webp',
-    youtubeId: 'dQw4w9WgXcQ', // Placeholder embed
+    youtubeId: 'dQw4w9WgXcQ',
     views: 42100,
   },
   {
@@ -81,9 +90,14 @@ const SAMPLE_VIDEOS: VideoItem[] = [
 const CATEGORIES = ['সব ভিডিও', 'বিশেষ প্রতিবেদন', 'জুলাই বিপ্লব', 'রাজনীতি', 'অর্থনীতি', 'সারা দেশ', 'খেলা'];
 
 export default function VideoScreen() {
+  const language = useAppStore((state) => state.language);
   const insets = useSafeAreaInsets();
+  const listRef = useRef<FlatList<VideoItem>>(null);
   const [selectedCategory, setSelectedCategory] = useState('সব ভিডিও');
   const [activeVideo, setActiveVideo] = useState<VideoItem>(SAMPLE_VIDEOS[0]);
+  const [isScrolledPast, setIsScrolledPast] = useState(false);
+  const [showMiniPlayer, setShowMiniPlayer] = useState(false);
+  const [isMiniDismissed, setIsMiniDismissed] = useState(false);
 
   const styles = useThemedStyles((tokens) =>
     StyleSheet.create({
@@ -151,18 +165,37 @@ export default function VideoScreen() {
         borderBottomWidth: 1,
         borderBottomColor: tokens.border.default,
       },
+      activeDetailsHeaderRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 6,
+      },
       activeCatBadge: {
         alignSelf: 'flex-start',
         backgroundColor: tokens.brand.surface,
         paddingHorizontal: 8,
         paddingVertical: 3,
         borderRadius: 4,
-        marginBottom: 6,
       },
       activeCatText: {
         color: tokens.brand.primary,
         fontSize: 12,
         fontWeight: 'bold',
+      },
+      pipBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 6,
+        backgroundColor: tokens.brand.surface,
+      },
+      pipBtnText: {
+        fontSize: 11,
+        fontWeight: 'bold',
+        color: tokens.brand.primary,
       },
       activeTitle: {
         fontSize: 16,
@@ -186,7 +219,7 @@ export default function VideoScreen() {
         color: tokens.text.primary,
         marginHorizontal: 16,
         marginTop: 16,
-        marginBottom: 8,
+        marginBottom: 10,
       },
       videoCard: {
         flexDirection: 'row',
@@ -265,13 +298,75 @@ export default function VideoScreen() {
       ? SAMPLE_VIDEOS
       : SAMPLE_VIDEOS.filter((v) => v.category === selectedCategory);
 
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const scrollY = event.nativeEvent.contentOffset.y;
+    const shouldShow = scrollY > 280;
+    if (shouldShow !== isScrolledPast) {
+      setIsScrolledPast(shouldShow);
+      if (shouldShow) {
+        setIsMiniDismissed(false);
+      }
+    }
+  };
+
+  const handleSelectVideo = (item: VideoItem) => {
+    setActiveVideo(item);
+    setIsMiniDismissed(false);
+    setShowMiniPlayer(false);
+    listRef.current?.scrollToOffset({ offset: 0, animated: true });
+  };
+
+  const renderHeader = () => (
+    <View>
+      {/* Embedded Player for Active Video */}
+      <View style={styles.playerWrapper}>
+        <YouTubePlayerComponent videoId={activeVideo.youtubeId} />
+      </View>
+
+      {/* Active Video Details */}
+      <View style={styles.activeDetails}>
+        <View style={styles.activeDetailsHeaderRow}>
+          <View style={styles.activeCatBadge}>
+            <Text style={styles.activeCatText}>
+              {getLocalizedCategoryName(activeVideo.category, language)}
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={styles.pipBtn}
+            onPress={() => {
+              setShowMiniPlayer(true);
+              setIsMiniDismissed(false);
+            }}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="copy-outline" size={13} color={styles.activeCatText.color} />
+            <Text style={styles.pipBtnText}>{t('mini_player', language)}</Text>
+          </TouchableOpacity>
+        </View>
+
+        <Text style={styles.activeTitle}>{activeVideo.title}</Text>
+        <View style={styles.activeMeta}>
+          <Text style={styles.metaText}>{activeVideo.publishedAt}</Text>
+          <Text style={styles.metaText}>•</Text>
+          <Text style={styles.metaText}>
+            {formatLocalizedNumeral(activeVideo.views, language)}
+            {t('views_suffix', language)}
+          </Text>
+        </View>
+      </View>
+
+      {/* Playlist Title */}
+      <Text style={styles.listHeaderTitle}>{t('more_videos', language)}</Text>
+    </View>
+  );
+
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerTitleRow}>
           <View style={styles.liveDot} />
-          <Text style={styles.headerTitle}>আমার দেশ মাল্টিমিডিয়া</Text>
+          <Text style={styles.headerTitle}>{t('video_hub_title', language)}</Text>
         </View>
 
         <ScrollView
@@ -294,43 +389,28 @@ export default function VideoScreen() {
                   selectedCategory === cat && styles.activeCatChipText,
                 ]}
               >
-                {cat}
+                {cat === 'সব ভিডিও'
+                  ? t('all_videos', language)
+                  : getLocalizedCategoryName(cat, language)}
               </Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
       </View>
 
-      {/* Embedded Player for Active Video */}
-      <View style={styles.playerWrapper}>
-        <YouTubePlayerComponent videoId={activeVideo.youtubeId} />
-      </View>
-
-      {/* Active Video Details */}
-      <View style={styles.activeDetails}>
-        <View style={styles.activeCatBadge}>
-          <Text style={styles.activeCatText}>{activeVideo.category}</Text>
-        </View>
-        <Text style={styles.activeTitle}>{activeVideo.title}</Text>
-        <View style={styles.activeMeta}>
-          <Text style={styles.metaText}>{activeVideo.publishedAt}</Text>
-          <Text style={styles.metaText}>•</Text>
-          <Text style={styles.metaText}>
-            {toBengaliNumeral(activeVideo.views)} বার দেখা হয়েছে
-          </Text>
-        </View>
-      </View>
-
-      {/* Video Playlist */}
-      <Text style={styles.listHeaderTitle}>আরও ভিডিও সংবাদ</Text>
+      {/* Video Playlist with Main Player as Header */}
       <FlatList
+        ref={listRef}
         data={filteredVideos.filter((v) => v.id !== activeVideo.id)}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingBottom: 24 }}
+        ListHeaderComponent={renderHeader}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+        contentContainerStyle={{ paddingBottom: 60 }}
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.videoCard}
-            onPress={() => setActiveVideo(item)}
+            onPress={() => handleSelectVideo(item)}
             activeOpacity={0.8}
           >
             <View style={styles.thumbContainer}>
@@ -352,12 +432,29 @@ export default function VideoScreen() {
                 {item.title}
               </Text>
               <View style={styles.cardMetaRow}>
-                <Text style={styles.cardCategory}>{item.category}</Text>
+                <Text style={styles.cardCategory}>
+                  {getLocalizedCategoryName(item.category, language)}
+                </Text>
                 <Text style={styles.cardTime}>{item.publishedAt}</Text>
               </View>
             </View>
           </TouchableOpacity>
         )}
+      />
+
+      {/* Floating Video Mini-Player / PiP Overlay */}
+      <FloatingVideoPlayer
+        video={activeVideo}
+        visible={(isScrolledPast || showMiniPlayer) && !isMiniDismissed}
+        onExpand={() => {
+          listRef.current?.scrollToOffset({ offset: 0, animated: true });
+          setShowMiniPlayer(false);
+          setIsMiniDismissed(false);
+        }}
+        onClose={() => {
+          setIsMiniDismissed(true);
+          setShowMiniPlayer(false);
+        }}
       />
     </View>
   );

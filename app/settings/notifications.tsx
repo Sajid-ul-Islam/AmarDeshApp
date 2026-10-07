@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useThemedStyles } from '../../theme';
+import { useThemedStyles, useThemeTokens } from '../../theme';
 import { 
   NotificationPreferences, 
   loadNotificationPreferences, 
@@ -17,6 +17,7 @@ export default function NotificationSettingsScreen() {
   const router = useRouter();
   // Edge-to-edge: pad content below the status bar
   const insets = useSafeAreaInsets();
+  const tokens = useThemeTokens();
   const styles = useThemedStyles((tokens) => StyleSheet.create({
     container: {
       flex: 1,
@@ -174,7 +175,7 @@ export default function NotificationSettingsScreen() {
           onPress={() => router.back()}
           style={styles.backButton}
         >
-          <Ionicons name="arrow-back" size={24} color="#111827" />
+          <Ionicons name="arrow-back" size={24} color={tokens.text.primary} />
         </TouchableOpacity>
         <Text style={styles.title}>নোটিফিকেশন সেটিংস</Text>
       </View>
@@ -297,6 +298,16 @@ export default function NotificationSettingsScreen() {
             💡 নোটিফিকেশনে ট্যাপ করে সরাসরি সংবাদ পড়ুন। ব্রেকিং নিউজ সবচেয়ে গুরুত্বপূর্ণ সংবাদ তাৎক্ষণিকভাবে পৌঁছে দেয়।
           </Text>
         </View>
+
+        {/* View Inbox Button */}
+        <TouchableOpacity
+          style={[styles.dangerButton, { backgroundColor: tokens.brand.primary, marginTop: 16 }]}
+          onPress={() => router.push('/notifications' as any)}
+        >
+          <Text style={styles.dangerButtonText}>
+            নোটিফিকেশন ইনবক্স দেখুন →
+          </Text>
+        </TouchableOpacity>
 
         {/* Reset Button */}
         <TouchableOpacity

@@ -28,23 +28,25 @@ export const DistrictPickerModal: React.FC<DistrictPickerModalProps> = ({
     StyleSheet.create({
       overlay: {
         flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backgroundColor: 'rgba(0, 0, 0, 0.55)',
         justifyContent: 'flex-end',
       },
       content: {
         backgroundColor: tokens.surface.base,
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
         paddingHorizontal: 20,
-        paddingTop: 16,
-        paddingBottom: 32,
-        maxHeight: '60%',
+        paddingTop: 18,
+        paddingBottom: 36,
+        maxHeight: '65%',
+        borderWidth: 1,
+        borderColor: tokens.border.default,
       },
       headerRow: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingBottom: 12,
+        paddingBottom: 14,
         borderBottomWidth: 1,
         borderBottomColor: tokens.border.default,
       },
@@ -61,8 +63,13 @@ export const DistrictPickerModal: React.FC<DistrictPickerModalProps> = ({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingVertical: 14,
+        paddingHorizontal: 8,
+        borderRadius: 8,
         borderBottomWidth: 1,
         borderBottomColor: tokens.border.subtle,
+      },
+      activeDivisionItem: {
+        backgroundColor: tokens.brand.surface,
       },
       divisionText: {
         fontSize: 15,
@@ -71,6 +78,9 @@ export const DistrictPickerModal: React.FC<DistrictPickerModalProps> = ({
       activeDivisionText: {
         color: tokens.brand.primary,
         fontWeight: 'bold',
+      },
+      closeBtnText: {
+        color: tokens.text.secondary,
       },
     })
   );
@@ -81,22 +91,23 @@ export const DistrictPickerModal: React.FC<DistrictPickerModalProps> = ({
         <View style={styles.content}>
           <View style={styles.headerRow}>
             <Text style={styles.title}>আপনার বিভাগ নির্বাচন করুন</Text>
-            <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={24} color="#6B7280" />
+            <TouchableOpacity onPress={onClose} activeOpacity={0.7}>
+              <Ionicons name="close" size={24} color={styles.closeBtnText.color} />
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.divisionList}>
+          <ScrollView style={styles.divisionList} showsVerticalScrollIndicator={false}>
             {BANGLADESH_DIVISIONS.map((div) => {
               const isSelected = div === selectedDivision;
               return (
                 <TouchableOpacity
                   key={div}
-                  style={styles.divisionItem}
+                  style={[styles.divisionItem, isSelected && styles.activeDivisionItem]}
                   onPress={() => {
                     onSelectDivision(div);
                     onClose();
                   }}
+                  activeOpacity={0.7}
                 >
                   <Text
                     style={[
@@ -107,7 +118,11 @@ export const DistrictPickerModal: React.FC<DistrictPickerModalProps> = ({
                     {div} বিভাগ
                   </Text>
                   {isSelected && (
-                    <Ionicons name="checkmark-circle" size={20} color="#006B3F" />
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={20}
+                      color={styles.activeDivisionText.color}
+                    />
                   )}
                 </TouchableOpacity>
               );

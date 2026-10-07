@@ -1,0 +1,234 @@
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Linking,
+} from 'react-native';
+import { Image } from 'expo-image';
+import { Ionicons } from '@expo/vector-icons';
+import { useThemedStyles } from '../theme';
+
+export interface AdData {
+  id: string;
+  brandName: string;
+  badge?: string;
+  title: string;
+  description: string;
+  ctaText?: string;
+  imageUrl?: string;
+  targetUrl?: string;
+}
+
+const DEFAULT_EDITORIAL_ADS: AdData[] = [
+  {
+    id: 'ad-amar-desh-print',
+    brandName: 'আমার দেশ প্রকাশনা',
+    badge: 'বিশেষ পার্টনারশিপ',
+    title: 'দৈনিক আমার দেশ প্রিন্ট ও ই-পেপার বার্ষিক গ্রাহক সেবা',
+    description: 'সত্য ও নির্ভীক সাংবাদিকতার পাশে থাকুন। আজই গ্রাহক হয়ে বিশেষ ছাড় উপভোগ করুন।',
+    ctaText: 'গ্রাহক হন',
+    imageUrl: 'https://images.dailyamardesh.com/ad/amardesh-shadhinotar-kotha-bole.jpg',
+    targetUrl: 'https://www.dailyamardesh.com/subscription',
+  },
+  {
+    id: 'ad-tech-cloud',
+    brandName: 'সাইবারক্রাফট ডিজিটাল',
+    badge: 'টেক পার্টনার',
+    title: 'আধুনিক মিডিয়া ও মোবাইল অ্যাপ প্ল্যাটফর্ম সল্যুশন',
+    description: 'সংবাদমাধ্যম ও এন্টারপ্রাইজ প্রতিষ্ঠানের জন্য এআই-চালিত নেক্সট-জেন অ্যাপ আর্কিটেকচার।',
+    ctaText: 'বিস্তারিত জানুন',
+    imageUrl: 'https://images.dailyamardesh.com/original_images/imf-24dba6-720x405.webp',
+    targetUrl: 'https://cybrcraft.com/',
+  },
+];
+
+interface AdBannerProps {
+  variant?: 'feed' | 'articleFooter' | 'compact';
+  customAd?: AdData;
+  onDismiss?: () => void;
+}
+
+export const AdBanner: React.FC<AdBannerProps> = ({
+  variant = 'feed',
+  customAd,
+  onDismiss,
+}) => {
+  const [isDismissed, setIsDismissed] = useState(false);
+  const ad = customAd || DEFAULT_EDITORIAL_ADS[variant === 'articleFooter' ? 1 : 0];
+
+  const styles = useThemedStyles((tokens) =>
+    StyleSheet.create({
+      container: {
+        backgroundColor: tokens.surface.elevated,
+        borderRadius: 12,
+        padding: 14,
+        marginVertical: 12,
+        borderWidth: 1,
+        borderColor: tokens.border.default,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.06,
+        shadowRadius: 3,
+        elevation: 2,
+      },
+      headerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 8,
+      },
+      badgeContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+      },
+      adLabel: {
+        fontSize: 10,
+        fontWeight: 'bold',
+        color: tokens.text.tertiary,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+        backgroundColor: tokens.surface.subtle,
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+        borderRadius: 4,
+      },
+      brandName: {
+        fontSize: 11.5,
+        fontWeight: '600',
+        color: tokens.brand.primary,
+      },
+      closeButton: {
+        padding: 4,
+      },
+      bodyContent: {
+        flexDirection: variant === 'compact' ? 'row' : 'column',
+        gap: 10,
+      },
+      adImage: {
+        width: '100%',
+        height: variant === 'articleFooter' ? 140 : 120,
+        borderRadius: 8,
+        backgroundColor: tokens.surface.subtle,
+      },
+      compactImage: {
+        width: 80,
+        height: 60,
+        borderRadius: 6,
+      },
+      textBlock: {
+        flex: 1,
+        justifyContent: 'center',
+      },
+      title: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: tokens.text.primary,
+        lineHeight: 20,
+        marginBottom: 4,
+      },
+      description: {
+        fontSize: 12,
+        color: tokens.text.secondary,
+        lineHeight: 17,
+        marginBottom: 10,
+      },
+      ctaButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        alignSelf: 'flex-start',
+        backgroundColor: tokens.brand.primary,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 6,
+        gap: 4,
+      },
+      ctaText: {
+        color: '#FFFFFF',
+        fontSize: 12,
+        fontWeight: '600',
+      },
+      dismissedBox: {
+        padding: 10,
+        alignItems: 'center',
+        backgroundColor: tokens.surface.subtle,
+        borderRadius: 8,
+        marginVertical: 6,
+      },
+      dismissedText: {
+        fontSize: 11,
+        color: tokens.text.tertiary,
+      },
+    })
+  );
+
+  const handlePress = async () => {
+    if (ad.targetUrl) {
+      const supported = await Linking.canOpenURL(ad.targetUrl).catch(() => false);
+      if (supported) {
+        await Linking.openURL(ad.targetUrl).catch(() => {});
+      }
+    }
+  };
+
+  const handleClose = () => {
+    setIsDismissed(true);
+    if (onDismiss) onDismiss();
+  };
+
+  if (isDismissed) {
+    return (
+      <View style={styles.dismissedBox}>
+        <Text style={styles.dismissedText}>বিজ্ঞাপনটি প্রদর্শন বন্ধ করা হয়েছে</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.headerRow}>
+        <View style={styles.badgeContainer}>
+          <Text style={styles.adLabel}>বিজ্ঞাপন • SPONSORED</Text>
+          <Text style={styles.brandName}>{ad.brandName}</Text>
+        </View>
+        <TouchableOpacity
+          onPress={handleClose}
+          style={styles.closeButton}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          accessibilityLabel="বিজ্ঞাপন বন্ধ করুন"
+        >
+          <Ionicons name="close" size={14} color={styles.description.color} />
+        </TouchableOpacity>
+      </View>
+
+      <TouchableOpacity
+        activeOpacity={0.85}
+        onPress={handlePress}
+        style={styles.bodyContent}
+      >
+        {ad.imageUrl && (
+          <Image
+            source={{ uri: ad.imageUrl }}
+            style={variant === 'compact' ? styles.compactImage : styles.adImage}
+            contentFit="cover"
+            transition={200}
+          />
+        )}
+        <View style={styles.textBlock}>
+          <Text style={styles.title} numberOfLines={2}>
+            {ad.title}
+          </Text>
+          <Text style={styles.description} numberOfLines={2}>
+            {ad.description}
+          </Text>
+          <View style={styles.ctaButton}>
+            <Text style={styles.ctaText}>{ad.ctaText || 'বিস্তারিত জানুন'}</Text>
+            <Ionicons name="arrow-forward" size={13} color="#FFFFFF" />
+          </View>
+        </View>
+      </TouchableOpacity>
+    </View>
+  );
+};

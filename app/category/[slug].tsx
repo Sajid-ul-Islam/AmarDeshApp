@@ -10,7 +10,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useThemedStyles } from '../../theme';
+import { useThemedStyles, useThemeTokens } from '../../theme';
 import { ArticleThumbnail } from '../../components/OptimizedImage';
 import { getArticlesByCategory, SITE_CATEGORIES } from '../../services/contentService';
 import { formatRelativeTime, toBengaliNumeral } from '../../utils/bengali';
@@ -20,6 +20,7 @@ export default function CategoryScreen() {
   const { slug } = useLocalSearchParams();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const tokens = useThemeTokens();
   const [refreshing, setRefreshing] = useState(false);
 
   const categorySlug = Array.isArray(slug) ? slug[0] : slug || 'latest';
@@ -151,7 +152,7 @@ export default function CategoryScreen() {
             style={styles.backButton}
             onPress={() => router.back()}
           >
-            <Ionicons name="arrow-back" size={24} color="#111827" />
+            <Ionicons name="arrow-back" size={24} color={tokens.text.primary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>{categoryMeta.name}</Text>
         </View>
@@ -199,7 +200,7 @@ export default function CategoryScreen() {
         )}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Ionicons name="newspaper-outline" size={40} color="#9CA3AF" />
+            <Ionicons name="newspaper-outline" size={40} color={tokens.text.tertiary} />
             <Text style={styles.emptyText}>এই বিভাগে কোনো সংবাদ পাওয়া যায়নি</Text>
           </View>
         }
