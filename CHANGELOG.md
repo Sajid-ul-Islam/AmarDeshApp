@@ -32,6 +32,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Unified 'For You' Feed under the Save Option** (`app/(tabs)/bookmarks.tsx`, `app/(tabs)/foryou.tsx`, `app/(tabs)/_layout.tsx`):
   - Integrated personalized recommendations and reading affinities directly into the "Save" tab (`সেভ`) via an intuitive top segmented switcher (`[সংরক্ষিত | আপনার জন্য]`).
   - Seamlessly combines offline bookmarked reading with AI-powered personalized news feeds and user interest topics under one central hub.
+- **ePaper Integration under Menu** (`app/(tabs)/menu.tsx`, `app/(tabs)/_layout.tsx`):
+  - Moved ePaper from the main bottom navigation tab bar into a prominent featured editorial card and quick access action under the Menu (`মেনু`).
+  - Streamlined bottom navigation into an intuitive 4-tab bar (Home, Video, Saved, Menu) while giving digital print replicas dedicated focus inside the Menu.
 
 ### Official Amar Desh Branding & Edge-to-Edge Top Bar System
 - **Fail-Safe Edge-to-Edge Layout Architecture** (`utils/layout.ts`, all app screens):

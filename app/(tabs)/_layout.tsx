@@ -54,21 +54,6 @@ export default function TabLayout() {
         }}
       />
 
-      {/* 2. ইপেপার (ePaper) */}
-      <Tabs.Screen
-        name="epaper"
-        options={{
-          title: t('tab_epaper', language),
-          headerShown: false,
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name={focused ? 'newspaper' : 'newspaper-outline'}
-              size={size - 1}
-              color={color}
-            />
-          ),
-        }}
-      />
 
       {/* 3. ভিডিও (Video Hub) */}
       <Tabs.Screen
@@ -142,6 +127,15 @@ export default function TabLayout() {
         options={{
           href: null,
           title: 'For You',
+          headerShown: false,
+        }}
+      />
+
+      <Tabs.Screen
+        name="epaper"
+        options={{
+          href: null,
+          title: t('tab_epaper', language),
           headerShown: false,
         }}
       />

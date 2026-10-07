@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Switch,
   Alert,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -120,6 +121,72 @@ export default function MenuScreen() {
         fontSize: 12,
         fontWeight: '600',
         color: tokens.text.primary,
+      },
+      epaperCard: {
+        backgroundColor: tokens.surface.base,
+        marginHorizontal: 16,
+        marginTop: 14,
+        padding: 14,
+        borderRadius: 4,
+        borderWidth: 1.5,
+        borderColor: tokens.brand.primary,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+      },
+      epaperCardLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        flex: 1,
+      },
+      epaperIconBox: {
+        width: 44,
+        height: 44,
+        borderRadius: 6,
+        backgroundColor: tokens.brand.surface,
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      epaperTextCol: {
+        flex: 1,
+      },
+      epaperBadgeRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        marginBottom: 2,
+      },
+      epaperBadge: {
+        fontSize: 10,
+        fontWeight: 'bold',
+        color: tokens.brand.primary,
+        backgroundColor: tokens.brand.surface,
+        paddingHorizontal: 6,
+        paddingVertical: 1,
+        borderRadius: 3,
+      },
+      epaperTitle: {
+        fontSize: 15,
+        fontWeight: 'bold',
+        color: tokens.text.primary,
+        fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' }),
+      },
+      epaperSub: {
+        fontSize: 11.5,
+        color: tokens.text.secondary,
+        marginTop: 2,
+      },
+      epaperReadButton: {
+        backgroundColor: tokens.brand.primary,
+        paddingHorizontal: 12,
+        paddingVertical: 7,
+        borderRadius: 4,
+      },
+      epaperReadButtonText: {
+        color: '#FFFFFF',
+        fontSize: 12,
+        fontWeight: 'bold',
       },
       sectionTitle: {
         fontSize: 12,
@@ -307,6 +374,37 @@ export default function MenuScreen() {
             </Text>
           </TouchableOpacity>
         </View>
+
+        {/* Featured ePaper Edition Card under Menu */}
+        <TouchableOpacity
+          style={styles.epaperCard}
+          onPress={() => router.push('/epaper' as any)}
+          activeOpacity={0.8}
+        >
+          <View style={styles.epaperCardLeft}>
+            <View style={styles.epaperIconBox}>
+              <Ionicons name="newspaper" size={24} color={tokens.brand.primary} />
+            </View>
+            <View style={styles.epaperTextCol}>
+              <View style={styles.epaperBadgeRow}>
+                <Text style={styles.epaperBadge}>ডিজিটাল প্রিন্ট সংস্করণ</Text>
+              </View>
+              <Text style={styles.epaperTitle}>
+                {language === 'bn' ? 'দৈনিক আমার দেশ ই-পেপার' : 'Daily Amar Desh ePaper'}
+              </Text>
+              <Text style={styles.epaperSub} numberOfLines={1}>
+                {language === 'bn'
+                  ? 'মুদ্রিত পত্রিকার পূর্ণাঙ্গ ডিজিটাল পাতা ও কলাম পাঠ'
+                  : 'Read full print replica pages & column zoom'}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.epaperReadButton}>
+            <Text style={styles.epaperReadButtonText}>
+              {language === 'bn' ? 'পড়ুন ↗' : 'Read ↗'}
+            </Text>
+          </View>
+        </TouchableOpacity>
 
         {/* News Categories Section */}
         <Text style={styles.sectionTitle}>
