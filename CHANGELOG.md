@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Bilingual Localization Engine (Bengali & English)
+- **Comprehensive Dual-Language Support** (`services/i18n.ts`, `services/__tests__/i18n.test.ts`):
+  - Created bilingual translation engine with typed dictionaries (`TRANSLATIONS.bn`, `TRANSLATIONS.en`), `t()`, `formatLocalizedNumeral()`, `formatLocalizedRelativeTime()`, `getLocalizedCategoryName()`, and listener subscription system.
+  - Zero-friction instant language toggle between Bengali (`bn`) and English (`en`) with persistent device storage (`@amar_desh_language_preference`).
+  - Added full test coverage for i18n service (13 passing tests).
+- **Interactive UI Language Switchers**:
+  - Quick toggle pill in the home masthead date bar (`app/(tabs)/index.tsx`) allowing 1-tap switching (`[বাংলা | EN]`).
+  - Segmented language control option in settings & menu screen (`app/(tabs)/menu.tsx`).
+- **End-to-End Screen Localization**:
+  - **Bottom Navigation Tabs** (`app/(tabs)/_layout.tsx`): Dynamic tab labels (`Home / ePaper / Video / Saved / Menu` vs `হোম / ই-পেপার / ভিডিও / সেভ / মেনু`).
+  - **Home Screen & Category Bar** (`app/(tabs)/index.tsx`): Localized weather banner, division badge, category chips, breaking news banner, and July revolution spotlight.
+  - **Article Detail & Reader** (`app/article/[id].tsx`): Localized bylines, published dates, audio listen prompt, AI summary card, bidirectional navigation, swipe hints, copyright notice, related stories, and share dialogs.
+  - **ePaper Digital Reader** (`app/(tabs)/epaper.tsx`): Localized edition dates, column hotspots, and full digital reading triggers.
+  - **Multimedia & Video Hub** (`app/(tabs)/video.tsx`): Localized title, video category filters, views counter, and PiP mini player controls.
+  - **Saved Articles & Bookmarks** (`app/(tabs)/bookmarks.tsx`): Localized counter badges, card metadata, and empty state guides.
+
 ### 2026 Advanced Mobile Newspaper Capabilities & Backend Newsroom Suite
 - **Article Swipe & Next-Previous Navigation** (`app/article/[id].tsx`):
   - Category-scoped bidirectional article switcher ("← পূর্ববর্তী সংবাদ" / "পরবর্তী সংবাদ →") with rich headline preview cards.
