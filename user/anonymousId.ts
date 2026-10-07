@@ -16,6 +16,18 @@ import { v4 as uuidv4 } from 'uuid';
 
 const ANONYMOUS_ID_KEY = 'amar_desh_anonymous_user_id';
 
+function generateSafeUUID(): string {
+  try {
+    return uuidv4();
+  } catch {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+      const r = (Math.random() * 16) | 0;
+      const v = c === 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  }
+}
+
 /**
  * Get the anonymous user ID, generating one if it doesn't exist
  * 
@@ -32,7 +44,7 @@ export async function getAnonymousId(): Promise<string> {
     
     // If no ID exists, generate a new one
     if (!anonymousId) {
-      anonymousId = uuidv4();
+      anonymousId = generateSafeUUID();
       await SecureStore.setItemAsync(ANONYMOUS_ID_KEY, anonymousId);
       console.log('[AnonymousId] Generated new anonymous ID:', anonymousId);
     } else {
@@ -43,7 +55,7 @@ export async function getAnonymousId(): Promise<string> {
   } catch (error) {
     console.error('[AnonymousId] Error getting anonymous ID:', error);
     // Fallback: generate a temporary ID (won't persist)
-    const fallbackId = uuidv4();
+    const fallbackId = generateSafeUUID();
     console.warn('[AnonymousId] Using temporary ID:', fallbackId);
     return fallbackId;
   }

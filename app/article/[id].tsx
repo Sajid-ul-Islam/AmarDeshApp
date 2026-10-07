@@ -478,6 +478,37 @@ export default function ArticleDetailScreen() {
     })
   );
 
+  const categoryArticles = article ? getArticlesByCategory(article.category) : [];
+  const currentIndex = article ? categoryArticles.findIndex((a) => a.id === article.id) : -1;
+  const prevArticle = currentIndex > 0 ? categoryArticles[currentIndex - 1] : null;
+  const nextArticle =
+    currentIndex >= 0 && currentIndex < categoryArticles.length - 1
+      ? categoryArticles[currentIndex + 1]
+      : null;
+
+  const nextArticleRef = useRef(nextArticle);
+  nextArticleRef.current = nextArticle;
+  const prevArticleRef = useRef(prevArticle);
+  prevArticleRef.current = prevArticle;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        return (
+          Math.abs(gestureState.dx) > 35 &&
+          Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 2
+        );
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dx < -55 && nextArticleRef.current) {
+          router.push(`/article/${nextArticleRef.current.id}` as any);
+        } else if (gestureState.dx > 55 && prevArticleRef.current) {
+          router.push(`/article/${prevArticleRef.current.id}` as any);
+        }
+      },
+    })
+  ).current;
+
   if (isResolving && !article) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
@@ -524,32 +555,6 @@ export default function ArticleDetailScreen() {
   const relatedStories = getArticlesByCategory(article.category)
     .filter((a) => a.id !== article.id)
     .slice(0, 3);
-
-  const categoryArticles = article ? getArticlesByCategory(article.category) : [];
-  const currentIndex = article ? categoryArticles.findIndex((a) => a.id === article.id) : -1;
-  const prevArticle = currentIndex > 0 ? categoryArticles[currentIndex - 1] : null;
-  const nextArticle =
-    currentIndex >= 0 && currentIndex < categoryArticles.length - 1
-      ? categoryArticles[currentIndex + 1]
-      : null;
-
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        return (
-          Math.abs(gestureState.dx) > 35 &&
-          Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 2
-        );
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dx < -55 && nextArticle) {
-          router.push(`/article/${nextArticle.id}` as any);
-        } else if (gestureState.dx > 55 && prevArticle) {
-          router.push(`/article/${prevArticle.id}` as any);
-        }
-      },
-    })
-  ).current;
 
   const fullTextToSpeak = `${article.title}. ${
     scrapedData ? scrapedData.paragraphs.join(' ') : article.content
