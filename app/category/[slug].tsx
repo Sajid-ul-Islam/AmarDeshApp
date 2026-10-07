@@ -46,8 +46,8 @@ export default function CategoryScreen() {
         paddingHorizontal: 16,
         paddingBottom: 12,
         backgroundColor: tokens.surface.base,
-        borderBottomWidth: 1,
-        borderBottomColor: tokens.border.default,
+        borderBottomWidth: 0.5,
+        borderBottomColor: tokens.border.subtle,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -69,7 +69,7 @@ export default function CategoryScreen() {
         backgroundColor: tokens.surface.elevated,
         paddingHorizontal: 8,
         paddingVertical: 3,
-        borderRadius: 12,
+        borderRadius: tokens.radii.pill,
       },
       countText: {
         fontSize: 12,
@@ -82,12 +82,13 @@ export default function CategoryScreen() {
       card: {
         flexDirection: 'row',
         backgroundColor: tokens.surface.base,
-        borderRadius: 10,
+        borderRadius: tokens.radii.lg,
         marginBottom: 12,
         padding: 12,
         gap: 12,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.card,
       },
       cardContent: {
         flex: 1,
@@ -123,7 +124,7 @@ export default function CategoryScreen() {
       thumbnail: {
         width: 100,
         height: 75,
-        borderRadius: 6,
+        borderRadius: tokens.radii.md,
       },
       emptyContainer: {
         alignItems: 'center',

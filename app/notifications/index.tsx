@@ -96,8 +96,8 @@ export default function NotificationCenterScreen() {
         paddingHorizontal: 16,
         paddingBottom: 12,
         backgroundColor: tokens.surface.base,
-        borderBottomWidth: 1,
-        borderBottomColor: tokens.border.default,
+        borderBottomWidth: 0.5,
+        borderBottomColor: tokens.border.subtle,
       },
       headerTop: {
         flexDirection: 'row',
@@ -119,9 +119,9 @@ export default function NotificationCenterScreen() {
         color: tokens.text.primary,
       },
       markAllBtn: {
-        paddingHorizontal: 10,
+        paddingHorizontal: 12,
         paddingVertical: 5,
-        borderRadius: 14,
+        borderRadius: tokens.radii.pill,
         backgroundColor: tokens.surface.elevated,
       },
       markAllText: {
@@ -134,12 +134,12 @@ export default function NotificationCenterScreen() {
         gap: 8,
       },
       filterChip: {
-        paddingHorizontal: 12,
+        paddingHorizontal: 14,
         paddingVertical: 6,
-        borderRadius: 16,
+        borderRadius: tokens.radii.pill,
         backgroundColor: tokens.surface.elevated,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
       },
       activeFilterChip: {
         backgroundColor: tokens.brand.primary,
@@ -161,12 +161,12 @@ export default function NotificationCenterScreen() {
       card: {
         flexDirection: 'row',
         backgroundColor: tokens.surface.base,
-        borderRadius: 12,
+        borderRadius: tokens.radii.lg,
         padding: 14,
         marginBottom: 10,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
-        elevation: 1,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.card,
       },
       unreadCard: {
         borderLeftWidth: 4,
@@ -186,9 +186,9 @@ export default function NotificationCenterScreen() {
         marginBottom: 6,
       },
       badge: {
-        paddingHorizontal: 6,
+        paddingHorizontal: 8,
         paddingVertical: 2,
-        borderRadius: 4,
+        borderRadius: tokens.radii.pill,
         backgroundColor: tokens.surface.elevated,
       },
       breakingBadge: {

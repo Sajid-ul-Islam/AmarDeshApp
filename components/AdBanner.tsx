@@ -62,16 +62,12 @@ export const AdBanner: React.FC<AdBannerProps> = ({
     StyleSheet.create({
       container: {
         backgroundColor: tokens.surface.elevated,
-        borderRadius: 12,
+        borderRadius: tokens.radii.lg,
         padding: 14,
         marginVertical: 12,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.06,
-        shadowRadius: 3,
-        elevation: 2,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.card,
       },
       headerRow: {
         flexDirection: 'row',
@@ -91,9 +87,9 @@ export const AdBanner: React.FC<AdBannerProps> = ({
         textTransform: 'uppercase',
         letterSpacing: 0.5,
         backgroundColor: tokens.surface.subtle,
-        paddingHorizontal: 6,
-        paddingVertical: 2,
-        borderRadius: 4,
+        paddingHorizontal: 8,
+        paddingVertical: 2.5,
+        borderRadius: tokens.radii.pill,
       },
       brandName: {
         fontSize: 11.5,
@@ -101,7 +97,12 @@ export const AdBanner: React.FC<AdBannerProps> = ({
         color: tokens.brand.primary,
       },
       closeButton: {
-        padding: 4,
+        width: 24,
+        height: 24,
+        borderRadius: tokens.radii.pill,
+        backgroundColor: tokens.surface.subtle,
+        alignItems: 'center',
+        justifyContent: 'center',
       },
       bodyContent: {
         flexDirection: variant === 'compact' ? 'row' : 'column',
@@ -110,13 +111,13 @@ export const AdBanner: React.FC<AdBannerProps> = ({
       adImage: {
         width: '100%',
         height: variant === 'articleFooter' ? 140 : 120,
-        borderRadius: 8,
+        borderRadius: tokens.radii.md,
         backgroundColor: tokens.surface.subtle,
       },
       compactImage: {
         width: 80,
         height: 60,
-        borderRadius: 6,
+        borderRadius: tokens.radii.sm,
       },
       textBlock: {
         flex: 1,
@@ -140,10 +141,11 @@ export const AdBanner: React.FC<AdBannerProps> = ({
         alignItems: 'center',
         alignSelf: 'flex-start',
         backgroundColor: tokens.brand.primary,
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 6,
-        gap: 4,
+        paddingHorizontal: 14,
+        paddingVertical: 7,
+        borderRadius: tokens.radii.pill,
+        gap: 5,
+        ...tokens.shadows.sm,
       },
       ctaText: {
         color: '#FFFFFF',
@@ -154,7 +156,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
         padding: 10,
         alignItems: 'center',
         backgroundColor: tokens.surface.subtle,
-        borderRadius: 8,
+        borderRadius: tokens.radii.md,
         marginVertical: 6,
       },
       dismissedText: {

@@ -15,8 +15,11 @@ export default function ReadingStreak({ compact = false }: ReadingStreakProps) {
       backgroundColor: tokens.brand.surface,
       paddingHorizontal: compact ? 12 : 16,
       paddingVertical: compact ? 8 : 12,
-      borderRadius: 12,
+      borderRadius: tokens.radii.lg,
       gap: 8,
+      borderWidth: 0.5,
+      borderColor: tokens.border.subtle,
+      ...tokens.shadows.card,
     },
     icon: {
       color: tokens.brand.primary,
@@ -37,12 +40,12 @@ export default function ReadingStreak({ compact = false }: ReadingStreakProps) {
     streakBadge: {
       backgroundColor: tokens.brand.primary,
       paddingHorizontal: 12,
-      paddingVertical: 6,
-      borderRadius: 16,
+      paddingVertical: 5,
+      borderRadius: tokens.radii.pill,
     },
     streakText: {
       color: tokens.brand.onPrimary,
-      fontSize: compact ? 16 : 18,
+      fontSize: compact ? 15 : 17,
       fontWeight: 'bold',
     },
   }));

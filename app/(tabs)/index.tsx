@@ -27,16 +27,7 @@ import { ArticleThumbnail, ArticleHeroImage } from '../../components/OptimizedIm
 import { useUserStore, trackCategoryViewed } from '../../user';
 import ReadingStreak from '../../components/ReadingStreak';
 import { BreakingNewsTicker } from '../../components/BreakingNewsTicker';
-import { PrayerTimesWidget } from '../../components/PrayerTimesWidget';
-import { DistrictPickerModal } from '../../components/DistrictPickerModal';
 import { ContinueReadingCard } from '../../components/ContinueReadingCard';
-import {
-  getPrayerTimesForDivision,
-  getSavedPrayerData,
-  requestGpsPrayerTimes,
-  resetToDhakaDefault,
-  PrayerTimeData,
-} from '../../services/prayerTimesService';
 import {
   SITE_CATEGORIES,
   getArticlesByCategory,
@@ -62,12 +53,8 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('সর্বশেষ');
-  const [showDistrictModal, setShowDistrictModal] = useState(false);
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
   const language = useAppStore((state) => state.language);
-  const [prayerData, setPrayerData] = useState<PrayerTimeData>(
-    getPrayerTimesForDivision('ঢাকা')
-  );
 
   // Live news from dailyamardesh.com shared store
   const liveArticles = useSyncExternalStore(subscribeToArticles, getArticles);
@@ -78,25 +65,6 @@ export default function HomeScreen() {
   const [bookmarks, setBookmarks] = useState<string[]>([]);
   const isUserReady = useUserStore((state) => state.isInitialized);
   const getPersonalizedFeed = useUserStore((state) => state.getPersonalizedFeed);
-
-  // Load saved prayer schedule on mount (Dhaka default or GPS)
-  useEffect(() => {
-    getSavedPrayerData().then(setPrayerData);
-  }, []);
-
-  const handleRequestGps = async () => {
-    const result = await requestGpsPrayerTimes();
-    if (result.success && result.data) {
-      setPrayerData(result.data);
-    } else if (result.error) {
-      Alert.alert('লোকেশন বার্তা', result.error);
-    }
-  };
-
-  const handleResetDhaka = async () => {
-    const defaultData = await resetToDhakaDefault();
-    setPrayerData(defaultData);
-  };
 
   // Load bookmarks on mount
   useEffect(() => {
@@ -194,18 +162,22 @@ export default function HomeScreen() {
         gap: 8,
       },
       iconBtn: {
-        padding: 7,
-        borderRadius: 4,
+        width: 36,
+        height: 36,
+        borderRadius: tokens.radii.pill,
         backgroundColor: tokens.surface.elevated,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.sm,
       },
       notifBadge: {
         position: 'absolute',
         top: -3,
         right: -3,
         backgroundColor: '#DC2626',
-        borderRadius: 9,
+        borderRadius: tokens.radii.pill,
         minWidth: 16,
         height: 16,
         alignItems: 'center',
@@ -222,20 +194,21 @@ export default function HomeScreen() {
         paddingHorizontal: 16,
         paddingVertical: 10,
         backgroundColor: tokens.surface.base,
-        borderBottomWidth: 1,
-        borderBottomColor: tokens.border.default,
+        borderBottomWidth: 0.5,
+        borderBottomColor: tokens.border.subtle,
       },
       catChip: {
-        paddingHorizontal: 12,
+        paddingHorizontal: 14,
         paddingVertical: 6,
-        borderRadius: 4,
+        borderRadius: tokens.radii.pill,
         backgroundColor: tokens.surface.subtle,
         marginRight: 8,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
       },
       specialCatChip: {
         backgroundColor: tokens.brand.crimsonSurface,
+        borderWidth: 1,
         borderColor: tokens.brand.primary,
       },
       activeCatChip: {
@@ -266,18 +239,19 @@ export default function HomeScreen() {
         paddingBottom: 40,
       },
       heroCard: {
-        borderRadius: 4,
+        borderRadius: tokens.radii.lg,
         overflow: 'hidden',
-        marginBottom: 20,
+        marginBottom: 16,
         backgroundColor: tokens.surface.base,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.card,
       },
       heroImage: {
         width: '100%',
         height: 220,
-        borderBottomWidth: 1,
-        borderBottomColor: tokens.border.default,
+        borderBottomWidth: 0.5,
+        borderBottomColor: tokens.border.subtle,
       },
       heroBody: {
         padding: 16,
@@ -316,7 +290,7 @@ export default function HomeScreen() {
         alignItems: 'center',
         gap: 6,
         paddingTop: 8,
-        borderTopWidth: 1,
+        borderTopWidth: 0.5,
         borderTopColor: tokens.border.subtle,
       },
       heroTime: {
@@ -332,10 +306,11 @@ export default function HomeScreen() {
         borderLeftWidth: 3.5,
         borderLeftColor: tokens.brand.primary,
         padding: 14,
-        borderRadius: 4,
-        marginBottom: 18,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderRadius: tokens.radii.lg,
+        marginBottom: 16,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.card,
       },
       spotlightTitle: {
         fontSize: 14.5,
@@ -353,10 +328,13 @@ export default function HomeScreen() {
       articleCard: {
         flexDirection: 'row',
         backgroundColor: tokens.surface.base,
-        paddingVertical: 14,
-        gap: 14,
-        borderBottomWidth: 1,
-        borderBottomColor: tokens.border.default,
+        padding: 12,
+        borderRadius: tokens.radii.lg,
+        marginBottom: 12,
+        gap: 12,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.card,
       },
       articleContent: {
         flex: 1,
@@ -379,6 +357,11 @@ export default function HomeScreen() {
         marginBottom: 6,
         fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' }),
       },
+      articleMetaRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+      },
       articleTime: {
         fontSize: 11,
         color: tokens.text.tertiary,
@@ -387,8 +370,8 @@ export default function HomeScreen() {
       articleImage: {
         width: 86,
         height: 86,
-        borderRadius: 4,
-        borderWidth: 1,
+        borderRadius: tokens.radii.md,
+        borderWidth: 0.5,
         borderColor: tokens.border.subtle,
       },
     })
@@ -403,12 +386,6 @@ export default function HomeScreen() {
       {breakingHeadlines.length > 0 && (
         <BreakingNewsTicker headlines={breakingHeadlines} />
       )}
-
-      {/* Prayer Times Widget */}
-      <PrayerTimesWidget
-        prayerData={prayerData}
-        onChangeDivision={() => setShowDistrictModal(true)}
-      />
 
       {/* Reading streak */}
       <View style={{ paddingHorizontal: 16, marginBottom: 12 }}>
@@ -490,13 +467,19 @@ export default function HomeScreen() {
             <Text style={styles.articleTitle} numberOfLines={2}>
               {stripCDATA(item.title)}
             </Text>
-            <Text style={styles.articleTime}>
-              {formatLocalizedRelativeTime(item.publishedAt, language)}
-            </Text>
+            <View style={styles.articleMetaRow}>
+              <Ionicons name="time-outline" size={11} color={styles.articleTime.color} />
+              <Text style={styles.articleTime}>
+                {formatLocalizedRelativeTime(item.publishedAt, language)}
+              </Text>
+            </View>
           </View>
           <ArticleThumbnail uri={item.imageUrl} style={styles.articleImage} />
         </TouchableOpacity>
-        {index === 2 && <AdBanner variant="feed" />}
+        {/* Dynamic In-Feed Ad Placement */}
+        {(index === 2 || (index > 2 && (index - 2) % 6 === 0)) && (
+          <AdBanner variant={index === 2 ? 'feed' : 'compact'} />
+        )}
       </View>
     );
   };
@@ -596,16 +579,6 @@ export default function HomeScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         showsVerticalScrollIndicator={false}
-      />
-
-      {/* GPS Location & Prayer Selector Modal */}
-      <DistrictPickerModal
-        visible={showDistrictModal}
-        selectedDivision={prayerData.division}
-        isGps={Boolean(prayerData.isGps)}
-        onRequestGps={handleRequestGps}
-        onResetDhaka={handleResetDhaka}
-        onClose={() => setShowDistrictModal(false)}
       />
     </View>
   );

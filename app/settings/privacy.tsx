@@ -20,16 +20,17 @@ export default function PrivacySettingsScreen() {
     header: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingTop: getSafeHeaderPaddingTop(insets.top, 6),
+      paddingTop: getSafeHeaderPaddingTop(insets.top, 8),
       paddingHorizontal: 16,
-      paddingVertical: 12,
+      paddingBottom: 12,
       backgroundColor: tokens.surface.base,
-      borderBottomWidth: 1,
-      borderBottomColor: tokens.border.default,
+      borderBottomWidth: 0.5,
+      borderBottomColor: tokens.border.subtle,
     },
     backButton: {
       padding: 8,
       marginRight: 8,
+      borderRadius: tokens.radii.pill,
     },
     title: {
       fontSize: 18,
@@ -38,14 +39,18 @@ export default function PrivacySettingsScreen() {
     },
     content: {
       flex: 1,
-      // Edge-to-edge: keep last section clear of the gesture navigation bar
       paddingBottom: 32,
     },
     section: {
       backgroundColor: tokens.surface.base,
       marginTop: 16,
+      marginHorizontal: 16,
+      borderRadius: tokens.radii.lg,
       paddingHorizontal: 16,
-      paddingVertical: 12,
+      paddingVertical: 14,
+      borderWidth: 0.5,
+      borderColor: tokens.border.subtle,
+      ...tokens.shadows.card,
     },
     sectionTitle: {
       fontSize: 14,
@@ -59,7 +64,7 @@ export default function PrivacySettingsScreen() {
       alignItems: 'center',
       justifyContent: 'space-between',
       paddingVertical: 12,
-      borderBottomWidth: 1,
+      borderBottomWidth: 0.5,
       borderBottomColor: tokens.border.subtle,
     },
     settingRowLast: {
@@ -77,24 +82,28 @@ export default function PrivacySettingsScreen() {
     },
     dangerButton: {
       backgroundColor: tokens.status.error,
-      padding: 16,
-      borderRadius: 8,
+      padding: 14,
+      borderRadius: tokens.radii.pill,
       alignItems: 'center',
       marginTop: 24,
       marginHorizontal: 16,
+      ...tokens.shadows.sm,
     },
     dangerButtonText: {
       color: tokens.text.inverse,
-      fontSize: 16,
+      fontSize: 15,
       fontWeight: '600',
     },
     infoBox: {
       backgroundColor: tokens.surface.elevated,
       padding: 16,
       margin: 16,
-      borderRadius: 8,
+      borderRadius: tokens.radii.lg,
       borderLeftWidth: 4,
       borderLeftColor: tokens.brand.primary,
+      borderWidth: 0.5,
+      borderColor: tokens.border.subtle,
+      ...tokens.shadows.card,
     },
     infoText: {
       fontSize: 14,
@@ -111,7 +120,7 @@ export default function PrivacySettingsScreen() {
       backgroundColor: tokens.brand.surface,
       paddingHorizontal: 12,
       paddingVertical: 6,
-      borderRadius: 16,
+      borderRadius: tokens.radii.pill,
     },
     interestText: {
       fontSize: 12,

@@ -68,14 +68,15 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({
     StyleSheet.create({
       card: {
         backgroundColor: tokens.surface.elevated,
-        borderRadius: 4,
+        borderRadius: tokens.radii.lg,
         marginHorizontal: 16,
         marginVertical: 14,
         padding: 14,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
         borderLeftWidth: 3.5,
         borderLeftColor: tokens.brand.primary,
+        ...tokens.shadows.card,
       },
       headerRow: {
         flexDirection: 'row',
@@ -90,9 +91,9 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({
         flex: 1,
       },
       iconBox: {
-        width: 26,
-        height: 26,
-        borderRadius: 3,
+        width: 28,
+        height: 28,
+        borderRadius: tokens.radii.pill,
         backgroundColor: tokens.brand.primary,
         alignItems: 'center',
         justifyContent: 'center',
@@ -105,11 +106,11 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({
       },
       badge: {
         backgroundColor: tokens.surface.base,
-        paddingHorizontal: 7,
+        paddingHorizontal: 8,
         paddingVertical: 2,
-        borderRadius: 3,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderRadius: tokens.radii.pill,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
       },
       badgeText: {
         fontSize: 10,
@@ -121,11 +122,15 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({
         alignItems: 'center',
         gap: 6,
       },
-      refreshBtn: {
-        padding: 4,
-      },
-      collapseBtn: {
-        padding: 4,
+      iconBtn: {
+        width: 30,
+        height: 30,
+        borderRadius: tokens.radii.pill,
+        backgroundColor: tokens.surface.base,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
       },
       body: {
         gap: 10,
@@ -138,9 +143,9 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({
       pointNumCircle: {
         width: 22,
         height: 22,
-        borderRadius: 11,
+        borderRadius: tokens.radii.pill,
         backgroundColor: tokens.surface.base,
-        borderWidth: 1,
+        borderWidth: 0.5,
         borderColor: tokens.brand.primary,
         alignItems: 'center',
         justifyContent: 'center',
@@ -163,19 +168,20 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({
         justifyContent: 'space-between',
         marginTop: 12,
         paddingTop: 10,
-        borderTopWidth: 1,
+        borderTopWidth: 0.5,
         borderTopColor: 'rgba(0, 107, 63, 0.15)',
       },
       askButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 6,
+        gap: 5,
         backgroundColor: tokens.surface.base,
-        paddingHorizontal: 10,
+        paddingHorizontal: 12,
         paddingVertical: 6,
-        borderRadius: 16,
-        borderWidth: 1,
+        borderRadius: tokens.radii.pill,
+        borderWidth: 0.5,
         borderColor: tokens.brand.primary,
+        ...tokens.shadows.sm,
       },
       askButtonText: {
         fontSize: 12,
@@ -183,9 +189,9 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({
         fontWeight: 'bold',
       },
       configLink: {
-        fontSize: 11,
+        fontSize: 11.5,
         color: tokens.text.secondary,
-        textDecorationLine: 'underline',
+        fontWeight: '500',
       },
     })
   );
@@ -213,23 +219,25 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({
 
         <View style={styles.controls}>
           <TouchableOpacity
-            style={styles.refreshBtn}
+            style={styles.iconBtn}
             onPress={handleRegenerate}
             disabled={loading}
+            accessibilityLabel="রিলোড"
           >
             {loading ? (
               <ActivityIndicator size="small" color={tokens.brand.primary} />
             ) : (
-              <Ionicons name="sync-outline" size={18} color={tokens.brand.primary} />
+              <Ionicons name="sync-outline" size={16} color={tokens.brand.primary} />
             )}
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.collapseBtn}
+            style={styles.iconBtn}
             onPress={() => setIsCollapsed(!isCollapsed)}
+            accessibilityLabel={isCollapsed ? 'প্রসারিত করুন' : 'সংকুচিত করুন'}
           >
             <Ionicons
               name={isCollapsed ? 'chevron-down' : 'chevron-up'}
-              size={18}
+              size={16}
               color={tokens.brand.primary}
             />
           </TouchableOpacity>
@@ -258,9 +266,10 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({
               <TouchableOpacity
                 style={styles.askButton}
                 onPress={onOpenAssistant}
+                accessibilityLabel="প্রশ্ন করুন"
               >
                 <Ionicons name="chatbubbles-outline" size={14} color={tokens.brand.primary} />
-                <Text style={styles.askButtonText}>এআইকে প্রশ্ন করুন</Text>
+                <Text style={styles.askButtonText}>প্রশ্ন করুন</Text>
               </TouchableOpacity>
             )}
 
@@ -269,9 +278,10 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({
                 onPress={onOpenSettings}
                 style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
                 activeOpacity={0.7}
+                accessibilityLabel="API কি"
               >
-                <Ionicons name="key-outline" size={13} color={tokens.brand.primary} />
-                <Text style={styles.configLink}>ফ্রি এপিআই কি যোগ করুন ↗</Text>
+                <Ionicons name="key-outline" size={14} color={tokens.brand.primary} />
+                <Text style={styles.configLink}>API কি ↗</Text>
               </TouchableOpacity>
             )}
           </View>

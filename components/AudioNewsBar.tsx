@@ -26,19 +26,15 @@ export const AudioNewsBar: React.FC<AudioNewsBarProps> = ({
         left: 16,
         right: 16,
         backgroundColor: '#111827',
-        borderRadius: 16,
+        borderRadius: tokens.radii.xl,
         paddingHorizontal: 16,
         paddingVertical: 12,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        elevation: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.35,
-        shadowRadius: 6,
-        borderWidth: 1,
+        borderWidth: 0.5,
         borderColor: 'rgba(255, 255, 255, 0.15)',
+        ...tokens.shadows.lg,
       },
       infoSection: {
         flex: 1,
@@ -53,7 +49,7 @@ export const AudioNewsBar: React.FC<AudioNewsBarProps> = ({
       soundDot: {
         width: 6,
         height: 6,
-        borderRadius: 3,
+        borderRadius: tokens.radii.pill,
         backgroundColor: tokens.brand.accent,
       },
       badgeText: {
@@ -72,10 +68,10 @@ export const AudioNewsBar: React.FC<AudioNewsBarProps> = ({
         gap: 10,
       },
       speedBtn: {
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        paddingHorizontal: 6,
-        paddingVertical: 3,
-        borderRadius: 4,
+        backgroundColor: 'rgba(255, 255, 255, 0.12)',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: tokens.radii.pill,
       },
       speedText: {
         color: '#FFFFFF',
@@ -83,12 +79,13 @@ export const AudioNewsBar: React.FC<AudioNewsBarProps> = ({
         fontWeight: '600',
       },
       playBtn: {
-        width: 38,
-        height: 38,
-        borderRadius: 19,
+        width: 40,
+        height: 40,
+        borderRadius: tokens.radii.pill,
         backgroundColor: tokens.brand.primary,
         justifyContent: 'center',
         alignItems: 'center',
+        ...tokens.shadows.sm,
       },
     })
   );

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useThemedStyles } from '../theme';
+import { useThemedStyles, useThemeTokens } from '../theme';
 
 interface ReaderSettingsModalProps {
   visible: boolean;
@@ -16,6 +16,7 @@ export const ReaderSettingsModal: React.FC<ReaderSettingsModalProps> = ({
   onFontSizeChange,
   onClose,
 }) => {
+  const tokens = useThemeTokens();
   const styles = useThemedStyles((tokens) =>
     StyleSheet.create({
       overlay: {
@@ -25,24 +26,35 @@ export const ReaderSettingsModal: React.FC<ReaderSettingsModalProps> = ({
       },
       content: {
         backgroundColor: tokens.surface.base,
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
+        borderTopLeftRadius: tokens.radii['2xl'],
+        borderTopRightRadius: tokens.radii['2xl'],
         paddingHorizontal: 20,
         paddingTop: 16,
         paddingBottom: 32,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.lg,
       },
       headerRow: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingBottom: 14,
-        borderBottomWidth: 1,
-        borderBottomColor: tokens.border.default,
+        borderBottomWidth: 0.5,
+        borderBottomColor: tokens.border.subtle,
       },
       title: {
         fontSize: 16,
         fontWeight: 'bold',
         color: tokens.text.primary,
+      },
+      closeIconButton: {
+        width: 32,
+        height: 32,
+        borderRadius: tokens.radii.pill,
+        backgroundColor: tokens.surface.elevated,
+        alignItems: 'center',
+        justifyContent: 'center',
       },
       sectionTitle: {
         fontSize: 14,
@@ -58,11 +70,12 @@ export const ReaderSettingsModal: React.FC<ReaderSettingsModalProps> = ({
       sizeBtn: {
         flex: 1,
         paddingVertical: 10,
-        borderRadius: 8,
+        borderRadius: tokens.radii.pill,
         backgroundColor: tokens.surface.elevated,
         alignItems: 'center',
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.sm,
       },
       activeSizeBtn: {
         backgroundColor: tokens.brand.primary,
@@ -79,9 +92,12 @@ export const ReaderSettingsModal: React.FC<ReaderSettingsModalProps> = ({
       },
       previewCard: {
         backgroundColor: tokens.surface.elevated,
-        padding: 12,
-        borderRadius: 8,
+        padding: 14,
+        borderRadius: tokens.radii.lg,
         marginTop: 16,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.card,
       },
       previewLabel: {
         fontSize: 11,
@@ -109,8 +125,8 @@ export const ReaderSettingsModal: React.FC<ReaderSettingsModalProps> = ({
         <View style={styles.content}>
           <View style={styles.headerRow}>
             <Text style={styles.title}>পড়ার সুবিধা ও সেটিংস</Text>
-            <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={24} color="#6B7280" />
+            <TouchableOpacity style={styles.closeIconButton} onPress={onClose} accessibilityLabel="বন্ধ করুন">
+              <Ionicons name="close" size={20} color={tokens.text.secondary} />
             </TouchableOpacity>
           </View>
 

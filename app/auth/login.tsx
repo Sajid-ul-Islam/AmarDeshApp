@@ -14,7 +14,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '../../theme';
+import { useTheme, radii, shadows } from '../../theme';
 import {
   signInWithEmail,
   createAccountWithEmail,
@@ -279,6 +279,7 @@ const styles = StyleSheet.create({
   backButton: {
     padding: 8,
     marginRight: 12,
+    borderRadius: radii.pill,
   },
   title: {
     fontSize: 24,
@@ -290,8 +291,8 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 12,
+    borderWidth: 0.5,
+    borderRadius: radii.md,
     paddingHorizontal: 16,
     paddingVertical: 12,
     marginBottom: 16,
@@ -302,10 +303,11 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   submitButton: {
-    borderRadius: 12,
-    paddingVertical: 16,
+    borderRadius: radii.pill,
+    paddingVertical: 14,
     alignItems: 'center',
     marginBottom: 24,
+    ...shadows.sm,
   },
   submitButtonText: {
     fontSize: 16,
@@ -328,9 +330,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingVertical: 16,
+    borderWidth: 0.5,
+    borderRadius: radii.pill,
+    paddingVertical: 14,
     marginBottom: 12,
   },
   socialButtonText: {

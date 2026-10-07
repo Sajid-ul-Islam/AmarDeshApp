@@ -276,17 +276,114 @@ export const spacing = {
 };
 
 /**
- * Modern Editorial shape language:
- * Enforces crisp architectural edges reflecting broadsheet print stocks
+ * Modern Rounded & Curvy Shape System:
+ * Configurable globally for buttons, cards, inputs, modals, lists
  */
 export const radii = {
   none: 0,
   sharp: 0,
-  sm: 2,
-  md: 4,      // Controlled micro-radius for cards & inputs
-  lg: 6,
-  xl: 10,
-  full: 9999, // For circular badges and pill switches only
+  xs: 4,
+  sm: 8,       // 8px - chips, small buttons, tags, badges
+  md: 12,      // 12px - cards, standard buttons, text inputs, list items
+  lg: 16,      // 16px - prominent cards, bottom sheets, featured blocks, containers
+  xl: 20,      // 20px - large modals, dialogue boxes
+  '2xl': 24,   // 24px - modal top curves, drawer sheets
+  pill: 999,   // 999px - rounded pills, circular icon buttons, floating action buttons
+  full: 999,   // alias
+};
+
+/**
+ * Soft Diffused Shadows:
+ * Replaces harsh, high-contrast hard borders with subtle elevation, depth, and soft light
+ */
+export const shadows = {
+  none: {
+    shadowColor: 'transparent',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
+  },
+  sm: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  md: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.07,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  lg: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.10,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  soft: {
+    shadowColor: '#121212',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  card: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+};
+
+export const darkShadows = {
+  none: {
+    shadowColor: 'transparent',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
+  },
+  sm: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  md: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  lg: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.45,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  soft: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.28,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  card: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.28,
+    shadowRadius: 6,
+    elevation: 2,
+  },
 };
 
 export type ThemeMode = 'light' | 'dark';
@@ -298,10 +395,21 @@ export interface ThemeTokens {
   border: typeof light.border;
   status: typeof light.status;
   interactive: typeof light.interactive;
+  radii: typeof radii;
+  shadows: typeof shadows;
+  typography: typeof typography;
+  spacing: typeof spacing;
 }
 
 export const getThemeTokens = (mode: ThemeMode): ThemeTokens => {
-  return mode === 'dark' ? dark : light;
+  const base = mode === 'dark' ? dark : light;
+  return {
+    ...base,
+    radii,
+    shadows: mode === 'dark' ? darkShadows : shadows,
+    typography,
+    spacing,
+  };
 };
 
 export const social = {
@@ -320,8 +428,11 @@ export const tokens = {
   typography,
   spacing,
   radii,
+  shadows,
+  darkShadows,
   social,
   getThemeTokens,
 };
 
 export default tokens;
+

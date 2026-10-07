@@ -164,10 +164,10 @@ export default function BookmarksScreen() {
       countBadge: {
         backgroundColor: tokens.brand.surface,
         paddingHorizontal: 8,
-        paddingVertical: 3,
-        borderRadius: 4,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        paddingVertical: 2,
+        borderRadius: tokens.radii.pill,
+        borderWidth: 0.5,
+        borderColor: tokens.brand.primary,
       },
       countText: {
         fontSize: 11.5,
@@ -182,9 +182,9 @@ export default function BookmarksScreen() {
         marginTop: 10,
         marginBottom: 6,
         padding: 3,
-        borderRadius: 6,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderRadius: tokens.radii.pill,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
       },
       segmentBtn: {
         flex: 1,
@@ -192,7 +192,7 @@ export default function BookmarksScreen() {
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: 8,
-        borderRadius: 4,
+        borderRadius: tokens.radii.pill,
         gap: 6,
       },
       segmentBtnActive: {
@@ -209,9 +209,9 @@ export default function BookmarksScreen() {
       },
       countPill: {
         backgroundColor: tokens.surface.elevated,
-        paddingHorizontal: 6,
-        paddingVertical: 1,
-        borderRadius: 10,
+        paddingHorizontal: 7,
+        paddingVertical: 1.5,
+        borderRadius: tokens.radii.pill,
       },
       countPillActive: {
         backgroundColor: 'rgba(255, 255, 255, 0.25)',
@@ -226,9 +226,9 @@ export default function BookmarksScreen() {
       },
       sparkleBadge: {
         backgroundColor: tokens.brand.surface,
-        paddingHorizontal: 5,
-        paddingVertical: 1,
-        borderRadius: 4,
+        paddingHorizontal: 6,
+        paddingVertical: 1.5,
+        borderRadius: tokens.radii.pill,
       },
       sparkleBadgeActive: {
         backgroundColor: 'rgba(255, 255, 255, 0.25)',
@@ -246,7 +246,7 @@ export default function BookmarksScreen() {
         backgroundColor: tokens.surface.base,
         paddingHorizontal: 16,
         paddingVertical: 8,
-        borderBottomWidth: 1,
+        borderBottomWidth: 0.5,
         borderBottomColor: tokens.border.subtle,
       },
       interestsRow: {
@@ -266,11 +266,11 @@ export default function BookmarksScreen() {
       },
       interestChip: {
         backgroundColor: tokens.surface.elevated,
-        paddingHorizontal: 10,
-        paddingVertical: 3,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        paddingHorizontal: 12,
+        paddingVertical: 4,
+        borderRadius: tokens.radii.pill,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
       },
       interestText: {
         fontSize: 11,
@@ -285,11 +285,12 @@ export default function BookmarksScreen() {
       articleCard: {
         flexDirection: 'row',
         backgroundColor: tokens.surface.base,
-        borderRadius: 4,
+        borderRadius: tokens.radii.lg,
         overflow: 'hidden',
         marginBottom: 12,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.card,
       },
       articleImage: {
         width: 104,
@@ -325,11 +326,12 @@ export default function BookmarksScreen() {
       // Lead hero card for For You tab
       heroCard: {
         backgroundColor: tokens.surface.base,
-        borderRadius: 4,
+        borderRadius: tokens.radii.lg,
         overflow: 'hidden',
         marginBottom: 14,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.card,
       },
       heroImage: {
         width: '100%',
@@ -343,7 +345,7 @@ export default function BookmarksScreen() {
         backgroundColor: tokens.brand.surface,
         paddingHorizontal: 8,
         paddingVertical: 2,
-        borderRadius: 3,
+        borderRadius: tokens.radii.pill,
         marginBottom: 6,
       },
       heroBadgeText: {

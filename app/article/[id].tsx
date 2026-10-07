@@ -200,12 +200,12 @@ export default function ArticleDetailScreen() {
         paddingTop: getSafeHeaderPaddingTop(insets.top, 8),
         paddingBottom: 10,
         backgroundColor: tokens.surface.base,
-        borderBottomWidth: 1,
-        borderBottomColor: tokens.border.default,
+        borderBottomWidth: 0.5,
+        borderBottomColor: tokens.border.subtle,
       },
       backButton: {
         padding: 6,
-        borderRadius: 20,
+        borderRadius: tokens.radii.pill,
         backgroundColor: tokens.surface.elevated,
       },
       headerActions: {
@@ -215,14 +215,16 @@ export default function ArticleDetailScreen() {
       },
       iconButton: {
         padding: 7,
-        borderRadius: 20,
+        borderRadius: tokens.radii.pill,
         backgroundColor: tokens.surface.elevated,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.sm,
       },
       activeIconButton: {
         backgroundColor: tokens.brand.surface,
         borderColor: tokens.brand.primary,
+        borderWidth: 1,
       },
       progressBarTrack: {
         height: 2.5,
@@ -244,8 +246,8 @@ export default function ArticleDetailScreen() {
         paddingHorizontal: 16,
         paddingVertical: 7,
         backgroundColor: tokens.surface.elevated,
-        borderBottomWidth: 1,
-        borderBottomColor: tokens.border.default,
+        borderBottomWidth: 0.5,
+        borderBottomColor: tokens.border.subtle,
       },
       captionText: {
         fontSize: 12,
@@ -260,12 +262,12 @@ export default function ArticleDetailScreen() {
       categoryBadge: {
         alignSelf: 'flex-start',
         backgroundColor: tokens.brand.crimsonSurface,
-        paddingHorizontal: 9,
-        paddingVertical: 3.5,
-        borderRadius: 2,
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: tokens.radii.pill,
         marginBottom: 12,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderWidth: 0.5,
+        borderColor: tokens.brand.primary,
       },
       categoryText: {
         fontSize: 11.5,
@@ -289,15 +291,15 @@ export default function ArticleDetailScreen() {
         gap: 12,
         paddingVertical: 12,
         marginBottom: 20,
-        borderTopWidth: 1,
-        borderTopColor: tokens.border.default,
-        borderBottomWidth: 1,
-        borderBottomColor: tokens.border.default,
+        borderTopWidth: 0.5,
+        borderTopColor: tokens.border.subtle,
+        borderBottomWidth: 0.5,
+        borderBottomColor: tokens.border.subtle,
       },
       avatar: {
         width: 38,
         height: 38,
-        borderRadius: 19,
+        borderRadius: tokens.radii.pill,
         backgroundColor: tokens.surface.elevated,
       },
       authorName: {
@@ -323,12 +325,13 @@ export default function ArticleDetailScreen() {
       sourceCard: {
         backgroundColor: tokens.surface.elevated,
         padding: 14,
-        borderRadius: 4,
+        borderRadius: tokens.radii.lg,
         marginTop: 18,
         marginBottom: 28,
         alignItems: 'center',
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.card,
       },
       sourceCardText: {
         fontSize: 12,
@@ -348,12 +351,13 @@ export default function ArticleDetailScreen() {
       relatedCard: {
         flexDirection: 'row',
         backgroundColor: tokens.surface.elevated,
-        borderRadius: 4,
-        padding: 10,
+        borderRadius: tokens.radii.lg,
+        padding: 12,
         marginBottom: 10,
         gap: 12,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.card,
       },
       relatedContent: {
         flex: 1,
@@ -373,7 +377,7 @@ export default function ArticleDetailScreen() {
       relatedThumb: {
         width: 75,
         height: 56,
-        borderRadius: 4,
+        borderRadius: tokens.radii.md,
       },
       // Share Sheet
       shareSheetOverlay: {
@@ -388,12 +392,13 @@ export default function ArticleDetailScreen() {
       },
       shareSheet: {
         backgroundColor: tokens.surface.base,
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
+        borderTopLeftRadius: tokens.radii['2xl'],
+        borderTopRightRadius: tokens.radii['2xl'],
         padding: 22,
         paddingBottom: 40,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.lg,
       },
       shareSheetTitle: {
         fontSize: 17,
@@ -413,7 +418,7 @@ export default function ArticleDetailScreen() {
       shareIcon: {
         width: 50,
         height: 50,
-        borderRadius: 25,
+        borderRadius: tokens.radii.pill,
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 6,
@@ -426,10 +431,10 @@ export default function ArticleDetailScreen() {
       shareSheetClose: {
         backgroundColor: tokens.surface.elevated,
         padding: 12,
-        borderRadius: 10,
+        borderRadius: tokens.radii.pill,
         alignItems: 'center',
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
       },
       shareSheetCloseText: {
         fontSize: 14,
@@ -444,10 +449,11 @@ export default function ArticleDetailScreen() {
       navCard: {
         flex: 1,
         backgroundColor: tokens.surface.elevated,
-        borderRadius: 10,
+        borderRadius: tokens.radii.lg,
         padding: 12,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.card,
       },
       navCardHeader: {
         flexDirection: 'row',
@@ -698,12 +704,20 @@ export default function ArticleDetailScreen() {
             onOpenSettings={() => router.push('/settings/ai' as any)}
           />
 
-          {/* Body Paragraphs */}
+          {/* Body Paragraphs with Dynamic In-Article Ad Placement */}
           {scrapedData && scrapedData.paragraphs.length > 0 ? (
             scrapedData.paragraphs.map((para, i) => (
-              <Text key={i} style={styles.paragraph}>
-                {para}
-              </Text>
+              <React.Fragment key={i}>
+                <Text style={styles.paragraph}>
+                  {para}
+                </Text>
+                {/* Dynamic Inline Ad after 2nd paragraph for articles with 3+ paragraphs */}
+                {i === 1 && scrapedData.paragraphs.length >= 3 && (
+                  <View style={{ marginVertical: 8 }}>
+                    <AdBanner variant="feed" />
+                  </View>
+                )}
+              </React.Fragment>
             ))
           ) : (
             <Text style={styles.paragraph}>{article.content}</Text>

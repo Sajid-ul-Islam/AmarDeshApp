@@ -34,26 +34,27 @@ export const DistrictPickerModal: React.FC<DistrictPickerModalProps> = ({
     StyleSheet.create({
       overlay: {
         flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        backgroundColor: 'rgba(0, 0, 0, 0.55)',
         justifyContent: 'flex-end',
       },
       content: {
         backgroundColor: tokens.surface.base,
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
+        borderTopLeftRadius: tokens.radii['2xl'],
+        borderTopRightRadius: tokens.radii['2xl'],
         paddingHorizontal: 20,
         paddingTop: 20,
         paddingBottom: 36,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.lg,
       },
       headerRow: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingBottom: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: tokens.border.default,
+        paddingBottom: 14,
+        borderBottomWidth: 0.5,
+        borderBottomColor: tokens.border.subtle,
       },
       titleRow: {
         flexDirection: 'row',
@@ -66,14 +67,23 @@ export const DistrictPickerModal: React.FC<DistrictPickerModalProps> = ({
         color: tokens.text.primary,
         letterSpacing: -0.2,
       },
+      closeIconButton: {
+        width: 32,
+        height: 32,
+        borderRadius: tokens.radii.pill,
+        backgroundColor: tokens.surface.elevated,
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
       infoBox: {
         backgroundColor: tokens.surface.elevated,
-        borderRadius: 12,
+        borderRadius: tokens.radii.md,
         padding: 14,
         marginTop: 16,
         marginBottom: 18,
-        borderWidth: 1,
+        borderWidth: 0.5,
         borderColor: tokens.border.subtle,
+        ...tokens.shadows.sm,
       },
       infoText: {
         fontSize: 13,
@@ -85,14 +95,16 @@ export const DistrictPickerModal: React.FC<DistrictPickerModalProps> = ({
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: 16,
-        borderRadius: 12,
-        borderWidth: 1.5,
-        borderColor: tokens.border.default,
+        borderRadius: tokens.radii.lg,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
         marginBottom: 12,
         backgroundColor: tokens.surface.base,
+        ...tokens.shadows.card,
       },
       activeOptionCard: {
         borderColor: tokens.brand.primary,
+        borderWidth: 1.5,
         backgroundColor: tokens.brand.surface,
       },
       optionLeft: {
@@ -102,9 +114,9 @@ export const DistrictPickerModal: React.FC<DistrictPickerModalProps> = ({
         flex: 1,
       },
       iconCircle: {
-        width: 42,
-        height: 42,
-        borderRadius: 21,
+        width: 44,
+        height: 44,
+        borderRadius: tokens.radii.pill,
         backgroundColor: tokens.surface.elevated,
         alignItems: 'center',
         justifyContent: 'center',
@@ -130,14 +142,15 @@ export const DistrictPickerModal: React.FC<DistrictPickerModalProps> = ({
         lineHeight: 16,
       },
       closeBtn: {
-        marginTop: 6,
+        marginTop: 8,
         paddingVertical: 13,
         alignItems: 'center',
         justifyContent: 'center',
-        borderRadius: 10,
+        borderRadius: tokens.radii.pill,
         backgroundColor: tokens.surface.elevated,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.sm,
       },
       closeBtnText: {
         fontSize: 14,
@@ -172,8 +185,8 @@ export const DistrictPickerModal: React.FC<DistrictPickerModalProps> = ({
               <Ionicons name="moon-outline" size={20} color={styles.activeOptionTitle.color} />
               <Text style={styles.title}>নামাজের সময়সূচি নির্ধারণ</Text>
             </View>
-            <TouchableOpacity onPress={onClose} activeOpacity={0.7} accessibilityLabel="বন্ধ করুন">
-              <Ionicons name="close" size={24} color={styles.closeBtnText.color} />
+            <TouchableOpacity style={styles.closeIconButton} onPress={onClose} activeOpacity={0.7} accessibilityLabel="বন্ধ করুন">
+              <Ionicons name="close" size={20} color={styles.closeBtnText.color} />
             </TouchableOpacity>
           </View>
 

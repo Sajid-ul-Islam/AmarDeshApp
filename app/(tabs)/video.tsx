@@ -26,6 +26,7 @@ import {
 } from '../../services/i18n';
 import { getSafeHeaderPaddingTop } from '../../utils/layout';
 import { AmarDeshLogo } from '../../components/AmarDeshLogo';
+import { AdBanner } from '../../components/AdBanner';
 import {
   getAmarDeshVideos,
   VIDEO_CATEGORIES,
@@ -89,7 +90,7 @@ export default function VideoScreen() {
       headerTitleRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 8,
+        justifyContent: 'space-between',
         marginBottom: 8,
       },
       liveDot: {
@@ -109,12 +110,12 @@ export default function VideoScreen() {
         paddingVertical: 4,
       },
       catChip: {
-        paddingHorizontal: 12,
-        paddingVertical: 5,
-        borderRadius: 4,
+        paddingHorizontal: 14,
+        paddingVertical: 6,
+        borderRadius: tokens.radii.pill,
         backgroundColor: tokens.surface.elevated,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
       },
       activeCatChip: {
         backgroundColor: tokens.brand.primary,
@@ -131,14 +132,14 @@ export default function VideoScreen() {
       },
       playerWrapper: {
         backgroundColor: '#000000',
-        borderBottomWidth: 1,
-        borderBottomColor: tokens.border.default,
+        borderBottomWidth: 0.5,
+        borderBottomColor: tokens.border.subtle,
       },
       activeDetails: {
         padding: 16,
         backgroundColor: tokens.surface.base,
-        borderBottomWidth: 1,
-        borderBottomColor: tokens.border.default,
+        borderBottomWidth: 0.5,
+        borderBottomColor: tokens.border.subtle,
       },
       activeDetailsHeaderRow: {
         flexDirection: 'row',
@@ -151,9 +152,9 @@ export default function VideoScreen() {
         backgroundColor: tokens.brand.surface,
         paddingHorizontal: 8,
         paddingVertical: 3,
-        borderRadius: 2,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderRadius: tokens.radii.pill,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
       },
       activeCatText: {
         color: tokens.brand.primary,
@@ -165,12 +166,13 @@ export default function VideoScreen() {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 4,
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 4,
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: tokens.radii.pill,
         backgroundColor: tokens.surface.elevated,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.sm,
       },
       pipBtnText: {
         fontSize: 11,
@@ -181,12 +183,13 @@ export default function VideoScreen() {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 5,
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 4,
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: tokens.radii.pill,
         backgroundColor: tokens.surface.elevated,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.sm,
       },
       ytChannelBtnText: {
         fontSize: 11,
@@ -224,16 +227,19 @@ export default function VideoScreen() {
         backgroundColor: tokens.surface.base,
         marginHorizontal: 16,
         marginBottom: 12,
-        borderRadius: 4,
+        borderRadius: tokens.radii.lg,
         overflow: 'hidden',
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.card,
       },
       thumbContainer: {
         width: 130,
         height: 84,
         position: 'relative',
         backgroundColor: '#000',
+        borderRadius: tokens.radii.md,
+        overflow: 'hidden',
       },
       thumbnail: {
         width: '100%',
@@ -254,9 +260,9 @@ export default function VideoScreen() {
         bottom: 4,
         right: 4,
         backgroundColor: 'rgba(0,0,0,0.75)',
-        paddingHorizontal: 4,
-        paddingVertical: 1,
-        borderRadius: 3,
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+        borderRadius: tokens.radii.pill,
       },
       durationText: {
         color: '#FFFFFF',
@@ -374,9 +380,15 @@ export default function VideoScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerTitleRow}>
-          <AmarDeshLogo height={24} variant="png" />
-          <View style={styles.liveDot} />
-          <Text style={styles.headerTitle}>{t('video_hub_title', language)}</Text>
+          <AmarDeshLogo height={28} variant="png" />
+          <TouchableOpacity
+            style={styles.ytChannelBtn}
+            onPress={() => Linking.openURL(AMAR_DESH_YT_CHANNEL_URL)}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="logo-youtube" size={13} color="#DC2626" />
+            <Text style={styles.ytChannelBtnText}>অফিসিয়াল চ্যানেল</Text>
+          </TouchableOpacity>
         </View>
 
         <ScrollView
@@ -425,38 +437,47 @@ export default function VideoScreen() {
         onScroll={handleScroll}
         scrollEventThrottle={16}
         contentContainerStyle={{ paddingBottom: 60 }}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.videoCard}
-            onPress={() => handleSelectVideo(item)}
-            activeOpacity={0.8}
-          >
-            <View style={styles.thumbContainer}>
-              <Image
-                source={{ uri: item.thumbnailUrl }}
-                style={styles.thumbnail}
-                contentFit="cover"
-              />
-              <View style={styles.playOverlay}>
-                <Ionicons name="play-circle" size={28} color="#FFFFFF" />
+        renderItem={({ item, index }) => (
+          <View>
+            <TouchableOpacity
+              style={styles.videoCard}
+              onPress={() => handleSelectVideo(item)}
+              activeOpacity={0.8}
+            >
+              <View style={styles.thumbContainer}>
+                <Image
+                  source={{ uri: item.thumbnailUrl }}
+                  style={styles.thumbnail}
+                  contentFit="cover"
+                />
+                <View style={styles.playOverlay}>
+                  <Ionicons name="play-circle" size={28} color="#FFFFFF" />
+                </View>
+                <View style={styles.durationBadge}>
+                  <Text style={styles.durationText}>{item.duration}</Text>
+                </View>
               </View>
-              <View style={styles.durationBadge}>
-                <Text style={styles.durationText}>{item.duration}</Text>
-              </View>
-            </View>
 
-            <View style={styles.cardInfo}>
-              <Text style={styles.cardTitle} numberOfLines={2}>
-                {item.title}
-              </Text>
-              <View style={styles.cardMetaRow}>
-                <Text style={styles.cardCategory}>
-                  {getLocalizedCategoryName(item.category, language)}
+              <View style={styles.cardInfo}>
+                <Text style={styles.cardTitle} numberOfLines={2}>
+                  {item.title}
                 </Text>
-                <Text style={styles.cardTime}>{item.publishedAt}</Text>
+                <View style={styles.cardMetaRow}>
+                  <Text style={styles.cardCategory}>
+                    {getLocalizedCategoryName(item.category, language)}
+                  </Text>
+                  <Text style={styles.cardTime}>{item.publishedAt}</Text>
+                </View>
               </View>
-            </View>
-          </TouchableOpacity>
+            </TouchableOpacity>
+
+            {/* Dynamic Native Ad Placement between videos */}
+            {(index === 2 || (index > 2 && (index - 2) % 6 === 0)) && (
+              <View style={{ paddingHorizontal: 16 }}>
+                <AdBanner variant="compact" />
+              </View>
+            )}
+          </View>
         )}
       />
 

@@ -45,10 +45,11 @@ export const ContinueReadingCard: React.FC = () => {
         backgroundColor: tokens.surface.base,
         marginHorizontal: 16,
         marginBottom: 14,
-        borderRadius: 4,
+        borderRadius: tokens.radii.lg,
         padding: 14,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.card,
       },
       headerRow: {
         flexDirection: 'row',
@@ -67,8 +68,17 @@ export const ContinueReadingCard: React.FC = () => {
         color: tokens.brand.primary,
         textTransform: 'uppercase',
       },
+      percentBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        backgroundColor: tokens.brand.surface,
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: tokens.radii.pill,
+      },
       percentText: {
-        fontSize: 12,
+        fontSize: 11,
         fontWeight: 'bold',
         color: tokens.brand.primary,
       },
@@ -82,14 +92,14 @@ export const ContinueReadingCard: React.FC = () => {
       progressTrack: {
         height: 5,
         backgroundColor: tokens.surface.elevated,
-        borderRadius: 3,
+        borderRadius: tokens.radii.pill,
         overflow: 'hidden',
         marginBottom: 8,
       },
       progressFill: {
         height: '100%',
         backgroundColor: tokens.brand.primary,
-        borderRadius: 3,
+        borderRadius: tokens.radii.pill,
       },
       footerRow: {
         flexDirection: 'row',
@@ -99,6 +109,11 @@ export const ContinueReadingCard: React.FC = () => {
       catText: {
         fontSize: 11,
         color: tokens.text.secondary,
+      },
+      resumeRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
       },
       resumeText: {
         fontSize: 12,
@@ -117,11 +132,14 @@ export const ContinueReadingCard: React.FC = () => {
       <View style={styles.headerRow}>
         <View style={styles.titleLeft}>
           <Ionicons name="time-outline" size={14} color={tokens.brand.primary} />
-          <Text style={styles.headerText}>পড়া চালিয়ে যান</Text>
+          <Text style={styles.headerText}>চালিয়ে যান</Text>
         </View>
-        <Text style={styles.percentText}>
-          {toBengaliNumeral(percent)}% পড়া হয়েছে
-        </Text>
+        <View style={styles.percentBadge}>
+          <Ionicons name="bookmark" size={10} color={tokens.brand.primary} />
+          <Text style={styles.percentText}>
+            {toBengaliNumeral(percent)}%
+          </Text>
+        </View>
       </View>
 
       <Text style={styles.articleTitle} numberOfLines={2}>
@@ -134,7 +152,10 @@ export const ContinueReadingCard: React.FC = () => {
 
       <View style={styles.footerRow}>
         <Text style={styles.catText}>{lastRead.category}</Text>
-        <Text style={styles.resumeText}>পড়ুন →</Text>
+        <View style={styles.resumeRow}>
+          <Text style={styles.resumeText}>পড়ুন</Text>
+          <Ionicons name="arrow-forward" size={13} color={tokens.brand.primary} />
+        </View>
       </View>
     </TouchableOpacity>
   );

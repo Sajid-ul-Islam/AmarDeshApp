@@ -18,6 +18,7 @@ import { t, getLocalizedCategoryName, SupportedLanguage } from '../../services/i
 import { getSafeHeaderPaddingTop } from '../../utils/layout';
 import { AmarDeshLogo } from '../../components/AmarDeshLogo';
 import { DistrictPickerModal } from '../../components/DistrictPickerModal';
+import { PrayerTimesWidget } from '../../components/PrayerTimesWidget';
 import {
   getSavedPrayerData,
   requestGpsPrayerTimes,
@@ -114,12 +115,13 @@ export default function MenuScreen() {
       searchIconButton: {
         width: 38,
         height: 38,
-        borderRadius: 19,
+        borderRadius: tokens.radii.pill,
         backgroundColor: tokens.surface.elevated,
         alignItems: 'center',
         justifyContent: 'center',
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.sm,
       },
       scrollContent: {
         paddingBottom: 40,
@@ -129,11 +131,12 @@ export default function MenuScreen() {
         marginHorizontal: 16,
         marginTop: 16,
         backgroundColor: tokens.surface.base,
-        borderRadius: 4,
+        borderRadius: tokens.radii.lg,
         padding: 12,
         justifyContent: 'space-around',
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.card,
       },
       quickItem: {
         alignItems: 'center',
@@ -142,7 +145,7 @@ export default function MenuScreen() {
       quickIconCircle: {
         width: 44,
         height: 44,
-        borderRadius: 4,
+        borderRadius: tokens.radii.pill,
         backgroundColor: tokens.brand.surface,
         alignItems: 'center',
         justifyContent: 'center',
@@ -157,12 +160,13 @@ export default function MenuScreen() {
         marginHorizontal: 16,
         marginTop: 14,
         padding: 14,
-        borderRadius: 4,
-        borderWidth: 1.5,
+        borderRadius: tokens.radii.lg,
+        borderWidth: 1,
         borderColor: tokens.brand.primary,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
+        ...tokens.shadows.card,
       },
       epaperCardLeft: {
         flexDirection: 'row',
@@ -173,7 +177,7 @@ export default function MenuScreen() {
       epaperIconBox: {
         width: 44,
         height: 44,
-        borderRadius: 6,
+        borderRadius: tokens.radii.md,
         backgroundColor: tokens.brand.surface,
         alignItems: 'center',
         justifyContent: 'center',
@@ -192,9 +196,9 @@ export default function MenuScreen() {
         fontWeight: 'bold',
         color: tokens.brand.primary,
         backgroundColor: tokens.brand.surface,
-        paddingHorizontal: 6,
-        paddingVertical: 1,
-        borderRadius: 3,
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: tokens.radii.pill,
       },
       epaperTitle: {
         fontSize: 15,
@@ -209,9 +213,10 @@ export default function MenuScreen() {
       },
       epaperReadButton: {
         backgroundColor: tokens.brand.primary,
-        paddingHorizontal: 12,
+        paddingHorizontal: 14,
         paddingVertical: 7,
-        borderRadius: 4,
+        borderRadius: tokens.radii.pill,
+        ...tokens.shadows.sm,
       },
       epaperReadButtonText: {
         color: '#FFFFFF',
@@ -231,10 +236,11 @@ export default function MenuScreen() {
       gridCard: {
         backgroundColor: tokens.surface.base,
         marginHorizontal: 16,
-        borderRadius: 4,
+        borderRadius: tokens.radii.lg,
         overflow: 'hidden',
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.card,
       },
       categoryRow: {
         flexDirection: 'row',
@@ -242,7 +248,7 @@ export default function MenuScreen() {
         justifyContent: 'space-between',
         paddingHorizontal: 16,
         paddingVertical: 14,
-        borderBottomWidth: 1,
+        borderBottomWidth: 0.5,
         borderBottomColor: tokens.border.subtle,
       },
       categoryLeft: {
@@ -253,7 +259,7 @@ export default function MenuScreen() {
       catIconBox: {
         width: 36,
         height: 36,
-        borderRadius: 8,
+        borderRadius: tokens.radii.pill,
         backgroundColor: tokens.surface.elevated,
         justifyContent: 'center',
         alignItems: 'center',
@@ -276,7 +282,7 @@ export default function MenuScreen() {
         justifyContent: 'space-between',
         paddingHorizontal: 16,
         paddingVertical: 14,
-        borderBottomWidth: 1,
+        borderBottomWidth: 0.5,
         borderBottomColor: tokens.border.subtle,
       },
       utilityLeft: {
@@ -299,15 +305,15 @@ export default function MenuScreen() {
       langSegment: {
         flexDirection: 'row',
         backgroundColor: tokens.surface.subtle,
-        borderRadius: 8,
+        borderRadius: tokens.radii.pill,
         padding: 3,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
       },
       langBtn: {
-        paddingHorizontal: 10,
+        paddingHorizontal: 12,
         paddingVertical: 5,
-        borderRadius: 6,
+        borderRadius: tokens.radii.pill,
       },
       langBtnActive: {
         backgroundColor: tokens.brand.primary,
@@ -328,12 +334,13 @@ export default function MenuScreen() {
         marginBottom: 4,
         paddingHorizontal: 14,
         paddingVertical: 11,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderRadius: tokens.radii.lg,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
+        ...tokens.shadows.card,
       },
       dateWeatherLeft: {
         flexDirection: 'row',
@@ -351,11 +358,11 @@ export default function MenuScreen() {
         alignItems: 'center',
         gap: 4,
         backgroundColor: tokens.surface.elevated,
-        paddingHorizontal: 8,
+        paddingHorizontal: 10,
         paddingVertical: 4,
-        borderRadius: 6,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
+        borderRadius: tokens.radii.pill,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
       },
       weatherText: {
         fontSize: 11.5,
@@ -367,10 +374,10 @@ export default function MenuScreen() {
         alignItems: 'center',
         gap: 4,
         backgroundColor: tokens.brand.surface,
-        paddingHorizontal: 8,
+        paddingHorizontal: 10,
         paddingVertical: 4,
-        borderRadius: 6,
-        borderWidth: 1,
+        borderRadius: tokens.radii.pill,
+        borderWidth: 0.5,
         borderColor: tokens.brand.primary,
       },
       locationPillText: {
@@ -436,6 +443,12 @@ export default function MenuScreen() {
             </Text>
           </View>
         </View>
+
+        {/* Prayer Times Widget in Menu */}
+        <PrayerTimesWidget
+          prayerData={prayerData}
+          onChangeDivision={() => setShowLocationModal(true)}
+        />
 
         {/* Quick Access Bar */}
         <View style={styles.quickBar}>
