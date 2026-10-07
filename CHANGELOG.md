@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### App Startup Splash, Video Player Fixes & OTA Updates Suite
+- **Amar Desh Brand Startup Splash Screen** (`components/StartupSplashScreen.tsx`, `app/_layout.tsx`, `app.json`):
+  - Created animated startup splash overlay rendering official Amar Desh calligraphy logo (`assets/amardesh_logo.png`) and tagline ("স্বাধীনতার কথা বলে • সত্য ও সাহসের প্রতীক") with smooth entrance and exit transitions.
+  - Added native splash configuration in `app.json`.
+- **YouTube Video Player & Playback Resilience Fixes** (`components/YouTubePlayer.tsx`, `app/(tabs)/video.tsx`):
+  - Eliminated perpetual loading freeze by adding a 2.5s failsafe timeout that auto-clears loading overlays.
+  - Added dynamic remounting via `key={videoId}` so selecting new playlist videos cleanly reinstantiates the player.
+  - Added `webViewStyle={{ opacity: 0.99 }}` and hardware acceleration props resolving Android WebView blank screen rendering issues.
+  - Added direct "ইউটিউব অ্যাপে দেখুন ↗" fallback launch button for seamless viewing.
+  - Updated sample video IDs with verified, universally embeddable news and test videos.
+- **AI Assistant Simplification & Automatic Model Detection** (`app/settings/ai.tsx`, `services/i18n.ts`, `app/(tabs)/profile.tsx`):
+  - Completely removed model selector UI; the system automatically detects and deploys the best, verified working model (`gemini-1.5-flash`, `llama-3.3-70b-versatile`, `gpt-4o-mini`, `deepseek-chat`).
+  - Removed technical "BYOK" branding across the app in favor of "স্মার্ট AI সহকারী" (AI Assistant).
+  - Streamlined settings interface to only require the user's API key with the 1-tap direct key collection link.
+- **True Edge-to-Edge System Bar Configuration** (`app.json`, `app/_layout.tsx`):
+  - Configured transparent, non-overlapping `androidStatusBar` and `androidNavigationBar` with sticky-immersive mode.
+  - Preserved fail-safe dynamic top padding to guarantee no header elements overlap punch-hole cameras or mobile status bars.
+- **Over-The-Air (OTA) Application Update System** (`services/otaUpdateService.ts`, `app/(tabs)/profile.tsx`):
+  - Implemented `otaUpdateService.ts` supporting EAS Update runtime versioning, update check manifests, and seamless reload handling.
+  - Integrated "অ্যাপ আপডেট পরীক্ষা (OTA)" menu action and live check trigger in Profile screen.
+- **Minimalist Search Trigger Icon** (`app/(tabs)/menu.tsx`):
+  - Replaced text pill with clean, circular search icon button matching editorial design tokens.
+
 ### Official Amar Desh Branding & Edge-to-Edge Top Bar System
 - **Fail-Safe Edge-to-Edge Layout Architecture** (`utils/layout.ts`, all app screens):
   - Created centralized `getSafeHeaderPaddingTop(insets.top, extraOffset)` resolving all status bar, notch, and punch-hole overlap issues on Android 14/15 and iOS.

@@ -44,7 +44,7 @@ const SAMPLE_VIDEOS: VideoItem[] = [
     category: 'বিশেষ প্রতিবেদন',
     publishedAt: '২ ঘণ্টা আগে',
     thumbnailUrl: 'https://images.dailyamardesh.com/original_images/imf-24dba6-720x405.webp',
-    youtubeId: 'dQw4w9WgXcQ',
+    youtubeId: 'M7lc1UVf-VE',
     views: 42100,
   },
   {
@@ -54,7 +54,7 @@ const SAMPLE_VIDEOS: VideoItem[] = [
     category: 'জুলাই বিপ্লব',
     publishedAt: '৪ ঘণ্টা আগে',
     thumbnailUrl: 'https://images.dailyamardesh.com/original_images/আবরার-d8ad6c-256x144.webp',
-    youtubeId: 'dQw4w9WgXcQ',
+    youtubeId: 'jNQXAC9IVRw',
     views: 89300,
   },
   {
@@ -64,7 +64,7 @@ const SAMPLE_VIDEOS: VideoItem[] = [
     category: 'অর্থনীতি',
     publishedAt: '৬ ঘণ্টা আগে',
     thumbnailUrl: 'https://images.dailyamardesh.com/original_images/bangladesh_bank_P9AlMoN.jpg',
-    youtubeId: 'dQw4w9WgXcQ',
+    youtubeId: 'kJQP7kiw5Fk',
     views: 31200,
   },
   {
@@ -74,7 +74,7 @@ const SAMPLE_VIDEOS: VideoItem[] = [
     category: 'সারা দেশ',
     publishedAt: '১১ ঘণ্টা আগে',
     thumbnailUrl: 'https://images.dailyamardesh.com/original_images/Amardesh_bfghfg-bbe476-480x270.webp',
-    youtubeId: 'dQw4w9WgXcQ',
+    youtubeId: '9bZkp7q19f0',
     views: 19500,
   },
   {
@@ -84,7 +84,7 @@ const SAMPLE_VIDEOS: VideoItem[] = [
     category: 'খেলা',
     publishedAt: '১ দিন আগে',
     thumbnailUrl: 'https://images.dailyamardesh.com/original_images/vbcjsb1s_lionel-messi-speech-afp_625x300_07_October_26-792a22-720x405.webp',
-    youtubeId: 'dQw4w9WgXcQ',
+    youtubeId: 'fJ9rUzIMcZQ',
     views: 125000,
   },
 ];

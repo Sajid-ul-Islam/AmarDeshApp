@@ -6,6 +6,21 @@
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "scheme": "amardesh",
+    "splash": {
+      "image": "./assets/amardesh_logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
+    },
+    "androidStatusBar": {
+      "barStyle": "dark-content",
+      "backgroundColor": "#00000000",
+      "translucent": true
+    },
+    "androidNavigationBar": {
+      "visible": "sticky-immersive",
+      "barStyle": "dark-content",
+      "backgroundColor": "#00000000"
+    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.amardesh.mobile",

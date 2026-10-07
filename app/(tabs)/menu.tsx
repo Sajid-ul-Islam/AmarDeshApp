@@ -80,21 +80,15 @@ export default function MenuScreen() {
         color: tokens.text.secondary,
         marginTop: 2,
       },
-      searchPill: {
-        flexDirection: 'row',
-        alignItems: 'center',
+      searchIconButton: {
+        width: 38,
+        height: 38,
+        borderRadius: 19,
         backgroundColor: tokens.surface.elevated,
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        borderRadius: 4,
-        gap: 6,
+        alignItems: 'center',
+        justifyContent: 'center',
         borderWidth: 1,
         borderColor: tokens.border.default,
-      },
-      searchPillText: {
-        fontSize: 13,
-        color: tokens.text.secondary,
-        fontWeight: '500',
       },
       scrollContent: {
         paddingBottom: 40,
@@ -257,14 +251,13 @@ export default function MenuScreen() {
         <View style={styles.brandRow}>
           <AmarDeshLogo height={28} variant="png" showMotto language={language} />
           <TouchableOpacity
-            style={styles.searchPill}
+            style={styles.searchIconButton}
             onPress={() => router.push('/search' as any)}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={language === 'bn' ? 'অনুসন্ধান' : 'Search'}
           >
-            <Ionicons name="search" size={16} color={tokens.brand.primary} />
-            <Text style={styles.searchPillText}>
-              {language === 'bn' ? 'অনুসন্ধান' : 'Search'}
-            </Text>
+            <Ionicons name="search" size={19} color={tokens.brand.primary} />
           </TouchableOpacity>
         </View>
       </View>

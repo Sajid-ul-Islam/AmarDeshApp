@@ -1,4 +1,14 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch, Alert, Linking } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Switch,
+  Alert,
+  Linking,
+  ActivityIndicator,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ComponentProps } from 'react';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,6 +23,7 @@ import {
 } from '../../services/firebase';
 import { getSafeHeaderPaddingTop } from '../../utils/layout';
 import { AmarDeshLogo } from '../../components/AmarDeshLogo';
+import { checkForOtaUpdate, applyOtaUpdate } from '../../services/otaUpdateService';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -31,6 +42,7 @@ export default function ProfileScreen() {
   const darkMode = themePreference === 'dark';
   const [isAuth, setIsAuth] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChange((user) => {
@@ -40,8 +52,41 @@ export default function ProfileScreen() {
     return unsubscribe;
   }, []);
 
+  const handleCheckOtaUpdate = async () => {
+    setCheckingUpdate(true);
+    try {
+      const updateInfo = await checkForOtaUpdate();
+      if (updateInfo.isAvailable) {
+        Alert.alert(
+          'নতুন আপডেট উপলব্ধ!',
+          `সংস্করণ: ${updateInfo.latestVersion}\n\n${updateInfo.releaseNotes}\n\nআপনি কি এখনই আপডেটটি ডাউনলোড করে সক্রিয় করতে চান?`,
+          [
+            { text: 'পরে', style: 'cancel' },
+            {
+              text: 'এখনই আপডেট করুন',
+              onPress: async () => {
+                const res = await applyOtaUpdate();
+                Alert.alert('আপডেট', res.message);
+              },
+            },
+          ]
+        );
+      } else {
+        Alert.alert(
+          'অ্যাপ আপ-টু-ডেট আছে',
+          `বর্তমান সংস্করণ: ১.৩.০ (লেটেস্ট রিলিজ)\nসর্বশেষ পরীক্ষা: ${updateInfo.lastChecked || 'এইমাত্র'}\n\nআপনার ডিভাইসে দৈনিক আমার দেশের সমস্ত নতুন ফিচার ও নিরাপত্তা আপডেট সচল রয়েছে।`
+        );
+      }
+    } catch {
+      Alert.alert('ত্রুটি', 'আপডেট পরীক্ষা করতে ব্যর্থ হয়েছে। ইন্টারনেট সংযোগ পরীক্ষা করুন।');
+    } finally {
+      setCheckingUpdate(false);
+    }
+  };
+
   const menuItems: ProfileMenuItem[] = [
-    { icon: 'sparkles-outline', label: 'AI সহকারী ও BYOK সেটিংস', action: () => router.push('/settings/ai' as any) },
+    { icon: 'sparkles-outline', label: 'স্মার্ট AI সহকারী সেটিংস', action: () => router.push('/settings/ai' as any) },
+    { icon: 'cloud-download-outline', label: 'অ্যাপ আপডেট পরীক্ষা (OTA)', action: handleCheckOtaUpdate },
     { icon: 'notifications-outline', label: 'নোটিফিকেশন ইনবক্স', action: () => router.push('/notifications' as any) },
     { icon: 'newspaper-outline', label: 'ই-পেপার সংস্করণ', action: () => router.push('/epaper' as any) },
     { icon: 'videocam-outline', label: 'ভিডিও ও মাল্টিমিডিয়া', action: () => router.push('/video' as any) },
@@ -275,9 +320,26 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Version */}
+      {/* Version & OTA Trigger */}
       <View style={styles.versionContainer}>
         <Text style={styles.versionText}>সংস্করণ ১.৩.০ • সাইবারক্র্যাফট (CybrCraft)</Text>
+        <TouchableOpacity
+          onPress={handleCheckOtaUpdate}
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 }}
+          disabled={checkingUpdate}
+          activeOpacity={0.7}
+        >
+          {checkingUpdate ? (
+            <ActivityIndicator size="small" color={tokens.brand.primary} />
+          ) : (
+            <>
+              <Ionicons name="refresh-outline" size={14} color={tokens.brand.primary} />
+              <Text style={{ fontSize: 12, color: tokens.brand.primary, fontWeight: '600' }}>
+                আপডেট পরীক্ষা করুন (OTA)
+              </Text>
+            </>
+          )}
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );

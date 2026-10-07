@@ -2,17 +2,19 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider } from '../theme';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import { initializeNotifications } from '../services/notificationService';
 import { useUserStore } from '../user';
 import { initializeAuthListener, isFirebaseConfigured } from '../services/firebase';
 import { warmArticleStore } from '../services/articleStore';
+import { StartupSplashScreen } from '../components/StartupSplashScreen';
 
 export default function RootLayout() {
   const loadFeatureFlags = useAppStore((state) => state.loadFeatureFlags);
   const features = useAppStore((state) => state.features);
   const initializeUser = useUserStore((state) => state.initialize);
+  const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
     loadFeatureFlags();
@@ -38,6 +40,7 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
+        {/* Edge-to-Edge System Bar Configuration */}
         <StatusBar style="auto" />
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(tabs)" />
@@ -52,6 +55,11 @@ export default function RootLayout() {
           <Stack.Screen name="settings/export" options={{ headerShown: false }} />
           <Stack.Screen name="auth/login" options={{ headerShown: false }} />
         </Stack>
+
+        {/* Startup Amar Desh Logo Splash Screen */}
+        {showSplash && (
+          <StartupSplashScreen onFinish={() => setShowSplash(false)} />
+        )}
       </ThemeProvider>
     </SafeAreaProvider>
   );

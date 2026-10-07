@@ -364,60 +364,23 @@ export default function AiSettingsScreen() {
         borderWidth: 1,
         borderColor: tokens.border.default,
       },
-      modelSelectorHeader: {
-        fontSize: 13,
-        fontWeight: 'bold',
-        color: tokens.text.primary,
-        marginBottom: 8,
-      },
-      modelPillList: {
-        flexDirection: 'column',
-        gap: 8,
-        marginBottom: 16,
-      },
-      modelChip: {
-        padding: 10,
-        borderRadius: 6,
-        backgroundColor: tokens.surface.elevated,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
-      },
-      activeModelChip: {
+      autoModelBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
         backgroundColor: tokens.brand.surface,
+        paddingHorizontal: 10,
+        paddingVertical: 8,
+        borderRadius: 6,
+        marginBottom: 14,
+        borderWidth: 1,
         borderColor: tokens.brand.primary,
       },
-      modelChipTop: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: 3,
-      },
-      modelChipName: {
-        fontSize: 13,
-        fontWeight: '700',
-        color: tokens.text.primary,
-      },
-      activeModelChipName: {
+      autoModelBadgeText: {
+        fontSize: 12,
         color: tokens.brand.primary,
-      },
-      modelChipDesc: {
-        fontSize: 11.5,
-        color: tokens.text.secondary,
-        lineHeight: 15,
-      },
-      verifiedBadge: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 3,
-        backgroundColor: tokens.brand.primary,
-        paddingHorizontal: 6,
-        paddingVertical: 2,
-        borderRadius: 3,
-      },
-      verifiedBadgeText: {
-        fontSize: 9.5,
-        fontWeight: 'bold',
-        color: '#FFFFFF',
+        fontWeight: '600',
+        flex: 1,
       },
       inputLabel: {
         fontSize: 13,
@@ -549,7 +512,7 @@ export default function AiSettingsScreen() {
           >
             <Ionicons name="arrow-back" size={22} color={tokens.text.primary} />
           </TouchableOpacity>
-          <Text style={styles.title}>AI সহকারী ও BYOK সেটিংস</Text>
+          <Text style={styles.title}>AI সহকারী সেটিংস</Text>
         </View>
         <AmarDeshLogo height={22} variant="png" />
       </View>
@@ -559,7 +522,7 @@ export default function AiSettingsScreen() {
         <View style={styles.heroCard}>
           <View style={styles.heroHeader}>
             <Ionicons name="sparkles" size={20} color={tokens.brand.primary} />
-            <Text style={styles.heroTitle}>Bring Your Own Key (BYOK)</Text>
+            <Text style={styles.heroTitle}>স্মার্ট AI সহকারী</Text>
           </View>
           <Text style={styles.heroBody}>
             আপনার নিজস্ব পার্সোনাল এপিআই কি ব্যবহার করে ৩-পয়েন্ট দ্রুত সারসংক্ষেপ ও ইন্টারেক্টিভ প্রশ্নোত্তর উপভোগ করুন।
@@ -668,43 +631,12 @@ export default function AiSettingsScreen() {
 
         {/* Provider Config & Verified Model Selection Card */}
         <View style={styles.card}>
-          {/* Model Selection */}
-          <Text style={styles.modelSelectorHeader}>
-            কার্যকর মডেল নির্বাচন (স্বয়ংক্রিয়ভাবে সামঞ্জস্যপূর্ণ)
-          </Text>
-          <View style={styles.modelPillList}>
-            {meta.supportedModels.map((m) => {
-              const isChosen = selectedModel === m.id;
-              return (
-                <TouchableOpacity
-                  key={m.id}
-                  style={[
-                    styles.modelChip,
-                    isChosen && styles.activeModelChip,
-                  ]}
-                  onPress={() => setSelectedModel(m.id)}
-                  activeOpacity={0.75}
-                >
-                  <View style={styles.modelChipTop}>
-                    <Text
-                      style={[
-                        styles.modelChipName,
-                        isChosen && styles.activeModelChipName,
-                      ]}
-                    >
-                      {m.name}
-                    </Text>
-                    {isChosen ? (
-                      <View style={styles.verifiedBadge}>
-                        <Ionicons name="checkmark" size={11} color="#FFFFFF" />
-                        <Text style={styles.verifiedBadgeText}>সক্রিয়</Text>
-                      </View>
-                    ) : null}
-                  </View>
-                  <Text style={styles.modelChipDesc}>{m.description}</Text>
-                </TouchableOpacity>
-              );
-            })}
+          {/* Auto-detected Best Model Banner */}
+          <View style={styles.autoModelBadge}>
+            <Ionicons name="sparkles" size={15} color={tokens.brand.primary} />
+            <Text style={styles.autoModelBadgeText}>
+              সর্বোত্তম ও দ্রুততম AI মডেলটি স্বয়ংক্রিয়ভাবে সক্রিয় থাকবে
+            </Text>
           </View>
 
           {/* API Key Input */}
