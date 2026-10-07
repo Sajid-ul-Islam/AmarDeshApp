@@ -15,6 +15,8 @@ import { ArticleThumbnail } from '../../components/OptimizedImage';
 import { formatRelativeTime } from '../../utils/bengali';
 import { CATEGORY_ARTICLES } from '../../services/contentService';
 import { Article } from '../../data/mockData';
+import { getSafeHeaderPaddingTop } from '../../utils/layout';
+import { AmarDeshLogo } from '../../components/AmarDeshLogo';
 
 const JULY_SUB_TABS = [
   'সকল প্রতিবেদন',
@@ -37,7 +39,7 @@ export default function JulyRevolutionScreen() {
         backgroundColor: tokens.surface.subtle,
       },
       header: {
-        paddingTop: insets.top > 0 ? insets.top + 4 : 12,
+        paddingTop: getSafeHeaderPaddingTop(insets.top, 8),
         paddingHorizontal: 16,
         paddingBottom: 14,
         backgroundColor: '#7F1D1D', // Deep memorial red
@@ -204,7 +206,7 @@ export default function JulyRevolutionScreen() {
             <Text style={styles.headerTitle}>জুলাই বিপ্লব ২০২৪</Text>
           </View>
 
-          <View style={{ width: 24 }} />
+          <AmarDeshLogo height={20} variant="png" />
         </View>
 
         <Text style={styles.subHeader}>

@@ -17,9 +17,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useThemedStyles } from '../../theme';
-import { toBengaliNumeral } from '../../utils/bengali';
 import { useAppStore } from '../../store/useAppStore';
 import { t, formatLocalizedNumeral } from '../../services/i18n';
+import { getSafeHeaderPaddingTop } from '../../utils/layout';
+import { AmarDeshLogo } from '../../components/AmarDeshLogo';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -209,7 +210,7 @@ export default function EPaperScreen() {
         backgroundColor: tokens.surface.subtle,
       },
       header: {
-        paddingTop: insets.top > 0 ? insets.top : 12,
+        paddingTop: getSafeHeaderPaddingTop(insets.top, 8),
         paddingHorizontal: 16,
         paddingBottom: 10,
         backgroundColor: tokens.surface.base,
@@ -515,9 +516,7 @@ export default function EPaperScreen() {
         <View style={styles.headerTop}>
           <View>
             <View style={styles.titleRow}>
-              <View style={styles.logoBadge}>
-                <Text style={styles.logoBadgeText}>আমার দেশ</Text>
-              </View>
+              <AmarDeshLogo height={24} variant="png" />
               <Text style={styles.headerTitle}>{t('epaper_header', language)}</Text>
             </View>
             <Text style={styles.editionDate}>

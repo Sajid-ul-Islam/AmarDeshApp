@@ -14,6 +14,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useThemedStyles, useThemeTokens } from '../../theme';
 import { useAppStore } from '../../store/useAppStore';
 import { t, getLocalizedCategoryName, SupportedLanguage } from '../../services/i18n';
+import { getSafeHeaderPaddingTop } from '../../utils/layout';
+import { AmarDeshLogo } from '../../components/AmarDeshLogo';
 
 interface CategoryItem {
   id: string;
@@ -56,7 +58,7 @@ export default function MenuScreen() {
         backgroundColor: tokens.surface.subtle,
       },
       header: {
-        paddingTop: insets.top > 0 ? insets.top : 16,
+        paddingTop: getSafeHeaderPaddingTop(insets.top, 8),
         paddingHorizontal: 20,
         paddingBottom: 16,
         backgroundColor: tokens.surface.base,
@@ -253,12 +255,7 @@ export default function MenuScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.brandRow}>
-          <View>
-            <Text style={styles.brandTitle}>{t('app_name', language)}</Text>
-            <Text style={styles.motto}>
-              {t('app_motto', language)} • {language === 'bn' ? 'সংস্করণ ১.৩' : 'v1.3'}
-            </Text>
-          </View>
+          <AmarDeshLogo height={28} variant="png" showMotto language={language} />
           <TouchableOpacity
             style={styles.searchPill}
             onPress={() => router.push('/search' as any)}

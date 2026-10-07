@@ -9,6 +9,8 @@ import { ArticleThumbnail } from '../../components/OptimizedImage';
 import { useUserStore } from '../../user';
 import { loadArticles, getArticles, subscribeToArticles } from '../../services/articleStore';
 import { useThemedStyles, useThemeTokens } from '../../theme';
+import { getSafeHeaderPaddingTop } from '../../utils/layout';
+import { AmarDeshLogo } from '../../components/AmarDeshLogo';
 
 const POPULAR_SEARCH_TAGS = [
   'জুলাই বিপ্লব',
@@ -77,7 +79,7 @@ export default function SearchScreen() {
       },
       header: {
         paddingHorizontal: 16,
-        paddingTop: insets.top > 0 ? insets.top : 12,
+        paddingTop: getSafeHeaderPaddingTop(insets.top, 8),
         paddingBottom: 12,
         backgroundColor: tokens.surface.base,
         borderBottomWidth: 1,
@@ -213,6 +215,9 @@ export default function SearchScreen() {
     <View style={styles.container}>
       {/* Search Header Bar */}
       <View style={styles.header}>
+        <View style={{ marginBottom: 10, alignItems: 'center' }}>
+          <AmarDeshLogo height={26} variant="png" />
+        </View>
         <View style={styles.searchContainer}>
           <Ionicons name="search" size={18} color={tokens.brand.primary} />
           <TextInput

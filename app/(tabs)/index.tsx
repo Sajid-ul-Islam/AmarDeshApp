@@ -54,6 +54,8 @@ import {
   formatLocalizedNumeral,
   formatLocalizedRelativeTime,
 } from '../../services/i18n';
+import { getSafeHeaderPaddingTop } from '../../utils/layout';
+import { AmarDeshLogo } from '../../components/AmarDeshLogo';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -144,7 +146,7 @@ export default function HomeScreen() {
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 16,
-        paddingTop: insets.top > 0 ? insets.top + 4 : 8,
+        paddingTop: getSafeHeaderPaddingTop(insets.top, 6),
         paddingBottom: 6,
         backgroundColor: tokens.surface.elevated,
         borderBottomWidth: 1,
@@ -567,18 +569,10 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* Broadsheet Masthead */}
+      {/* Broadsheet Masthead with Official Logo */}
       <View style={styles.mainHeader}>
         <View style={styles.mastheadCol}>
-          <View style={styles.mastheadTitleRow}>
-            <View style={styles.mastheadAccentBar} />
-            <Text style={styles.mastheadTitle}>
-              {language === 'bn' ? 'দৈনিক আমার দেশ' : 'Daily Amar Desh'}
-            </Text>
-          </View>
-          <Text style={styles.mastheadMotto}>
-            {language === 'bn' ? 'স্বাধীনতার কথা বলে • সত্য ও সাহসের প্রতীক' : 'Speaks of Independence • Voice of Truth'}
-          </Text>
+          <AmarDeshLogo height={34} variant="png" showMotto language={language} />
         </View>
 
         <View style={styles.headerIcons}>

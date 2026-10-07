@@ -21,6 +21,8 @@ import {
   subscribeToInbox,
 } from '../../services/notificationInboxService';
 import { formatRelativeTime } from '../../utils/bengali';
+import { getSafeHeaderPaddingTop } from '../../utils/layout';
+import { AmarDeshLogo } from '../../components/AmarDeshLogo';
 
 type FilterType = 'all' | 'breaking' | 'daily' | 'category';
 
@@ -90,7 +92,7 @@ export default function NotificationCenterScreen() {
         backgroundColor: tokens.surface.subtle,
       },
       header: {
-        paddingTop: insets.top > 0 ? insets.top : 12,
+        paddingTop: getSafeHeaderPaddingTop(insets.top, 8),
         paddingHorizontal: 16,
         paddingBottom: 12,
         backgroundColor: tokens.surface.base,
@@ -306,14 +308,17 @@ export default function NotificationCenterScreen() {
             <Text style={styles.headerTitle}>নোটিফিকেশন ইনবক্স</Text>
           </View>
 
-          {unreadCount > 0 && (
-            <TouchableOpacity
-              style={styles.markAllBtn}
-              onPress={markAllNotificationsAsRead}
-            >
-              <Text style={styles.markAllText}>সব পঠিত</Text>
-            </TouchableOpacity>
-          )}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            {unreadCount > 0 && (
+              <TouchableOpacity
+                style={styles.markAllBtn}
+                onPress={markAllNotificationsAsRead}
+              >
+                <Text style={styles.markAllText}>সব পঠিত</Text>
+              </TouchableOpacity>
+            )}
+            <AmarDeshLogo height={20} variant="png" />
+          </View>
         </View>
 
         {/* Filters */}

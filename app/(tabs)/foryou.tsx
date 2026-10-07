@@ -9,6 +9,8 @@ import { ArticleThumbnail, ArticleHeroImage } from '../../components/OptimizedIm
 import { useUserStore } from '../../user';
 import { useSyncExternalStore } from 'react';
 import { loadArticles, getArticles, subscribeToArticles } from '../../services/articleStore';
+import { getSafeHeaderPaddingTop } from '../../utils/layout';
+import { AmarDeshLogo } from '../../components/AmarDeshLogo';
 
 export default function ForYouScreen() {
   const router = useRouter();
@@ -276,11 +278,12 @@ export default function ForYouScreen() {
 
   if (!isUserReady) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top }]}>
+      <View style={[styles.container, { paddingTop: getSafeHeaderPaddingTop(insets.top, 0) }]}>
         <View style={styles.header}>
           <View style={styles.titleContainer}>
             <Text style={styles.title}>আপনার জন্য</Text>
           </View>
+          <AmarDeshLogo height={22} variant="png" />
         </View>
         <View style={styles.emptyState}>
           <Text style={styles.emptyText}>লোড হচ্ছে...</Text>
@@ -290,7 +293,7 @@ export default function ForYouScreen() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: getSafeHeaderPaddingTop(insets.top, 0) }]}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.titleContainer}>
@@ -299,6 +302,7 @@ export default function ForYouScreen() {
             <Text style={styles.subtitle}>আপনার আগ্রহের উপর ভিত্তি করে</Text>
           </View>
         </View>
+        <AmarDeshLogo height={24} variant="png" />
       </View>
 
       {/* Interests */}

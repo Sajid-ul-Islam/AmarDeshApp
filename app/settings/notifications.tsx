@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemedStyles, useThemeTokens } from '../../theme';
+import { getSafeHeaderPaddingTop } from '../../utils/layout';
+import { AmarDeshLogo } from '../../components/AmarDeshLogo';
 import { 
   NotificationPreferences, 
   loadNotificationPreferences, 
@@ -168,16 +170,19 @@ export default function NotificationSettingsScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: getSafeHeaderPaddingTop(insets.top, 0) }]}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
-          <Ionicons name="arrow-back" size={24} color={tokens.text.primary} />
-        </TouchableOpacity>
-        <Text style={styles.title}>নোটিফিকেশন সেটিংস</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backButton}
+          >
+            <Ionicons name="arrow-back" size={24} color={tokens.text.primary} />
+          </TouchableOpacity>
+          <Text style={styles.title}>নোটিফিকেশন সেটিংস</Text>
+        </View>
+        <AmarDeshLogo height={22} variant="png" />
       </View>
 
       <ScrollView style={styles.content}>

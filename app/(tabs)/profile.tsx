@@ -11,6 +11,8 @@ import {
   signOut,
   onAuthStateChange,
 } from '../../services/firebase';
+import { getSafeHeaderPaddingTop } from '../../utils/layout';
+import { AmarDeshLogo } from '../../components/AmarDeshLogo';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -156,24 +158,21 @@ export default function ProfileScreen() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={{
-        paddingTop: insets.top,
+        paddingTop: getSafeHeaderPaddingTop(insets.top, 0),
         paddingBottom: 32,
       }}
     >
       <View style={styles.header}>
-        <Text style={styles.title}>প্রোফাইল ও সেটিংস</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Text style={styles.title}>প্রোফাইল ও সেটিংস</Text>
+          <AmarDeshLogo height={24} variant="png" />
+        </View>
       </View>
 
       {/* App Info */}
       <View style={styles.section}>
         <View style={styles.appInfo}>
-          <View style={styles.logo}>
-            <Text style={styles.logoText}>আ.দে</Text>
-          </View>
-          <View>
-            <Text style={styles.appName}>আমার দেশ</Text>
-            <Text style={styles.tagline}>স্বাধীনতার কথা বলে • সংস্করণ ১.৩</Text>
-          </View>
+          <AmarDeshLogo height={32} variant="png" showMotto />
         </View>
       </View>
 

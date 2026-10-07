@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,11 +10,16 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemedStyles, useThemeTokens } from '../theme';
 import { Article } from '../data/mockData';
-import { askArticleAiQuestion } from '../services/byokAiService';
+import {
+  askArticleAiQuestion,
+  getByokAiConfig,
+  PROVIDER_METADATA,
+} from '../services/byokAiService';
 
 interface AiAssistantModalProps {
   visible: boolean;
@@ -54,6 +59,17 @@ export const AiAssistantModal: React.FC<AiAssistantModalProps> = ({
   ]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
+  const [hasApiKey, setHasApiKey] = useState(true);
+  const [activeProvider, setActiveProvider] = useState<string>('gemini');
+
+  useEffect(() => {
+    if (visible) {
+      getByokAiConfig().then((cfg) => {
+        setHasApiKey(!!(cfg.apiKey && cfg.apiKey.trim().length >= 8));
+        setActiveProvider(cfg.provider);
+      });
+    }
+  }, [visible]);
 
   const handleSend = async (questionText?: string) => {
     const textToSend = (questionText || inputText).trim();
@@ -232,6 +248,65 @@ export const AiAssistantModal: React.FC<AiAssistantModalProps> = ({
         alignItems: 'center',
         justifyContent: 'center',
       },
+      byokBanner: {
+        backgroundColor: tokens.brand.surface,
+        borderWidth: 1,
+        borderColor: tokens.brand.primary,
+        borderRadius: 8,
+        padding: 12,
+        marginBottom: 14,
+      },
+      byokBannerHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        marginBottom: 4,
+      },
+      byokBannerTitle: {
+        fontSize: 13,
+        fontWeight: 'bold',
+        color: tokens.brand.primary,
+      },
+      byokBannerText: {
+        fontSize: 12,
+        color: tokens.text.secondary,
+        lineHeight: 16,
+        marginBottom: 10,
+      },
+      byokBannerBtnRow: {
+        flexDirection: 'row',
+        gap: 8,
+      },
+      byokGetBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: tokens.brand.primary,
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 4,
+        gap: 4,
+      },
+      byokGetBtnText: {
+        fontSize: 11.5,
+        fontWeight: 'bold',
+        color: '#FFFFFF',
+      },
+      byokSettingsBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: tokens.surface.base,
+        borderWidth: 1,
+        borderColor: tokens.brand.primary,
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 4,
+        gap: 4,
+      },
+      byokSettingsBtnText: {
+        fontSize: 11.5,
+        fontWeight: 'bold',
+        color: tokens.brand.primary,
+      },
     })
   );
 
@@ -276,6 +351,46 @@ export const AiAssistantModal: React.FC<AiAssistantModalProps> = ({
             contentContainerStyle={{ paddingBottom: 16 }}
             keyboardShouldPersistTaps="handled"
           >
+            {/* Banner to directly collect API key or open settings if not configured */}
+            {!hasApiKey && (
+              <View style={styles.byokBanner}>
+                <View style={styles.byokBannerHeader}>
+                  <Ionicons name="key" size={16} color={tokens.brand.primary} />
+                  <Text style={styles.byokBannerTitle}>AI সহকারী সক্রিয় করুন</Text>
+                </View>
+                <Text style={styles.byokBannerText}>
+                  গুগল এআই স্টুডিও থেকে বিনামূল্যে API কি সংগ্রহ করে আনলিমিটেড প্রশ্নোত্তরের সুবিধা উপভোগ করুন।
+                </Text>
+                <View style={styles.byokBannerBtnRow}>
+                  <TouchableOpacity
+                    style={styles.byokGetBtn}
+                    onPress={() => {
+                      const url =
+                        PROVIDER_METADATA[activeProvider as keyof typeof PROVIDER_METADATA]?.keyHelpUrl ||
+                        'https://aistudio.google.com/app/apikey';
+                      Linking.openURL(url);
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <Ionicons name="open-outline" size={13} color="#FFFFFF" />
+                    <Text style={styles.byokGetBtnText}>ফ্রি Key নিন ↗</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.byokSettingsBtn}
+                    onPress={() => {
+                      onClose();
+                      onOpenSettings();
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <Ionicons name="settings-outline" size={13} color={tokens.brand.primary} />
+                    <Text style={styles.byokSettingsBtnText}>কি যোগ করুন</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+
             {/* Suggested quick prompt chips */}
             {messages.length <= 2 && (
               <View style={styles.suggestedContainer}>

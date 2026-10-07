@@ -21,6 +21,8 @@ import {
   signInWithGoogle,
   signInWithApple,
 } from '../../services/firebase/authService';
+import { getSafeHeaderPaddingTop } from '../../utils/layout';
+import { AmarDeshLogo } from '../../components/AmarDeshLogo';
 
 export default function AuthScreen() {
   const router = useRouter();
@@ -117,21 +119,24 @@ export default function AuthScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top }]}
+      style={[styles.container, { backgroundColor: colors.background, paddingTop: getSafeHeaderPaddingTop(insets.top, 0) }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => router.back()}
-          >
-            <Ionicons name="arrow-back" size={24} color={colors.text} />
-          </TouchableOpacity>
-          <Text style={[styles.title, { color: colors.text }]}>
-            {isLogin ? 'লগইন করুন' : 'অ্যাকাউন্ট তৈরি করুন'}
-          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => router.back()}
+            >
+              <Ionicons name="arrow-back" size={24} color={colors.text} />
+            </TouchableOpacity>
+            <Text style={[styles.title, { color: colors.text }]}>
+              {isLogin ? 'লগইন করুন' : 'অ্যাকাউন্ট তৈরি করুন'}
+            </Text>
+          </View>
+          <AmarDeshLogo height={24} variant="png" />
         </View>
 
         {/* Form */}

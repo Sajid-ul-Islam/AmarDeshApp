@@ -17,6 +17,8 @@ import {
   formatLocalizedNumeral,
   formatLocalizedRelativeTime,
 } from '../../services/i18n';
+import { getSafeHeaderPaddingTop } from '../../utils/layout';
+import { AmarDeshLogo } from '../../components/AmarDeshLogo';
 
 export default function BookmarksScreen() {
   const language = useAppStore((state) => state.language);
@@ -171,10 +173,10 @@ export default function BookmarksScreen() {
   );
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: getSafeHeaderPaddingTop(insets.top, 0) }]}>
       <View style={styles.header}>
         <View style={styles.titleRow}>
-          <Ionicons name="bookmark" size={20} color={tokens.brand.primary} />
+          <AmarDeshLogo height={20} variant="png" />
           <Text style={styles.title}>{t('saved_articles', language)}</Text>
         </View>
         {bookmarkedArticles.length > 0 && (

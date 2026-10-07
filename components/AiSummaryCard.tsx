@@ -265,8 +265,13 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({
             )}
 
             {!isAiGenerated && onOpenSettings && (
-              <TouchableOpacity onPress={onOpenSettings}>
-                <Text style={styles.configLink}>নিজস্ব এপিআই কি দিন ↗</Text>
+              <TouchableOpacity
+                onPress={onOpenSettings}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="key-outline" size={13} color={tokens.brand.primary} />
+                <Text style={styles.configLink}>ফ্রি এপিআই কি যোগ করুন ↗</Text>
               </TouchableOpacity>
             )}
           </View>

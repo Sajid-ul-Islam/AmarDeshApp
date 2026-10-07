@@ -9,11 +9,12 @@ import {
   ActivityIndicator,
   Alert,
   Linking,
-  Switch,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import * as Clipboard from 'expo-clipboard';
 import { useThemedStyles, useThemeTokens } from '../../theme';
 import {
   AiProvider,
@@ -23,6 +24,8 @@ import {
   testAiConnection,
   PROVIDER_METADATA,
 } from '../../services/byokAiService';
+import { getSafeHeaderPaddingTop } from '../../utils/layout';
+import { AmarDeshLogo } from '../../components/AmarDeshLogo';
 
 export default function AiSettingsScreen() {
   const router = useRouter();
@@ -31,6 +34,9 @@ export default function AiSettingsScreen() {
 
   const [provider, setProvider] = useState<AiProvider>('gemini');
   const [apiKey, setApiKey] = useState('');
+  const [selectedModel, setSelectedModel] = useState<string>(
+    PROVIDER_METADATA.gemini.defaultModel
+  );
   const [showKey, setShowKey] = useState(false);
   const [enabled, setEnabled] = useState(true);
   const [testing, setTesting] = useState(false);
@@ -38,16 +44,44 @@ export default function AiSettingsScreen() {
     null
   );
   const [saving, setSaving] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   useEffect(() => {
     getByokAiConfig().then((cfg) => {
       setProvider(cfg.provider);
       setApiKey(cfg.apiKey);
       setEnabled(cfg.enabled);
+      if (cfg.model) {
+        setSelectedModel(cfg.model);
+      } else {
+        setSelectedModel(PROVIDER_METADATA[cfg.provider].defaultModel);
+      }
     });
   }, []);
 
   const meta = PROVIDER_METADATA[provider];
+
+  const handleProviderChange = (newProv: AiProvider) => {
+    setProvider(newProv);
+    setSelectedModel(PROVIDER_METADATA[newProv].defaultModel);
+    setTestResult(null);
+  };
+
+  const handleOpenKeyPortal = () => {
+    Linking.openURL(meta.keyHelpUrl).catch(() => {
+      Alert.alert(
+        'লিংক খুলতে ব্যর্থ',
+        `অনুগ্রহ করে ব্রাউজারে এই লিংকটি ভিজিট করুন:\n${meta.keyHelpUrl}`
+      );
+    });
+  };
+
+  const handleCopyLink = async () => {
+    await Clipboard.setStringAsync(meta.keyHelpUrl);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2500);
+    Alert.alert('লিংক কপি হয়েছে', `${meta.portalName}-এর অফিসিয়াল পেজ লিংক ক্লিপবোর্ডে কপি করা হয়েছে:\n${meta.keyHelpUrl}`);
+  };
 
   const handleTestConnection = async () => {
     if (!apiKey.trim()) {
@@ -58,7 +92,7 @@ export default function AiSettingsScreen() {
     setTesting(true);
     setTestResult(null);
 
-    const result = await testAiConnection(provider, apiKey.trim());
+    const result = await testAiConnection(provider, apiKey.trim(), selectedModel);
     setTesting(false);
     setTestResult(result);
   };
@@ -68,7 +102,7 @@ export default function AiSettingsScreen() {
     await saveByokAiConfig({
       provider,
       apiKey: apiKey.trim(),
-      model: meta.defaultModel,
+      model: selectedModel,
       enabled,
     });
     setSaving(false);
@@ -90,7 +124,7 @@ export default function AiSettingsScreen() {
             await saveByokAiConfig({
               provider,
               apiKey: '',
-              model: meta.defaultModel,
+              model: selectedModel,
               enabled,
             });
             Alert.alert('সফল', 'এপিআই কি মুছে ফেলা হয়েছে।');
@@ -109,21 +143,30 @@ export default function AiSettingsScreen() {
       header: {
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'space-between',
         paddingHorizontal: 16,
-        paddingTop: insets.top > 0 ? insets.top : 12,
+        paddingTop: getSafeHeaderPaddingTop(insets.top, 8),
         paddingBottom: 14,
         backgroundColor: tokens.surface.base,
         borderBottomWidth: 1,
         borderBottomColor: tokens.border.default,
       },
+      headerLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        flex: 1,
+      },
       backButton: {
-        padding: 4,
-        marginRight: 12,
+        padding: 6,
+        borderRadius: 20,
+        backgroundColor: tokens.surface.elevated,
       },
       title: {
-        fontSize: 18,
+        fontSize: 17,
         fontWeight: 'bold',
         color: tokens.text.primary,
+        fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' }),
       },
       content: {
         padding: 16,
@@ -131,9 +174,9 @@ export default function AiSettingsScreen() {
       },
       heroCard: {
         backgroundColor: tokens.brand.surface,
-        borderRadius: 14,
+        borderRadius: 8,
         padding: 16,
-        marginBottom: 20,
+        marginBottom: 18,
         borderWidth: 1,
         borderColor: tokens.brand.primary,
       },
@@ -163,18 +206,18 @@ export default function AiSettingsScreen() {
         borderTopColor: 'rgba(0, 107, 63, 0.15)',
       },
       securityText: {
-        fontSize: 11,
+        fontSize: 11.5,
         color: tokens.brand.primary,
         fontWeight: '600',
       },
       sectionLabel: {
-        fontSize: 14,
+        fontSize: 13,
         fontWeight: 'bold',
         color: tokens.text.secondary,
         textTransform: 'uppercase',
         letterSpacing: 0.5,
         marginBottom: 10,
-        marginTop: 8,
+        marginTop: 6,
       },
       providerRow: {
         flexDirection: 'row',
@@ -187,7 +230,7 @@ export default function AiSettingsScreen() {
         minWidth: '45%',
         paddingVertical: 12,
         paddingHorizontal: 12,
-        borderRadius: 10,
+        borderRadius: 8,
         backgroundColor: tokens.surface.base,
         borderWidth: 1,
         borderColor: tokens.border.default,
@@ -215,20 +258,166 @@ export default function AiSettingsScreen() {
         paddingVertical: 2,
         borderRadius: 4,
         marginTop: 4,
+        fontWeight: '600',
+      },
+      // Direct Key Collection Action Card
+      portalCard: {
+        backgroundColor: tokens.surface.base,
+        borderRadius: 8,
+        padding: 16,
+        marginBottom: 16,
+        borderWidth: 1.5,
+        borderColor: tokens.brand.primary,
+      },
+      portalHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 8,
+      },
+      portalTitleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        flex: 1,
+      },
+      portalTitle: {
+        fontSize: 14.5,
+        fontWeight: 'bold',
+        color: tokens.text.primary,
+      },
+      portalBadge: {
+        backgroundColor: tokens.brand.surface,
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderRadius: 4,
+        borderWidth: 1,
+        borderColor: tokens.brand.primary,
+      },
+      portalBadgeText: {
+        fontSize: 11,
+        color: tokens.brand.primary,
+        fontWeight: '700',
+      },
+      portalDesc: {
+        fontSize: 12.5,
+        color: tokens.text.secondary,
+        lineHeight: 18,
+        marginBottom: 12,
+      },
+      openPortalButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: tokens.brand.primary,
+        paddingVertical: 12,
+        paddingHorizontal: 14,
+        borderRadius: 6,
+        gap: 8,
+        marginBottom: 8,
+      },
+      openPortalButtonText: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#FFFFFF',
+      },
+      copyLinkButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: tokens.surface.elevated,
+        paddingVertical: 9,
+        paddingHorizontal: 12,
+        borderRadius: 6,
+        borderWidth: 1,
+        borderColor: tokens.border.default,
+        gap: 6,
+      },
+      copyLinkButtonText: {
+        fontSize: 12,
+        color: tokens.text.secondary,
+        fontWeight: '600',
+      },
+      stepsBox: {
+        marginTop: 12,
+        paddingTop: 10,
+        borderTopWidth: 1,
+        borderTopColor: tokens.border.default,
+        gap: 6,
+      },
+      stepsTitle: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        color: tokens.text.primary,
+        marginBottom: 2,
+      },
+      stepItem: {
+        fontSize: 11.5,
+        color: tokens.text.secondary,
+        lineHeight: 16,
       },
       card: {
         backgroundColor: tokens.surface.base,
-        borderRadius: 12,
+        borderRadius: 8,
         padding: 16,
         marginBottom: 16,
         borderWidth: 1,
         borderColor: tokens.border.default,
       },
-      providerDesc: {
+      modelSelectorHeader: {
         fontSize: 13,
+        fontWeight: 'bold',
+        color: tokens.text.primary,
+        marginBottom: 8,
+      },
+      modelPillList: {
+        flexDirection: 'column',
+        gap: 8,
+        marginBottom: 16,
+      },
+      modelChip: {
+        padding: 10,
+        borderRadius: 6,
+        backgroundColor: tokens.surface.elevated,
+        borderWidth: 1,
+        borderColor: tokens.border.default,
+      },
+      activeModelChip: {
+        backgroundColor: tokens.brand.surface,
+        borderColor: tokens.brand.primary,
+      },
+      modelChipTop: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 3,
+      },
+      modelChipName: {
+        fontSize: 13,
+        fontWeight: '700',
+        color: tokens.text.primary,
+      },
+      activeModelChipName: {
+        color: tokens.brand.primary,
+      },
+      modelChipDesc: {
+        fontSize: 11.5,
         color: tokens.text.secondary,
-        lineHeight: 18,
-        marginBottom: 12,
+        lineHeight: 15,
+      },
+      verifiedBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 3,
+        backgroundColor: tokens.brand.primary,
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+        borderRadius: 3,
+      },
+      verifiedBadgeText: {
+        fontSize: 9.5,
+        fontWeight: 'bold',
+        color: '#FFFFFF',
       },
       inputLabel: {
         fontSize: 13,
@@ -240,7 +429,7 @@ export default function AiSettingsScreen() {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: tokens.surface.elevated,
-        borderRadius: 8,
+        borderRadius: 6,
         borderWidth: 1,
         borderColor: tokens.border.default,
         paddingHorizontal: 12,
@@ -252,19 +441,8 @@ export default function AiSettingsScreen() {
         fontSize: 14,
         color: tokens.text.primary,
       },
-      helpLinkRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginTop: 4,
-      },
-      helpLink: {
-        fontSize: 12,
-        color: tokens.brand.primary,
-        fontWeight: '600',
-      },
       statusBox: {
-        borderRadius: 8,
+        borderRadius: 6,
         padding: 12,
         marginTop: 12,
       },
@@ -294,7 +472,7 @@ export default function AiSettingsScreen() {
         justifyContent: 'center',
         backgroundColor: tokens.surface.elevated,
         paddingVertical: 12,
-        borderRadius: 8,
+        borderRadius: 6,
         borderWidth: 1,
         borderColor: tokens.border.strong,
         gap: 6,
@@ -311,7 +489,7 @@ export default function AiSettingsScreen() {
         justifyContent: 'center',
         backgroundColor: tokens.brand.primary,
         paddingVertical: 12,
-        borderRadius: 8,
+        borderRadius: 6,
         gap: 6,
       },
       saveButtonText: {
@@ -331,7 +509,7 @@ export default function AiSettingsScreen() {
       },
       featuresCard: {
         backgroundColor: tokens.surface.base,
-        borderRadius: 12,
+        borderRadius: 8,
         padding: 16,
         borderWidth: 1,
         borderColor: tokens.border.default,
@@ -346,7 +524,7 @@ export default function AiSettingsScreen() {
         marginTop: 2,
       },
       featureTitle: {
-        fontSize: 14,
+        fontSize: 13.5,
         fontWeight: 'bold',
         color: tokens.text.primary,
         marginBottom: 2,
@@ -361,18 +539,22 @@ export default function AiSettingsScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
+      {/* Edge-to-Edge Safe Header */}
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <Ionicons name="arrow-back" size={24} color={tokens.text.primary} />
-        </TouchableOpacity>
-        <Text style={styles.title}>AI সহকারী ও BYOK সেটিংস</Text>
+        <View style={styles.headerLeft}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="arrow-back" size={22} color={tokens.text.primary} />
+          </TouchableOpacity>
+          <Text style={styles.title}>AI সহকারী ও BYOK সেটিংস</Text>
+        </View>
+        <AmarDeshLogo height={22} variant="png" />
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* Banner */}
         <View style={styles.heroCard}>
           <View style={styles.heroHeader}>
@@ -380,12 +562,12 @@ export default function AiSettingsScreen() {
             <Text style={styles.heroTitle}>Bring Your Own Key (BYOK)</Text>
           </View>
           <Text style={styles.heroBody}>
-            আপনার পছন্দের AI প্রোভাইডারের নিজস্ব API কি দিয়ে অ্যাপের ৩-পয়েন্ট বুলেট সারসংক্ষেপ ও সংবাদ বিশ্লেষণ সক্ষম করুন।
+            আপনার নিজস্ব পার্সোনাল এপিআই কি ব্যবহার করে ৩-পয়েন্ট দ্রুত সারসংক্ষেপ ও ইন্টারেক্টিভ প্রশ্নোত্তর উপভোগ করুন।
           </Text>
           <View style={styles.securityNote}>
             <Ionicons name="shield-checkmark" size={14} color={tokens.brand.primary} />
             <Text style={styles.securityText}>
-              সম্পূর্ণ নিরাপদ: আপনার কি শুধুমাত্র আপনার ফোনে সুরক্ষিত থাকে
+              ১০০% ব্যক্তিগত ও নিরাপদ: আপনার কি শুধুমাত্র আপনার ফোনে সুরক্ষিত থাকে
             </Text>
           </View>
         </View>
@@ -403,10 +585,8 @@ export default function AiSettingsScreen() {
                   styles.providerPill,
                   isSelected && styles.activeProviderPill,
                 ]}
-                onPress={() => {
-                  setProvider(prov);
-                  setTestResult(null);
-                }}
+                onPress={() => handleProviderChange(prov)}
+                activeOpacity={0.75}
               >
                 <Ionicons
                   name={prov === 'gemini' ? 'logo-google' : 'hardware-chip-outline'}
@@ -429,10 +609,105 @@ export default function AiSettingsScreen() {
           })}
         </View>
 
-        {/* Provider Config Card */}
-        <View style={styles.card}>
-          <Text style={styles.providerDesc}>{meta.description}</Text>
+        {/* Direct Action Card: Go Directly to AI API Key Collection */}
+        <View style={styles.portalCard}>
+          <View style={styles.portalHeader}>
+            <View style={styles.portalTitleRow}>
+              <Ionicons name="key" size={18} color={tokens.brand.primary} />
+              <Text style={styles.portalTitle}>{meta.portalName}</Text>
+            </View>
+            {meta.freeTierAvailable ? (
+              <View style={styles.portalBadge}>
+                <Text style={styles.portalBadgeText}>১০০% ফ্রি কি</Text>
+              </View>
+            ) : null}
+          </View>
 
+          <Text style={styles.portalDesc}>
+            {meta.freeTierNote}. নিচের বাটনে ট্যাপ করে সরাসরি {meta.name}-এর অফিশিয়াল কি তৈরির পেইজে প্রবেশ করুন।
+          </Text>
+
+          {/* Primary CTA: Open directly in browser */}
+          <TouchableOpacity
+            style={styles.openPortalButton}
+            onPress={handleOpenKeyPortal}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="open-outline" size={18} color="#FFFFFF" />
+            <Text style={styles.openPortalButtonText}>
+              সরাসরি API Key পেজে যান ↗
+            </Text>
+          </TouchableOpacity>
+
+          {/* Copy Link button */}
+          <TouchableOpacity
+            style={styles.copyLinkButton}
+            onPress={handleCopyLink}
+            activeOpacity={0.75}
+          >
+            <Ionicons
+              name={copiedLink ? 'checkmark-circle' : 'copy-outline'}
+              size={15}
+              color={copiedLink ? tokens.brand.primary : tokens.text.secondary}
+            />
+            <Text style={styles.copyLinkButtonText}>
+              {copiedLink ? 'লিংক কপি হয়েছে!' : 'পোর্টাল লিংক কপি করুন'}
+            </Text>
+          </TouchableOpacity>
+
+          {/* 3-Step Guide */}
+          <View style={styles.stepsBox}>
+            <Text style={styles.stepsTitle}>কীভাবে এপিআই কি পাবেন:</Text>
+            {meta.steps.map((st, idx) => (
+              <Text key={idx} style={styles.stepItem}>
+                {idx + 1}. {st}
+              </Text>
+            ))}
+          </View>
+        </View>
+
+        {/* Provider Config & Verified Model Selection Card */}
+        <View style={styles.card}>
+          {/* Model Selection */}
+          <Text style={styles.modelSelectorHeader}>
+            কার্যকর মডেল নির্বাচন (স্বয়ংক্রিয়ভাবে সামঞ্জস্যপূর্ণ)
+          </Text>
+          <View style={styles.modelPillList}>
+            {meta.supportedModels.map((m) => {
+              const isChosen = selectedModel === m.id;
+              return (
+                <TouchableOpacity
+                  key={m.id}
+                  style={[
+                    styles.modelChip,
+                    isChosen && styles.activeModelChip,
+                  ]}
+                  onPress={() => setSelectedModel(m.id)}
+                  activeOpacity={0.75}
+                >
+                  <View style={styles.modelChipTop}>
+                    <Text
+                      style={[
+                        styles.modelChipName,
+                        isChosen && styles.activeModelChipName,
+                      ]}
+                    >
+                      {m.name}
+                    </Text>
+                    {isChosen ? (
+                      <View style={styles.verifiedBadge}>
+                        <Ionicons name="checkmark" size={11} color="#FFFFFF" />
+                        <Text style={styles.verifiedBadgeText}>সক্রিয়</Text>
+                      </View>
+                    ) : null}
+                  </View>
+                  <Text style={styles.modelChipDesc}>{m.description}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* API Key Input */}
           <Text style={styles.inputLabel}>{meta.name} API Key</Text>
           <View style={styles.inputContainer}>
             <TextInput
@@ -454,14 +729,6 @@ export default function AiSettingsScreen() {
                 size={20}
                 color={tokens.interactive.inactive}
               />
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.helpLinkRow}>
-            <TouchableOpacity onPress={() => Linking.openURL(meta.keyHelpUrl)}>
-              <Text style={styles.helpLink}>
-                এপিআই কি কীভাবে পাবেন? ({meta.name}) ↗
-              </Text>
             </TouchableOpacity>
           </View>
 

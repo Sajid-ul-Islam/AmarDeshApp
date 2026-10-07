@@ -22,6 +22,8 @@ import {
   getLocalizedCategoryName,
   formatLocalizedNumeral,
 } from '../../services/i18n';
+import { getSafeHeaderPaddingTop } from '../../utils/layout';
+import { AmarDeshLogo } from '../../components/AmarDeshLogo';
 
 interface VideoItem {
   id: string;
@@ -106,7 +108,7 @@ export default function VideoScreen() {
         backgroundColor: tokens.surface.subtle,
       },
       header: {
-        paddingTop: insets.top > 0 ? insets.top : 12,
+        paddingTop: getSafeHeaderPaddingTop(insets.top, 8),
         paddingHorizontal: 16,
         paddingBottom: 10,
         backgroundColor: tokens.surface.base,
@@ -374,6 +376,7 @@ export default function VideoScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerTitleRow}>
+          <AmarDeshLogo height={24} variant="png" />
           <View style={styles.liveDot} />
           <Text style={styles.headerTitle}>{t('video_hub_title', language)}</Text>
         </View>

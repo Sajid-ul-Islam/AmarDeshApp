@@ -49,6 +49,8 @@ import {
   getLocalizedCategoryName,
   formatLocalizedRelativeTime,
 } from '../../services/i18n';
+import { getSafeHeaderPaddingTop } from '../../utils/layout';
+import { AmarDeshLogo } from '../../components/AmarDeshLogo';
 
 export default function ArticleDetailScreen() {
   const language = useAppStore((state) => state.language);
@@ -195,7 +197,7 @@ export default function ArticleDetailScreen() {
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 16,
-        paddingTop: insets.top > 0 ? insets.top + 4 : 10,
+        paddingTop: getSafeHeaderPaddingTop(insets.top, 8),
         paddingBottom: 10,
         backgroundColor: tokens.surface.base,
         borderBottomWidth: 1,
@@ -571,6 +573,8 @@ export default function ArticleDetailScreen() {
         >
           <Ionicons name="arrow-back" size={22} color={styles.title.color} />
         </TouchableOpacity>
+
+        <AmarDeshLogo height={24} variant="png" />
 
         <View style={styles.headerActions}>
           {/* AI Assistant */}

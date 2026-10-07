@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Official Amar Desh Branding & Edge-to-Edge Top Bar System
+- **Fail-Safe Edge-to-Edge Layout Architecture** (`utils/layout.ts`, all app screens):
+  - Created centralized `getSafeHeaderPaddingTop(insets.top, extraOffset)` resolving all status bar, notch, and punch-hole overlap issues on Android 14/15 and iOS.
+  - Applied across Home (`app/(tabs)/index.tsx`), Article Reader (`app/article/[id].tsx`), ePaper (`app/(tabs)/epaper.tsx`), Video Hub (`app/(tabs)/video.tsx`), Bookmarks (`app/(tabs)/bookmarks.tsx`), Menu (`app/(tabs)/menu.tsx`), Profile (`app/(tabs)/profile.tsx`), Search (`app/(tabs)/search.tsx`), Notifications (`app/notifications/index.tsx`), July Revolution (`app/july-revolution/index.tsx`), and Settings screens.
+- **Official Amar Desh Logo Integration** (`components/AmarDeshLogo.tsx`, `assets/amardesh_logo.png`, `assets/amardesh_logo.jpg`):
+  - Implemented high-resolution official Amar Desh logo with authentic red sun emblem and Bengali calligraphy.
+  - Replaced plain text mastheads and placeholder boxes with official `AmarDeshLogo` across home masthead, reader top bar, ePaper header, video header, menu, profile, and login screens.
+  - Automatically adapts to light and dark theme modes with optimal contrast.
+
+### BYOK Multi-Provider AI Direct Link & Auto-Working Models Suite
+- **Direct 1-Tap API Key Collection Links** (`services/byokAiService.ts`, `app/settings/ai.tsx`, `components/AiAssistantModal.tsx`, `components/AiSummaryCard.tsx`):
+  - Added dedicated high-visibility action cards in AI settings with 1-tap direct links (`Linking.openURL`) to official API key creation portals:
+    - **Google Gemini**: `https://aistudio.google.com/app/apikey` (Google AI Studio - 100% free personal tier)
+    - **Groq Cloud**: `https://console.groq.com/keys` (Groq Console - free developer tier)
+    - **OpenAI**: `https://platform.openai.com/api-keys` (OpenAI Platform)
+    - **DeepSeek**: `https://platform.deepseek.com/api_keys` (DeepSeek Platform)
+  - Integrated one-click clipboard copying (`expo-clipboard`) and 3-step localized setup guide for collecting keys in seconds.
+  - Added contextual shortcuts in AI Assistant Modal and Summary Card prompting readers to collect a free key with 1 tap.
+- **Verified Auto-Working Default Models & Resilient Fallbacks**:
+  - Configured verified standard out-of-the-box API models for each provider (`gemini-1.5-flash`, `llama-3.3-70b-versatile`, `gpt-4o-mini`, `deepseek-chat`).
+  - Added visual model selection chips with "✓ অটো-ভেরিফায়েড" badges and descriptions.
+  - Implemented automatic fallback retry mechanisms (e.g., if a deprecated model is supplied, services automatically retry with the default working model).
+  - Added comprehensive automated test suite (`services/__tests__/layoutAndLogo.test.ts`) with 100% pass rate across 102 tests.
+
 ### Stitch Modern Editorial Design System Migration
 - **Editorial Broadside Tokens & Aesthetics** (`theme/tokens.ts`):
   - Synchronized tokens with Stitch MCP `Mobile News App` (`projects/14803972069666724044`): warm newsprint parchment (`#FBF9F5`), deep printer's ink (`#121212`), Editorial Crimson (`#BA131A`), National Forest Green (`#006B3F`), and 1px structural hairline rules (`#E5E0D8`).

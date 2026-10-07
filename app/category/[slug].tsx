@@ -15,6 +15,8 @@ import { ArticleThumbnail } from '../../components/OptimizedImage';
 import { getArticlesByCategory, SITE_CATEGORIES } from '../../services/contentService';
 import { formatRelativeTime, toBengaliNumeral } from '../../utils/bengali';
 import { Article } from '../../data/mockData';
+import { getSafeHeaderPaddingTop } from '../../utils/layout';
+import { AmarDeshLogo } from '../../components/AmarDeshLogo';
 
 export default function CategoryScreen() {
   const { slug } = useLocalSearchParams();
@@ -40,7 +42,7 @@ export default function CategoryScreen() {
         backgroundColor: tokens.surface.subtle,
       },
       header: {
-        paddingTop: insets.top > 0 ? insets.top : 14,
+        paddingTop: getSafeHeaderPaddingTop(insets.top, 8),
         paddingHorizontal: 16,
         paddingBottom: 12,
         backgroundColor: tokens.surface.base,
@@ -157,10 +159,13 @@ export default function CategoryScreen() {
           <Text style={styles.headerTitle}>{categoryMeta.name}</Text>
         </View>
 
-        <View style={styles.countBadge}>
-          <Text style={styles.countText}>
-            {toBengaliNumeral(articles.length)} টি সংবাদ
-          </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <View style={styles.countBadge}>
+            <Text style={styles.countText}>
+              {toBengaliNumeral(articles.length)} টি সংবাদ
+            </Text>
+          </View>
+          <AmarDeshLogo height={20} variant="png" />
         </View>
       </View>
 
