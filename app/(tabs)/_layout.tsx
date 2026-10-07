@@ -16,16 +16,24 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: tokens.surface.base,
           borderTopColor: tokens.border.default,
+          borderTopWidth: 1,
           height: 60,
           paddingBottom: 8,
           paddingTop: 6,
+          elevation: 0,
+          shadowOpacity: 0,
         },
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '600',
+          letterSpacing: 0.3,
         },
         headerStyle: {
           backgroundColor: tokens.surface.base,
+          borderBottomColor: tokens.border.default,
+          borderBottomWidth: 1,
+          elevation: 0,
+          shadowOpacity: 0,
         },
         headerTintColor: tokens.text.primary,
       }}

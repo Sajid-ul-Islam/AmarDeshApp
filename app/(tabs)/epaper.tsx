@@ -260,7 +260,7 @@ export default function EPaperScreen() {
       pageChip: {
         paddingHorizontal: 12,
         paddingVertical: 6,
-        borderRadius: 16,
+        borderRadius: 4,
         backgroundColor: tokens.surface.elevated,
         marginRight: 8,
         borderWidth: 1,
@@ -271,8 +271,9 @@ export default function EPaperScreen() {
         borderColor: tokens.brand.primary,
       },
       pageChipText: {
-        fontSize: 13,
+        fontSize: 12.5,
         color: tokens.text.secondary,
+        fontWeight: '600',
       },
       activePageChipText: {
         color: '#FFFFFF',
@@ -297,14 +298,11 @@ export default function EPaperScreen() {
         width: SCREEN_WIDTH - 24,
         aspectRatio: 0.68,
         backgroundColor: '#FFFFFF',
-        borderRadius: 8,
+        borderRadius: 4,
         overflow: 'hidden',
         position: 'relative',
-        elevation: 6,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
+        borderWidth: 1,
+        borderColor: tokens.border.default,
       },
       pageImage: {
         width: '100%',

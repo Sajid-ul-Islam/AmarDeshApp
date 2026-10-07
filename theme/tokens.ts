@@ -1,12 +1,13 @@
 /**
- * Daily Amar Desh - Comprehensive Theme Token System
+ * Daily Amar Desh - Modern Editorial Theme Token System
  * 
- * Semantic color tokens for the Daily Amar Desh app
- * Embodying "স্বাধীনতার কথা বলে" brand identity:
- * - Brand Crimson: #DC2626 (Breaking news, alerts, primary badge)
- * - Forest Green: #006B3F (National heritage, ePaper, verified icons)
- * - Editorial Ink: #0F172A (Headlines, typography, light surfaces)
- * - OLED Dark: #0A0A0A (Pure deep dark mode, off-white reading text)
+ * Synchronized with Stitch MCP: Mobile News App (projects/14803972069666724044)
+ * - Surface / Paper: #FBF9F5 (Warm crisp newsprint parchment)
+ * - Ink Primary: #121212 (Deep printer's ink)
+ * - Editorial Crimson: #BA131A (Breaking news, live indicator, active anchors)
+ * - Heritage Green: #006B3F (National flag accent, verified badges, ePaper)
+ * - Hairline Divider: #E5E0D8 (1px crisp structural borders)
+ * - OLED Dark: #0A0A0A (Pure pitch dark mode, off-white reading text #F5F5F7)
  */
 
 // ============================================================================
@@ -16,22 +17,22 @@
 export const brand = {
   hue: 150,
   
-  // Crimson scale (Amar Desh Masthead & Breaking News)
+  // Editorial Crimson scale (Stitch Brand Red & Breaking News)
   crimson: {
     50: '#fef2f2',
     100: '#fee2e2',
-    200: '#fecaca',
-    300: '#fca5a5',
+    200: '#ffdad6',
+    300: '#ffcac5',
     400: '#f87171',
     500: '#ef4444',
-    600: '#dc2626', // Base Crimson
-    700: '#b91c1c',
-    800: '#991b1b',
-    900: '#7f1d1d',
-    950: '#450a0a',
+    600: '#ba131a', // Stitch Editorial Crimson
+    700: '#91000d', // Stitch Primary Deep Crimson
+    800: '#680007',
+    900: '#410002',
+    950: '#2b0001',
   },
 
-  // Forest Green scale (National Heritage, ePaper)
+  // National Forest Green scale (Bangladesh Flag, ePaper, Verified)
   green: {
     50: '#f0fdf4',
     100: '#dcfce7',
@@ -39,124 +40,122 @@ export const brand = {
     300: '#86efac',
     400: '#4ade80',
     500: '#22c55e',
-    600: '#006B3F', // Brand Green
+    600: '#006B3F', // Amar Desh Heritage Green
     700: '#15803d',
     800: '#166534',
     900: '#14532d',
     950: '#052e16',
   },
 
-  // Editorial Slate scale (Ink & Neutral Surfaces)
-  slate: {
-    50: '#f8fafc',
-    100: '#f1f5f9',
-    200: '#e2e8f0',
-    300: '#cbd5e1',
-    400: '#94a3b8',
-    500: '#64748b',
-    600: '#475569',
-    700: '#334155',
-    800: '#1e293b',
-    900: '#0f172a',
-    950: '#020617',
+  // Parchment & Slate Neutral Scale
+  neutral: {
+    surface: '#fbf9f5',       // Warm crisp parchment
+    surfaceMuted: '#f3efea',  // Breakout panels
+    surfaceContainer: '#efeeea',
+    surfaceHigh: '#eae8e4',
+    hairline: '#e5e0d8',      // 1px structural divider
+    ink: '#121212',           // Primary typography
+    inkMuted: '#595959',      // Metadata neutral
   },
 
-  primary: '#006B3F',
-  secondary: '#DC2626',
+  primary: '#ba131a',
+  secondary: '#006B3F',
 };
 
 // ============================================================================
-// LIGHT MODE TOKENS
+// LIGHT MODE TOKENS (WARM EDITORIAL PARCHMENT)
 // ============================================================================
 
 export const light = {
   surface: {
-    base: '#ffffff',        // Main paper background
-    subtle: '#f8fafc',      // Subtle stream background
-    elevated: '#f1f5f9',    // Cards, pills, elevated surfaces
-    overlay: '#e2e8f0',     // Modals, overlays
+    base: '#fbf9f5',        // Warm newsprint parchment neutral
+    subtle: '#f5f3ef',      // Secondary surface container low
+    elevated: '#efeeea',    // Surface container / card background
+    overlay: '#eae8e4',     // Modals, sheets, breakouts
   },
   
   text: {
-    primary: '#0f172a',     // High-contrast editorial ink
-    secondary: '#475569',   // Supporting summaries
-    tertiary: '#94a3b8',    // Timestamps, captions
-    inverse: '#ffffff',     // Text on dark badges
+    primary: '#121212',     // Deep printer's ink for high legibility
+    secondary: '#595959',   // Balanced neutral grey for bylines & metadata
+    tertiary: '#7a7875',    // Auxiliary labels and timestamps
+    inverse: '#ffffff',     // Text on crimson/dark badges
   },
   
   brand: {
-    primary: '#006B3F',     // Forest Green
-    secondary: '#dc2626',   // Crimson Red
-    onPrimary: '#ffffff',   // Text on primary
-    surface: '#f0fdf4',     // Brand-tinted green background
-    crimsonSurface: '#fef2f2', // Brand-tinted red background
-    accent: '#22c55e',      // Vivid green
+    primary: '#ba131a',     // Editorial Crimson
+    secondary: '#91000d',   // Deep Crimson accent
+    heritageGreen: '#006B3F', // Amar Desh National Green
+    onPrimary: '#ffffff',   // Text on crimson
+    surface: '#f5f3ef',     // Neutral warm surface
+    crimsonSurface: '#fdf2f2', // Subdued crimson breakout
+    accent: '#006B3F',      // National heritage green
   },
   
   border: {
-    default: '#e2e8f0',     // Default card borders
-    subtle: '#f1f5f9',      // Subtle separators
-    strong: '#cbd5e1',      // Strong borders
+    default: '#e5e0d8',     // 1px signature hairline rule
+    subtle: '#efece6',      // Micro separators
+    strong: '#121212',      // Focused high-contrast structural borders
   },
   
   status: {
     success: '#16a34a',     // Success / live indicator
-    error: '#dc2626',       // Breaking news / critical
+    error: '#ba131a',       // Breaking news / critical
     warning: '#f59e0b',     // Warning
     info: '#2563eb',        // Informational
   },
   
   interactive: {
-    active: '#006B3F',      // Active tab / chip
-    inactive: '#64748b',    // Inactive state
-    hover: '#f1f5f9',       // Hover state
-    pressed: '#e2e8f0',     // Pressed state
+    active: '#ba131a',      // Active tab / chip
+    inactive: '#595959',    // Inactive state
+    hover: '#efeeea',       // Hover surface
+    pressed: '#eae8e4',     // Pressed surface
   },
 };
 
 // ============================================================================
-// DARK MODE TOKENS (OLED-OPTIMIZED)
+// DARK MODE TOKENS (OLED NIGHT EDITION)
 // ============================================================================
 
 export const dark = {
   surface: {
-    base: '#0a0a0a',        // True deep OLED background
+    base: '#0a0a0a',        // True deep OLED background (0% battery drain)
     subtle: '#121214',      // Subtle stream background
-    elevated: '#1a1a1e',    // Elevated cards
-    overlay: '#27272a',     // Modals, overlays
+    elevated: '#141414',    // Tonal planar card container
+    overlay: '#1c1c1e',     // Modals, overlays, elevated sheets
   },
   
   text: {
-    primary: '#f8fafc',     // Off-white crisp reading text
-    secondary: '#94a3b8',   // Secondary gray
-    tertiary: '#64748b',    // Muted tertiary text
+    primary: '#f5f5f7',     // Off-white crisp reading text
+    secondary: '#a1a1a6',   // Secondary grey for bylines
+    tertiary: '#71717a',    // Muted tertiary text
     inverse: '#0a0a0a',     // Inverted dark text
   },
   
   brand: {
-    primary: '#4ade80',     // Lighter accessible green for dark mode
-    secondary: '#f87171',   // Lighter accessible red for dark mode
-    onPrimary: '#052e16',   // Text on green
-    surface: '#14532d',     // Dark green card background
+    primary: '#ef4444',     // Vibrant accessible crimson for dark mode
+    secondary: '#f87171',   // Subdued light red
+    heritageGreen: '#4ade80', // Accessible vibrant green
+    onPrimary: '#ffffff',   // Text on primary
+    surface: '#1a1a1e',     // Dark neutral surface
     crimsonSurface: '#450a0a', // Dark red card background
-    accent: '#86efac',      // Luminous green accent
+    accent: '#10b981',      // Luminous emerald accent
   },
   
   border: {
-    default: '#27272a',     // Subtle dark border
-    subtle: '#18181b',      // Micro separators
+    default: '#27272a',     // 1px dark hairline divider
+    subtle: '#18181b',      // Micro dark separators
     strong: '#3f3f46',      // Focused borders
   },
   
   status: {
     success: '#4ade80',     // Luminous success green
-    error: '#f87171',       // High-contrast breaking red
+    error: '#ef4444',       // High-contrast breaking red
     warning: '#fbbf24',     // Warning amber
     info: '#60a5fa',        // Info blue
   },
   
   interactive: {
-    active: '#4ade80',      // Active pill
+    active: '#ef4444',      // Active pill
     inactive: '#71717a',    // Inactive text
     hover: '#1a1a1e',       // Hover surface
     pressed: '#27272a',     // Pressed surface
@@ -164,10 +163,11 @@ export const dark = {
 };
 
 // ============================================================================
-// TYPOGRAPHY & SPACING TOKENS
+// TYPOGRAPHY SYSTEM (NEWSREADER & INTER SCALES)
 // ============================================================================
 
 export const typography = {
+  // Legacy numeric sizes for backward compatibility
   fontSizes: {
     xs: 11,
     sm: 13,
@@ -182,7 +182,81 @@ export const typography = {
     normal: 1.5,
     relaxed: 1.75,
   },
+
+  // Complete Stitch Modern Editorial scale
+  scale: {
+    headlineXl: {
+      fontSize: 44,
+      lineHeight: 52,
+      letterSpacing: -0.88,
+      fontWeight: '600' as const,
+    },
+    headlineXlMobile: {
+      fontSize: 32,
+      lineHeight: 38,
+      letterSpacing: -0.48,
+      fontWeight: '600' as const,
+    },
+    headlineLg: {
+      fontSize: 32,
+      lineHeight: 40,
+      letterSpacing: -0.48,
+      fontWeight: '500' as const,
+    },
+    headlineLgMobile: {
+      fontSize: 26,
+      lineHeight: 32,
+      letterSpacing: -0.26,
+      fontWeight: '500' as const,
+    },
+    headlineMd: {
+      fontSize: 22,
+      lineHeight: 28,
+      letterSpacing: -0.22,
+      fontWeight: '500' as const,
+    },
+    headlineSm: {
+      fontSize: 18,
+      lineHeight: 24,
+      letterSpacing: 0,
+      fontWeight: '600' as const,
+    },
+    bodyLg: {
+      fontSize: 19,
+      lineHeight: 30,
+      letterSpacing: 0,
+      fontWeight: '400' as const,
+    },
+    bodyMd: {
+      fontSize: 15,
+      lineHeight: 24,
+      letterSpacing: 0,
+      fontWeight: '400' as const,
+    },
+    bodySm: {
+      fontSize: 13,
+      lineHeight: 20,
+      letterSpacing: 0,
+      fontWeight: '400' as const,
+    },
+    labelMd: {
+      fontSize: 12,
+      lineHeight: 16,
+      letterSpacing: 0.72,
+      fontWeight: '600' as const,
+    },
+    labelSm: {
+      fontSize: 11,
+      lineHeight: 14,
+      letterSpacing: 0.44,
+      fontWeight: '500' as const,
+    },
+  },
 };
+
+// ============================================================================
+// SPACING & SHAPE TOKENS (ARCHITECTURAL FLATNESS)
+// ============================================================================
 
 export const spacing = {
   xs: 4,
@@ -192,14 +266,21 @@ export const spacing = {
   xl: 20,
   '2xl': 24,
   '3xl': 32,
+  '4xl': 40,
 };
 
+/**
+ * Modern Editorial shape language:
+ * Enforces crisp architectural edges reflecting broadsheet print stocks
+ */
 export const radii = {
-  sm: 4,
-  md: 8,
-  lg: 12,
-  xl: 16,
-  full: 9999,
+  none: 0,
+  sharp: 0,
+  sm: 2,
+  md: 4,      // Controlled micro-radius for cards & inputs
+  lg: 6,
+  xl: 10,
+  full: 9999, // For circular badges and pill switches only
 };
 
 export type ThemeMode = 'light' | 'dark';

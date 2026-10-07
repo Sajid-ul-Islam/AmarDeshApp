@@ -257,162 +257,174 @@ export default function HomeScreen() {
       },
       categoryScroll: {
         flexDirection: 'row',
-        paddingHorizontal: 12,
-        paddingVertical: 9,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
         backgroundColor: tokens.surface.base,
         borderBottomWidth: 1,
         borderBottomColor: tokens.border.default,
       },
       catChip: {
-        paddingHorizontal: 14,
+        paddingHorizontal: 12,
         paddingVertical: 6,
-        borderRadius: 20,
-        backgroundColor: tokens.surface.elevated,
+        borderRadius: 4,
+        backgroundColor: tokens.surface.subtle,
         marginRight: 8,
         borderWidth: 1,
         borderColor: tokens.border.default,
       },
       specialCatChip: {
         backgroundColor: tokens.brand.crimsonSurface,
-        borderColor: '#FCA5A5',
+        borderColor: tokens.brand.primary,
       },
       activeCatChip: {
+        backgroundColor: tokens.text.primary,
+        borderColor: tokens.text.primary,
+      },
+      activeSpecialCatChip: {
         backgroundColor: tokens.brand.primary,
         borderColor: tokens.brand.primary,
       },
-      activeSpecialCatChip: {
-        backgroundColor: '#DC2626',
-        borderColor: '#DC2626',
-      },
       catChipText: {
-        fontSize: 13,
+        fontSize: 12.5,
         color: tokens.text.secondary,
-        fontWeight: '500',
+        fontWeight: '600',
+        letterSpacing: 0.2,
       },
       specialCatChipText: {
-        color: '#DC2626',
-        fontWeight: 'bold',
+        color: tokens.brand.primary,
+        fontWeight: '700',
       },
       activeCatChipText: {
-        color: '#FFFFFF',
-        fontWeight: 'bold',
+        color: tokens.surface.base,
+        fontWeight: '700',
       },
       listContent: {
-        padding: 16,
+        paddingHorizontal: 16,
+        paddingTop: 12,
         paddingBottom: 40,
       },
       heroCard: {
-        borderRadius: 14,
+        borderRadius: 4,
         overflow: 'hidden',
-        marginBottom: 16,
+        marginBottom: 20,
         backgroundColor: tokens.surface.base,
-        elevation: 4,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.12,
-        shadowRadius: 6,
         borderWidth: 1,
         borderColor: tokens.border.default,
       },
       heroImage: {
         width: '100%',
         height: 220,
+        borderBottomWidth: 1,
+        borderBottomColor: tokens.border.default,
       },
-      heroOverlay: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
+      heroBody: {
         padding: 16,
-        backgroundColor: 'rgba(15, 23, 42, 0.78)',
+        backgroundColor: tokens.surface.base,
       },
-      heroBadgeRow: {
+      heroKickerRow: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 6,
-        marginBottom: 6,
+        marginBottom: 8,
       },
-      heroCategory: {
-        color: '#4ADE80',
-        fontSize: 12,
+      heroKicker: {
+        color: tokens.brand.primary,
+        fontSize: 11.5,
         fontWeight: '700',
         textTransform: 'uppercase',
+        letterSpacing: 0.7,
       },
       heroTitle: {
-        color: '#FFFFFF',
-        fontSize: 18,
-        fontWeight: 'bold',
-        lineHeight: 25,
-        marginBottom: 6,
+        color: tokens.text.primary,
+        fontSize: 22,
+        fontWeight: '700',
+        lineHeight: 30,
+        letterSpacing: -0.3,
+        marginBottom: 8,
+      },
+      heroSnippet: {
+        color: tokens.text.secondary,
+        fontSize: 14,
+        lineHeight: 21,
+        marginBottom: 10,
+      },
+      heroMetaRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        paddingTop: 8,
+        borderTopWidth: 1,
+        borderTopColor: tokens.border.subtle,
       },
       heroTime: {
-        color: '#E2E8F0',
+        color: tokens.text.tertiary,
         fontSize: 11.5,
+        fontWeight: '500',
       },
       spotlightBanner: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: tokens.brand.crimsonSurface,
-        borderLeftWidth: 4,
-        borderLeftColor: '#DC2626',
+        backgroundColor: tokens.surface.elevated,
+        borderLeftWidth: 3.5,
+        borderLeftColor: tokens.brand.primary,
         padding: 14,
-        borderRadius: 10,
-        marginBottom: 16,
+        borderRadius: 4,
+        marginBottom: 18,
         borderWidth: 1,
         borderColor: tokens.border.default,
       },
       spotlightTitle: {
         fontSize: 14.5,
-        fontWeight: 'bold',
-        color: '#DC2626',
+        fontWeight: '700',
+        color: tokens.brand.primary,
+        letterSpacing: -0.2,
       },
       spotlightSub: {
-        fontSize: 11.5,
+        fontSize: 12,
         color: tokens.text.secondary,
         marginTop: 3,
+        lineHeight: 17,
       },
       articleCard: {
         flexDirection: 'row',
         backgroundColor: tokens.surface.base,
-        borderRadius: 12,
-        overflow: 'hidden',
-        marginBottom: 12,
-        padding: 12,
-        gap: 12,
-        borderWidth: 1,
-        borderColor: tokens.border.default,
-        elevation: 1,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 2,
+        paddingVertical: 14,
+        gap: 14,
+        borderBottomWidth: 1,
+        borderBottomColor: tokens.border.default,
       },
       articleContent: {
         flex: 1,
         justifyContent: 'space-between',
       },
       articleCategory: {
-        fontSize: 11.5,
+        fontSize: 11,
         color: tokens.brand.primary,
         fontWeight: '700',
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
         marginBottom: 4,
       },
       articleTitle: {
-        fontSize: 14.5,
-        fontWeight: 'bold',
+        fontSize: 15.5,
+        fontWeight: '700',
         color: tokens.text.primary,
-        lineHeight: 21,
-        marginBottom: 4,
+        lineHeight: 22,
+        letterSpacing: -0.2,
+        marginBottom: 6,
       },
       articleTime: {
         fontSize: 11,
         color: tokens.text.tertiary,
+        fontWeight: '500',
       },
       articleImage: {
-        width: 105,
-        height: 75,
-        borderRadius: 8,
+        width: 86,
+        height: 86,
+        borderRadius: 4,
+        borderWidth: 1,
+        borderColor: tokens.border.subtle,
       },
     })
   );
@@ -468,18 +480,32 @@ export default function HomeScreen() {
           activeOpacity={0.85}
         >
           <ArticleHeroImage uri={item.imageUrl} style={styles.heroImage} />
-          <View style={styles.heroOverlay}>
-            <View style={styles.heroBadgeRow}>
-              <Text style={styles.heroCategory}>
+          <View style={styles.heroBody}>
+            <View style={styles.heroKickerRow}>
+              <Text style={styles.heroKicker}>
                 {getLocalizedCategoryName(item.category, language)}
               </Text>
             </View>
-            <Text style={styles.heroTitle} numberOfLines={2}>
+            <Text style={styles.heroTitle} numberOfLines={3}>
               {item.title}
             </Text>
-            <Text style={styles.heroTime}>
-              {formatLocalizedRelativeTime(item.publishedAt, language)} • {item.author}
-            </Text>
+            {item.excerpt ? (
+              <Text style={styles.heroSnippet} numberOfLines={2}>
+                {item.excerpt}
+              </Text>
+            ) : null}
+            <View style={styles.heroMetaRow}>
+              <Ionicons name="time-outline" size={12} color={styles.heroTime.color} />
+              <Text style={styles.heroTime}>
+                {formatLocalizedRelativeTime(item.publishedAt, language)}
+              </Text>
+              {item.author ? (
+                <>
+                  <Text style={styles.heroTime}>•</Text>
+                  <Text style={styles.heroTime}>{item.author}</Text>
+                </>
+              ) : null}
+            </View>
           </View>
         </TouchableOpacity>
       );

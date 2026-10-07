@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Stitch Modern Editorial Design System Migration
+- **Editorial Broadside Tokens & Aesthetics** (`theme/tokens.ts`):
+  - Synchronized tokens with Stitch MCP `Mobile News App` (`projects/14803972069666724044`): warm newsprint parchment (`#FBF9F5`), deep printer's ink (`#121212`), Editorial Crimson (`#BA131A`), National Forest Green (`#006B3F`), and 1px structural hairline rules (`#E5E0D8`).
+  - Implemented OLED Night Edition (`#0A0A0A`, off-white typography `#F5F5F7`, `#27272A` dividers).
+  - Added complete Stitch typographic scale (`headlineXl`, `headlineXlMobile`, `headlineLg`, `headlineLgMobile`, `headlineMd`, `headlineSm`, `bodyLg`, `bodyMd`, `bodySm`, `labelMd`, `labelSm`).
+  - Transitioned shape system to architectural flatness with `4px` micro-radii and zero blurry elevation drop-shadows.
+- **Home Feed Broadsheet Transformation** (`app/(tabs)/index.tsx`, `components/BreakingNewsTicker.tsx`, `components/PrayerTimesWidget.tsx`, `components/ContinueReadingCard.tsx`):
+  - Redesigned lead hero card: top 16:9 photo with bottom hairline border, followed by clean parchment text box with uppercase crimson kicker, bold Newsreader headline, and byline row.
+  - Redesigned compact feed cards: 1:1 square right-aligned thumbnails (`86x86px`) with 1px hairline bottom rules.
+  - Refactored category tabs with sharp 1px bordered tabs.
+  - Updated Breaking News ticker and Prayer Times widget with planar 1px borders and sharp geometry.
+- **Long-Form Reader Typography** (`app/article/[id].tsx`, `components/AiSummaryCard.tsx`):
+  - Upgraded article title to `26px` with `-0.4` tracking; body copy to `18px` with `30px` line-height for optical reading comfort.
+  - Author byline row bracketed by top and bottom 1px hairline rules.
+  - AI Summary card restyled to planar surface (`#EFEEEA` / `#141414`) with 3.5px crimson accent left border.
+- **ePaper, Video & Navigation Polish** (`app/(tabs)/_layout.tsx`, `app/(tabs)/epaper.tsx`, `app/(tabs)/video.tsx`, `app/(tabs)/menu.tsx`, `app/(tabs)/bookmarks.tsx`):
+  - Bottom tab bar updated with 1px solid hairline top divider and Editorial Crimson active tint.
+  - Planar newsprint canvas on ePaper and video cards.
+
 ### Bilingual Localization Engine (Bengali & English)
 - **Comprehensive Dual-Language Support** (`services/i18n.ts`, `services/__tests__/i18n.test.ts`):
   - Created bilingual translation engine with typed dictionaries (`TRANSLATIONS.bn`, `TRANSLATIONS.en`), `t()`, `formatLocalizedNumeral()`, `formatLocalizedRelativeTime()`, `getLocalizedCategoryName()`, and listener subscription system.
