@@ -29,6 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Integrated "অ্যাপ আপডেট পরীক্ষা (OTA)" menu action and live check trigger in Profile screen.
 - **Minimalist Search Trigger Icon** (`app/(tabs)/menu.tsx`):
   - Replaced text pill with clean, circular search icon button matching editorial design tokens.
+- **Unified 'For You' Feed under the Save Option** (`app/(tabs)/bookmarks.tsx`, `app/(tabs)/foryou.tsx`, `app/(tabs)/_layout.tsx`):
+  - Integrated personalized recommendations and reading affinities directly into the "Save" tab (`সেভ`) via an intuitive top segmented switcher (`[সংরক্ষিত | আপনার জন্য]`).
+  - Seamlessly combines offline bookmarked reading with AI-powered personalized news feeds and user interest topics under one central hub.
 
 ### Official Amar Desh Branding & Edge-to-Edge Top Bar System
 - **Fail-Safe Edge-to-Edge Layout Architecture** (`utils/layout.ts`, all app screens):

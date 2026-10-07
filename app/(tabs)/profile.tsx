@@ -90,7 +90,7 @@ export default function ProfileScreen() {
     { icon: 'notifications-outline', label: 'নোটিফিকেশন ইনবক্স', action: () => router.push('/notifications' as any) },
     { icon: 'newspaper-outline', label: 'ই-পেপার সংস্করণ', action: () => router.push('/epaper' as any) },
     { icon: 'videocam-outline', label: 'ভিডিও ও মাল্টিমিডিয়া', action: () => router.push('/video' as any) },
-    { icon: 'bookmark-outline', label: 'সংরক্ষিত সংবাদ', action: () => router.push('/bookmarks' as any) },
+    { icon: 'bookmark-outline', label: 'সংরক্ষিত সংবাদ ও আপনার জন্য', action: () => router.push('/bookmarks' as any) },
     { icon: 'options-outline', label: 'নোটিফিকেশন নিয়ন্ত্রণ সেটিংস', action: () => router.push('/settings/notifications' as any) },
     { icon: 'heart-outline', label: 'পছন্দের বিষয়সমূহ (আগ্রহ)', action: () => router.push('/settings/interests' as any) },
     { icon: 'shield-checkmark-outline', label: 'গোপনীয়তা ও নিরাপত্তা', action: () => router.push('/settings/privacy' as any) },

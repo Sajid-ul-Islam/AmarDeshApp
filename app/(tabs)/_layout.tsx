@@ -86,13 +86,12 @@ export default function TabLayout() {
         }}
       />
 
-      {/* 4. সেভ (Saved & Offline) */}
+      {/* 4. সেভ (Saved & For You) */}
       <Tabs.Screen
         name="bookmarks"
         options={{
           title: t('tab_saved', language),
-          headerShown: true,
-          headerTitle: t('saved_articles', language),
+          headerShown: false,
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
               name={focused ? 'bookmark' : 'bookmark-outline'}
@@ -134,6 +133,15 @@ export default function TabLayout() {
         options={{
           href: null,
           title: 'Profile',
+          headerShown: false,
+        }}
+      />
+
+      <Tabs.Screen
+        name="foryou"
+        options={{
+          href: null,
+          title: 'For You',
           headerShown: false,
         }}
       />
