@@ -442,14 +442,76 @@ def build_proposal_document():
     doc.add_paragraph().paragraph_format.space_after = Pt(14)
 
     # -------------------------------------------------------------
-    # SECTION 4: 3-WEEK IMPLEMENTATION ROADMAP
+    # SECTION 4: HIGH-FIDELITY MOBILE UI/UX DESIGN SHOWCASE
     # -------------------------------------------------------------
-    h4 = doc.add_heading(level=1)
-    r_h4 = h4.add_run("4. Project Timeline & Rapid Delivery Roadmap")
-    r_h4.font.name = 'Calibri'
-    r_h4.font.size = Pt(18)
-    r_h4.font.bold = True
-    r_h4.font.color.rgb = RGBColor(15, 23, 42)
+    h_ui = doc.add_heading(level=1)
+    r_hui = h_ui.add_run("4. UI/UX Design System Showcase & Broadsheet Aesthetics")
+    r_hui.font.name = 'Calibri'
+    r_hui.font.size = Pt(18)
+    r_hui.font.bold = True
+    r_hui.font.color.rgb = RGBColor(15, 23, 42)
+
+    p_ui = doc.add_paragraph(
+        "To honor Daily Amar Desh's legacy and broadsheet stature, CybrCraft engineered the 'Modern Editorial' "
+        "design system via the Stitch UI framework. The visual interface replaces generic startup rounded shapes "
+        "with authentic newspaper parchment (#FBF9F5), deep printer's ink (#121212), Editorial Crimson (#BA131A), "
+        "and 1px hairline rules (#E5E0D8). The figures below present the actual high-fidelity mobile application screens "
+        "generated for Daily Amar Desh:"
+    )
+    p_ui.paragraph_format.space_after = Pt(10)
+
+    # 2x2 Grid Table of Screenshots
+    ui_table = doc.add_table(rows=2, cols=2)
+    ui_table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    ui_table.autofit = False
+    ui_table.columns[0].width = Inches(3.2)
+    ui_table.columns[1].width = Inches(3.2)
+    set_table_borders(ui_table, color="CBD5E1")
+
+    screens_data = [
+        ("assets/proposal/stitch_home_feed.jpg", "Figure 3: Broadsheet Home Feed", "Live masthead, breaking news ticker, lead hero splash, and 14-vertical category carousel chips."),
+        ("assets/proposal/stitch_article_reader.jpg", "Figure 4: Narrative Article Reader", "Book-grade typography (Newsreader / Noto Serif), 3-point AI smart summary, and bracketed author bylines."),
+        ("assets/proposal/stitch_epaper_saved.jpg", "Figure 5: Digital ePaper & Saved Edition", "High-resolution print replica canvas with 1px column hotspot crop reading and offline download."),
+        ("assets/proposal/stitch_explore_categories.jpg", "Figure 6: Sections Directory & Topics Hub", "Complete 14-vertical newsroom directory, district picker, AI assistant settings, and multi-language controls.")
+    ]
+
+    for idx, (img_path, caption, desc) in enumerate(screens_data):
+        row_idx = idx // 2
+        col_idx = idx % 2
+        cell = ui_table.cell(row_idx, col_idx)
+        cell.width = Inches(3.2)
+        set_cell_background(cell, "F8FAFC")
+        set_cell_margins(cell, top=100, bottom=100, left=100, right=100)
+        p_c = cell.paragraphs[0]
+        p_c.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        if os.path.exists(img_path):
+            r_img = p_c.add_run()
+            r_img.add_picture(img_path, width=Inches(2.8))
+
+        p_cap = cell.add_paragraph()
+        p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_cap.paragraph_format.space_before = Pt(4)
+        p_cap.paragraph_format.space_after = Pt(2)
+        r_cp = p_cap.add_run(caption + "\n")
+        r_cp.font.bold = True
+        r_cp.font.size = Pt(8.5)
+        r_cp.font.color.rgb = RGBColor(15, 23, 42)
+
+        r_cd = p_cap.add_run(desc)
+        r_cd.font.size = Pt(7.5)
+        r_cd.font.color.rgb = RGBColor(100, 116, 139)
+
+    doc.add_page_break()
+
+    # -------------------------------------------------------------
+    # SECTION 5: 3-WEEK IMPLEMENTATION ROADMAP
+    # -------------------------------------------------------------
+    h5 = doc.add_heading(level=1)
+    r_h5 = h5.add_run("5. Project Timeline & Rapid Delivery Roadmap")
+    r_h5.font.name = 'Calibri'
+    r_h5.font.size = Pt(18)
+    r_h5.font.bold = True
+    r_h5.font.color.rgb = RGBColor(15, 23, 42)
 
     p_road = doc.add_paragraph(
         "Because CybrCraft has already engineered and verified the frontend and mobile architecture in the Demo PoC, "
@@ -467,7 +529,7 @@ def build_proposal_document():
         p_cap3.alignment = WD_ALIGN_PARAGRAPH.CENTER
         p_cap3.paragraph_format.space_before = Pt(2)
         p_cap3.paragraph_format.space_after = Pt(14)
-        r_cap3 = p_cap3.add_run("Figure 3: 3-Week Express Delivery Schedule & Milestones")
+        r_cap3 = p_cap3.add_run("Figure 7: 3-Week Express Delivery Schedule & Milestones")
         r_cap3.font.size = Pt(8.5)
         r_cap3.font.italic = True
         r_cap3.font.color.rgb = RGBColor(100, 116, 139)
@@ -475,14 +537,14 @@ def build_proposal_document():
     doc.add_page_break()
 
     # -------------------------------------------------------------
-    # SECTION 5: COMMERCIAL INVESTMENT OPTIONS
+    # SECTION 6: COMMERCIAL INVESTMENT OPTIONS
     # -------------------------------------------------------------
-    h5 = doc.add_heading(level=1)
-    r_h5 = h5.add_run("5. Commercial Engagement Options")
-    r_h5.font.name = 'Calibri'
-    r_h5.font.size = Pt(18)
-    r_h5.font.bold = True
-    r_h5.font.color.rgb = RGBColor(15, 23, 42)
+    h6 = doc.add_heading(level=1)
+    r_h6 = h6.add_run("6. Commercial Engagement Options")
+    r_h6.font.name = 'Calibri'
+    r_h6.font.size = Pt(18)
+    r_h6.font.bold = True
+    r_h6.font.color.rgb = RGBColor(15, 23, 42)
 
     p_comm = doc.add_paragraph(
         "CybrCraft offers three flexible engagement models tailored to the administrative, "
@@ -542,14 +604,14 @@ def build_proposal_document():
     doc.add_paragraph().paragraph_format.space_after = Pt(14)
 
     # -------------------------------------------------------------
-    # SECTION 6: BENGALI EXECUTIVE PITCH SUMMARY
+    # SECTION 7: BENGALI EXECUTIVE PITCH SUMMARY
     # -------------------------------------------------------------
-    h6 = doc.add_heading(level=1)
-    r_h6 = h6.add_run("6. সম্পাদকীয় বোর্ড ও জনাব মাহমুদুর রহমান-এর সমীপে নিবেদন")
-    r_h6.font.name = 'Calibri'
-    r_h6.font.size = Pt(16)
-    r_h6.font.bold = True
-    r_h6.font.color.rgb = RGBColor(220, 38, 38)
+    h7 = doc.add_heading(level=1)
+    r_h7 = h7.add_run("7. সম্পাদকীয় বোর্ড ও জনাব মাহমুদুর রহমান-এর সমীপে নিবেদন")
+    r_h7.font.name = 'Calibri'
+    r_h7.font.size = Pt(16)
+    r_h7.font.bold = True
+    r_h7.font.color.rgb = RGBColor(220, 38, 38)
 
     p_bn1 = doc.add_paragraph(
         "শ্রদ্ধেয় সম্পাদক ও প্রকাশক মহোদয়,\n"
@@ -575,14 +637,14 @@ def build_proposal_document():
     p_bn3.paragraph_format.space_after = Pt(14)
 
     # -------------------------------------------------------------
-    # SECTION 7: ABOUT CYBRCRAFT & CONTACT DETAILS
+    # SECTION 8: ABOUT CYBRCRAFT & CONTACT DETAILS
     # -------------------------------------------------------------
-    h7 = doc.add_heading(level=1)
-    r_h7 = h7.add_run("7. About CybrCraft & Next Steps")
-    r_h7.font.name = 'Calibri'
-    r_h7.font.size = Pt(18)
-    r_h7.font.bold = True
-    r_h7.font.color.rgb = RGBColor(15, 23, 42)
+    h8 = doc.add_heading(level=1)
+    r_h8 = h8.add_run("8. About CybrCraft & Next Steps")
+    r_h8.font.name = 'Calibri'
+    r_h8.font.size = Pt(18)
+    r_h8.font.bold = True
+    r_h8.font.color.rgb = RGBColor(15, 23, 42)
 
     p_about = doc.add_paragraph(
         "CybrCraft (https://cybrcraft.com/) is a leading digital engineering and application development agency headquartered "

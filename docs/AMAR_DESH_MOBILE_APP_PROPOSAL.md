@@ -133,7 +133,25 @@ Furthermore, if any **backend stack modernization or API optimization** is requi
 
 ---
 
-## 4. Scope of Work & Deliverables
+## 4. UI/UX Design System Showcase & Broadsheet Aesthetics
+
+To honor *Daily Amar Desh*'s historical broadsheet stature and editorial courage, CybrCraft engineered the **"Modern Editorial"** design system using the Stitch UI framework. The interface rejects generic corporate tech styles, embracing authentic broadsheet paper parchment (`#FBF9F5`), printer's ink typography (`#121212`), iconic editorial crimson accents (`#BA131A`), and 1px hairline rules (`#E5E0D8`).
+
+The four high-fidelity screens below showcase the exact user experience crafted for Amar Desh readers:
+
+| **Figure 3: Broadsheet Home Feed** | **Figure 4: Narrative Article Reader** |
+| :---: | :---: |
+| ![Broadsheet Home Feed](../assets/proposal/stitch_home_feed.jpg) | ![Narrative Article Reader](../assets/proposal/stitch_article_reader.jpg) |
+| *Live broadsheet masthead, animated breaking news ticker, lead hero splash, and 14-vertical category carousel chips.* | *Book-grade typography (Newsreader / Noto Serif), 3-point AI smart summary, bracketed author bylines, and audio listen mode.* |
+
+| **Figure 5: Digital ePaper & Saved Edition** | **Figure 6: Sections Directory & Topics Hub** |
+| :---: | :---: |
+| ![Digital ePaper & Saved Edition](../assets/proposal/stitch_epaper_saved.jpg) | ![Sections Directory & Topics Hub](../assets/proposal/stitch_explore_categories.jpg) |
+| *High-resolution print replica canvas with 1px column hotspot crop reading, page thumbnail rail, and offline download.* | *Complete 14-vertical newsroom directory, 64-district hyperlocal selector, AI assistant preferences, and bilingual toggles.* |
+
+---
+
+## 5. Scope of Work & Deliverables
 
 CybrCraft will provide an end-to-end, white-glove deployment:
 
@@ -161,7 +179,7 @@ CybrCraft will provide an end-to-end, white-glove deployment:
 
 ---
 
-## 5. Implementation Roadmap (3-Week Rapid Delivery)
+## 6. Implementation Roadmap (3-Week Rapid Delivery)
 
 Because CybrCraft has already engineered and verified the core frontend and mobile architecture in the Demo PoC, the delivery timeline is compressed from traditional 12-16 weeks down to **3 weeks**:
 
@@ -184,7 +202,7 @@ Because CybrCraft has already engineered and verified the core frontend and mobi
 
 ---
 
-## 6. Commercial Investment Options
+## 7. Commercial Investment Options
 
 CybrCraft offers flexible engagement models tailored to Amar Desh Publication Limited's operational strategy:
 
@@ -211,7 +229,7 @@ CybrCraft offers flexible engagement models tailored to Amar Desh Publication Li
 
 ---
 
-## 7. Service Level Agreement (SLA) & Post-Launch Support
+## 8. Service Level Agreement (SLA) & Post-Launch Support
 
 For ongoing maintenance, CybrCraft provides enterprise-grade reliability:
 
@@ -224,7 +242,7 @@ For ongoing maintenance, CybrCraft provides enterprise-grade reliability:
 
 ---
 
-## 8. About CybrCraft
+## 9. About CybrCraft
 
 **CybrCraft** (https://cybrcraft.com/) is a premier software development and digital transformation agency based in Dhaka, Bangladesh (*Bashundhara Riverview*). 
 
@@ -242,7 +260,7 @@ For ongoing maintenance, CybrCraft provides enterprise-grade reliability:
 
 ---
 
-## 9. Next Steps & Action Plan
+## 10. Next Steps & Action Plan
 
 To proceed with testing and formalizing this partnership:
 

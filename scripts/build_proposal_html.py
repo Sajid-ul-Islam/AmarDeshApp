@@ -16,6 +16,10 @@ def build_html_proposal():
     comp_b64 = img_to_base64('assets/proposal/engagement_comparison.png')
     arch_b64 = img_to_base64('assets/proposal/architecture_diagram.png')
     road_b64 = img_to_base64('assets/proposal/timeline_roadmap.png')
+    home_b64 = img_to_base64('assets/proposal/stitch_home_feed.jpg')
+    reader_b64 = img_to_base64('assets/proposal/stitch_article_reader.jpg')
+    epaper_b64 = img_to_base64('assets/proposal/stitch_epaper_saved.jpg')
+    explore_b64 = img_to_base64('assets/proposal/stitch_explore_categories.jpg')
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -208,6 +212,55 @@ def build_html_proposal():
     color: var(--muted);
     font-style: italic;
     margin-top: 8px;
+  }}
+
+  /* SCREENS SHOWCASE GRID */
+  .screens-grid {{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin: 25px 0 35px;
+  }}
+  .screen-card {{
+    background: #fbf9f5;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  }}
+  .screen-img-box {{
+    width: 100%;
+    background: #f5f3ef;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    padding: 12px;
+  }}
+  .screen-img {{
+    max-width: 100%;
+    max-height: 480px;
+    height: auto;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }}
+  .screen-info {{
+    padding: 14px 16px;
+    background: #ffffff;
+    flex: 1;
+  }}
+  .screen-title {{
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 4px;
+  }}
+  .screen-desc {{
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.45;
   }}
 
   /* TABLES */
@@ -440,15 +493,57 @@ def build_html_proposal():
     </tbody>
   </table>
 
-  <h2>4. Project Timeline & 3-Week Rapid Roadmap</h2>
+  <h2>4. UI/UX Design System Showcase & Broadsheet Aesthetics</h2>
+  <p>To honor Daily Amar Desh's legacy and broadsheet stature, CybrCraft engineered the <strong>Modern Editorial</strong> design system via the Stitch UI framework. The visual interface replaces generic startup rounded shapes with authentic newspaper parchment (<code>#FBF9F5</code>), deep printer's ink (<code>#121212</code>), Editorial Crimson (<code>#BA131A</code>), and 1px hairline rules (<code>#E5E0D8</code>). The showcase below presents the actual high-fidelity mobile application screens designed for Daily Amar Desh:</p>
+
+  <div class="screens-grid">
+    <div class="screen-card">
+      <div class="screen-img-box">
+        <img src="{home_b64}" alt="Broadsheet Home Feed" class="screen-img">
+      </div>
+      <div class="screen-info">
+        <div class="screen-title">Figure 3: Broadsheet Home Feed</div>
+        <div class="screen-desc">Live masthead, breaking news ticker, lead hero splash, and 14-vertical category carousel chips.</div>
+      </div>
+    </div>
+    <div class="screen-card">
+      <div class="screen-img-box">
+        <img src="{reader_b64}" alt="Narrative Article Reader" class="screen-img">
+      </div>
+      <div class="screen-info">
+        <div class="screen-title">Figure 4: Narrative Article Reader</div>
+        <div class="screen-desc">Book-grade typography (Newsreader / Noto Serif), 3-point AI smart summary, and bracketed author bylines.</div>
+      </div>
+    </div>
+    <div class="screen-card">
+      <div class="screen-img-box">
+        <img src="{epaper_b64}" alt="Digital ePaper & Saved Edition" class="screen-img">
+      </div>
+      <div class="screen-info">
+        <div class="screen-title">Figure 5: Digital ePaper & Saved Edition</div>
+        <div class="screen-desc">High-resolution print replica canvas with 1px column hotspot crop reading and offline download.</div>
+      </div>
+    </div>
+    <div class="screen-card">
+      <div class="screen-img-box">
+        <img src="{explore_b64}" alt="Sections Directory & Topics Hub" class="screen-img">
+      </div>
+      <div class="screen-info">
+        <div class="screen-title">Figure 6: Sections Directory & Topics Hub</div>
+        <div class="screen-desc">Complete 14-vertical newsroom directory, district picker, AI assistant settings, and multi-language controls.</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>5. Project Timeline & 3-Week Rapid Roadmap</h2>
   <p>Because CybrCraft has already engineered and verified the frontend and mobile architecture in the Demo PoC, the standard development timeline of 3 to 4 months is compressed down to an express 3-week delivery window:</p>
 
   <div class="diagram-container">
     <img src="{road_b64}" alt="Project Timeline Roadmap" class="diagram-img">
-    <div class="caption">Figure 3: 3-Week Express Delivery Schedule & Milestones</div>
+    <div class="caption">Figure 7: 3-Week Express Delivery Schedule & Milestones</div>
   </div>
 
-  <h2>5. Commercial Engagement Options</h2>
+  <h2>6. Commercial Engagement Options</h2>
   <table>
     <thead>
       <tr>
@@ -476,7 +571,7 @@ def build_html_proposal():
     </tbody>
   </table>
 
-  <h2 class="bengali">৬. সম্পাদকীয় বোর্ড ও জনাব মাহমুদুর রহমান-এর সমীপে নিবেদন</h2>
+  <h2 class="bengali">৭. সম্পাদকীয় বোর্ড ও জনাব মাহমুদুর রহমান-এর সমীপে নিবেদন</h2>
   <p class="bengali-p"><strong>শ্রদ্ধেয় সম্পাদক ও প্রকাশক মহোদয়,</strong><br>
   ‘স্বাধীনতার কথা বলে’— আপসহীন সাংবাদিকতার প্রতীক ‘দৈনিক আমার দেশ’ দীর্ঘ সংগ্রাম ও জুলাই ২০২৪-এর ঐতিহাসিক গণঅভ্যুত্থানের পর কোটি পাঠকের হৃদয়ে পুনরুজ্জীবিত হয়েছে। স্বাধীন বাংলাদেশের মুক্ত চিন্তার অগ্রযাত্রায় আপনার বলিষ্ঠ নেতৃত্ব অনস্বীকার্য।</p>
   <p class="bengali-p">বর্তমানে গুগল প্লে-স্টোর কিংবা অ্যাপল অ্যাপ স্টোরে দৈনিক আমার দেশ-এর কোনো অফিসিয়াল মোবাইল অ্যাপ্লিকেশন না থাকায় পাঠকদের জন্য ব্রেকিং নিউজ পুশ অ্যালার্ট এবং অফলাইন রিডিং নিশ্চিত করা সম্ভব হচ্ছে না। সাইবারক্রাফট (CybrCraft) শুধুমাত্র কোনো তাত্ত্বিক পরিকল্পনা নয়, বরং সরাসরি ফোনে ব্যবহারযোগ্য একটি পূর্ণাঙ্গ পরীক্ষামূলক অ্যান্ড্রয়েড ডেমো এপিকে (Demo APK) তৈরি সম্পন্ন করেছে।</p>
