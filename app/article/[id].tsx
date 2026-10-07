@@ -33,7 +33,7 @@ import {
   setArticleSaved,
   setArticleShared,
 } from '../../user';
-import { scrapeFullArticle, ScrapedArticleData } from '../../services/articleScraper';
+import { scrapeFullArticle, ScrapedArticleData, cleanText } from '../../services/articleScraper';
 import { ReaderSettingsModal } from '../../components/ReaderSettingsModal';
 import { AudioNewsBar } from '../../components/AudioNewsBar';
 import { AiSummaryCard } from '../../components/AiSummaryCard';
@@ -118,12 +118,13 @@ export default function ArticleDetailScreen() {
         article.content,
         article.imageUrl,
         article.author,
-        article.publishedAt
+        article.publishedAt,
+        article.link
       ).then((data) => {
         setScrapedData(data);
       });
     }
-  }, [article]);
+  }, [article?.id, article?.link]);
 
   // Load bookmarks & tracking
   useEffect(() => {
@@ -656,7 +657,7 @@ export default function ArticleDetailScreen() {
           </View>
 
           {/* Title */}
-          <Text style={styles.title}>{scrapedData?.title || article.title}</Text>
+          <Text style={styles.title}>{cleanText(scrapedData?.title || article.title)}</Text>
 
           {/* Author Byline */}
           <View style={styles.authorRow}>
@@ -807,7 +808,7 @@ export default function ArticleDetailScreen() {
       {/* Floating Audio News Bar */}
       {showAudioBar && (
         <AudioNewsBar
-          title={scrapedData?.title || article.title}
+          title={cleanText(scrapedData?.title || article.title)}
           textToSpeak={fullTextToSpeak}
           onClose={() => setShowAudioBar(false)}
         />

@@ -20,6 +20,7 @@ import {
   subscribeToArticles,
 } from '../../services/articleStore';
 import { loadBookmarks } from '../../services/storage';
+import { stripCDATA } from '../../services/rssService';
 import { useThemedStyles } from '../../theme';
 import { ArticleThumbnail, ArticleHeroImage } from '../../components/OptimizedImage';
 import { useUserStore, trackCategoryViewed } from '../../user';
@@ -483,7 +484,7 @@ export default function HomeScreen() {
               </Text>
             </View>
             <Text style={styles.heroTitle} numberOfLines={3}>
-              {item.title}
+              {stripCDATA(item.title)}
             </Text>
             {item.excerpt ? (
               <Text style={styles.heroSnippet} numberOfLines={2}>
@@ -519,7 +520,7 @@ export default function HomeScreen() {
               {getLocalizedCategoryName(item.category, language)}
             </Text>
             <Text style={styles.articleTitle} numberOfLines={2}>
-              {item.title}
+              {stripCDATA(item.title)}
             </Text>
             <Text style={styles.articleTime}>
               {formatLocalizedRelativeTime(item.publishedAt, language)}

@@ -51,6 +51,7 @@ const parseRSSFeed = (xml: string): Article[] => {
         // same id across refreshes/relaunches, so bookmarks, reading state,
         // and personalization affinities survive feed re-fetches.
         id: `rss-${hashString(link || title)}`,
+        link: link || undefined,
         title: decodeHTML(title),
         excerpt: cleanDescription.substring(0, 150) + '...',
         content: cleanDescription,
@@ -107,14 +108,26 @@ const isRecent = (pubDate: string, hours: number): boolean => {
   return Date.now() - parsed <= hours * 60 * 60 * 1000;
 };
 
+/**
+ * Strip CDATA wrappers e.g. <![CDATA[ ... ]]> and stray XML artifacts
+ */
+export const stripCDATA = (str: string): string => {
+  if (!str) return '';
+  return str
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/gi, '$1')
+    .replace(/<!\[CDATA\[/gi, '')
+    .replace(/\]\]>/gi, '')
+    .trim();
+};
+
 const extractTag = (xml: string, tag: string, attribute?: string): string => {
   if (attribute) {
     const match = xml.match(new RegExp(`<${tag}[^>]*${attribute}="([^"]*)"`, 'i'));
-    return match ? match[1] : '';
+    return match ? stripCDATA(match[1]) : '';
   }
   
   const match = xml.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'i'));
-  return match ? match[1].trim() : '';
+  return match ? stripCDATA(match[1]) : '';
 };
 
 const extractImageFromDescription = (description: string): string => {
@@ -123,7 +136,7 @@ const extractImageFromDescription = (description: string): string => {
 };
 
 const cleanHTML = (html: string): string => {
-  return html
+  return stripCDATA(html)
     .replace(/<[^>]*>/g, '') // Remove HTML tags
     .replace(/&nbsp;/g, ' ')
     .replace(/&amp;/g, '&')
@@ -131,18 +144,21 @@ const cleanHTML = (html: string): string => {
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
     .replace(/&#039;/g, "'")
+    .replace(/&#39;/g, "'")
     .replace(/\s+/g, ' ')
     .trim();
 };
 
 const decodeHTML = (html: string): string => {
-  return html
+  return stripCDATA(html)
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
     .replace(/&#039;/g, "'")
-    .replace(/&nbsp;/g, ' ');
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .trim();
 };
 
 // Cache RSS feed for offline use

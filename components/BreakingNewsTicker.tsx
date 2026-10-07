@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemedStyles } from '../theme';
+import { stripCDATA } from '../services/rssService';
 
 interface BreakingNewsTickerProps {
   headlines: Array<{ id: string; title: string }>;
@@ -125,7 +126,7 @@ export const BreakingNewsTicker: React.FC<BreakingNewsTickerProps> = ({ headline
           style={[styles.headlineText, { opacity: fadeAnim }]}
           numberOfLines={1}
         >
-          {currentStory.title}
+          {stripCDATA(currentStory.title)}
         </Animated.Text>
       </TouchableOpacity>
 

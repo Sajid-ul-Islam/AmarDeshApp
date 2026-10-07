@@ -8,6 +8,7 @@ export interface Article {
   author: string;
   publishedAt: string;
   isBreaking?: boolean;
+  link?: string;
 }
 
 export const articles: Article[] = [

@@ -23,22 +23,27 @@ export async function scrapeFullArticle(
   fallbackContent: string,
   fallbackImage: string,
   fallbackAuthor: string,
-  fallbackDate: string
+  fallbackDate: string,
+  articleLink?: string
 ): Promise<ScrapedArticleData> {
-  const cacheKey = `${CACHE_PREFIX}${articleUrlOrId}`;
+  const cleanedFallbackTitle = cleanText(fallbackTitle);
+  const cleanedFallbackContent = cleanText(fallbackContent);
+  const cacheKey = `${CACHE_PREFIX}${articleLink || articleUrlOrId}`;
 
   // 1. Try local cache first for instant rendering
   try {
     const cached = await AsyncStorage.getItem(cacheKey);
     if (cached) {
-      return JSON.parse(cached);
+      const parsed = JSON.parse(cached);
+      parsed.title = cleanText(parsed.title);
+      return parsed;
     }
   } catch (err) {
     console.error('Error reading article cache:', err);
   }
 
   // 2. Build target URL if it's an ID or full URL
-  let targetUrl = articleUrlOrId;
+  let targetUrl = articleLink || articleUrlOrId;
   if (!targetUrl.startsWith('http')) {
     // If it's a slug or id, we construct standard portal path or use fallback
     if (targetUrl.startsWith('amd')) {
@@ -61,8 +66,8 @@ export async function scrapeFullArticle(
         const extracted = parseArticleHtml(
           html,
           articleUrlOrId,
-          fallbackTitle,
-          fallbackContent,
+          cleanedFallbackTitle,
+          cleanedFallbackContent,
           fallbackImage,
           fallbackAuthor,
           fallbackDate
@@ -78,18 +83,18 @@ export async function scrapeFullArticle(
   }
 
   // 4. Clean and split fallback content into structured paragraphs
-  const paragraphs = fallbackContent
+  const paragraphs = cleanedFallbackContent
     .split(/\n\n+/)
     .map((p) => p.trim())
     .filter((p) => p.length > 0);
 
   return {
     id: articleUrlOrId,
-    title: fallbackTitle,
-    author: fallbackAuthor || 'আমার দেশ অনলাইন',
+    title: cleanedFallbackTitle,
+    author: cleanText(fallbackAuthor) || 'আমার দেশ অনলাইন',
     publishedAt: fallbackDate,
     heroImageUrl: fallbackImage,
-    paragraphs: paragraphs.length > 0 ? paragraphs : [fallbackContent],
+    paragraphs: paragraphs.length > 0 ? paragraphs : [cleanedFallbackContent],
   };
 }
 
@@ -108,8 +113,9 @@ function parseArticleHtml(
   // Extract Title
   const titleMatch =
     html.match(/<h1[^>]*itemProp="headline"[^>]*>([\s\S]*?)<\/h1>/i) ||
+    html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i) ||
     html.match(/<title>([\s\S]*?)<\/title>/i);
-  const title = titleMatch ? cleanText(titleMatch[1].replace(/\|.*$/, '')) : fallbackTitle;
+  const title = titleMatch ? cleanText(titleMatch[1].replace(/\|.*$/, '')) : cleanText(fallbackTitle);
 
   // Extract Caption
   const captionMatch = html.match(/<figcaption[^>]*>([\s\S]*?)<\/figcaption>/i);
@@ -117,7 +123,7 @@ function parseArticleHtml(
 
   // Extract Author
   const authorMatch = html.match(/itemProp="name"[^>]*>([\s\S]*?)<\/a>/i);
-  const author = authorMatch ? cleanText(authorMatch[1]) : fallbackAuthor;
+  const author = authorMatch ? cleanText(authorMatch[1]) : cleanText(fallbackAuthor);
 
   // Extract Author Avatar
   const avatarMatch = html.match(/<img[^>]*alt="([^"]*)"[^>]*src="([^"]*amr_ds_anlin[^"]*)"/i);
@@ -155,8 +161,12 @@ function parseArticleHtml(
   };
 }
 
-function cleanText(text: string): string {
+export function cleanText(text: string): string {
+  if (!text) return '';
   return text
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/gi, '$1')
+    .replace(/<!\[CDATA\[/gi, '')
+    .replace(/\]\]>/gi, '')
     .replace(/<[^>]*>/g, '')
     .replace(/&nbsp;/g, ' ')
     .replace(/&amp;/g, '&')
@@ -164,6 +174,7 @@ function cleanText(text: string): string {
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
     .replace(/&#039;/g, "'")
+    .replace(/&#39;/g, "'")
     .replace(/\s+/g, ' ')
     .trim();
 }

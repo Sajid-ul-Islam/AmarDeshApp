@@ -8,6 +8,7 @@ import { formatRelativeTime, toBengaliNumeral } from '../../utils/bengali';
 import { loadBookmarks } from '../../services/storage';
 import { ArticleThumbnail } from '../../components/OptimizedImage';
 import { loadArticles, getArticles, subscribeToArticles } from '../../services/articleStore';
+import { stripCDATA } from '../../services/rssService';
 import { useThemedStyles, useThemeTokens } from '../../theme';
 import { useAppStore } from '../../store/useAppStore';
 import {
@@ -203,7 +204,7 @@ export default function BookmarksScreen() {
                   {getLocalizedCategoryName(item.category, language)}
                 </Text>
                 <Text style={styles.articleTitle} numberOfLines={2}>
-                  {item.title}
+                  {stripCDATA(item.title)}
                 </Text>
                 <Text style={styles.articleTime}>
                   {formatLocalizedRelativeTime(item.publishedAt, language)}
