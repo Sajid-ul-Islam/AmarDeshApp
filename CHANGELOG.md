@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Modern Industry-Standard Expo Android App & dailyamardesh.com Content Mirroring
+- **5-Tab Native Android Navigation** — Upgraded navigation structure to 5 core tabs: হোম (Home), ই-পেপার (ePaper Gallery), ভিডিও (Multimedia Hub), সেভ (Saved & Offline), and মেনু (Full 14-category catalog, search & settings).
+- **ePaper Static Image Gallery Edition** (`app/(tabs)/epaper.tsx`) — Native daily print replica reader with page switching (১ম পাতা, ২য় পাতা, সম্পাদকীয়, ইত্যাদি), pinch-to-zoom, and one-tap offline download manager.
+- **Video & Multimedia News Hub** (`app/(tabs)/video.tsx`) — Video news stream featuring Amar Desh video reports, duration tags, category chips, and inline YouTube video player.
+- **Full Taxonomy & Content Service** (`services/contentService.ts`) — Unified ingestion supporting all 14 site verticals (সর্বশেষ, জুলাই বিপ্লব, জাতীয়, রাজনীতি, বাণিজ্য, সারা দেশ, বিনোদন, বিশ্ব, খেলা, ইসলাম ও জীবন, মতামত, ফিচার, শিক্ষা, কর্পোরেট).
+- **Rich Full-Text Article Extractor** (`services/articleScraper.ts`) — On-demand scraper fetching structured paragraphs, photo captions, author avatars, and caching to SQLite/AsyncStorage for instant offline re-reads.
+- **Enhanced Article Reader** (`app/article/[id].tsx`) — In-reader font size scaler (A- / A+), floating Bengali TTS audio player bar (`components/AudioNewsBar.tsx`), photo captions, and related stories.
+- **July Revolution Memorial Portal** (`app/july-revolution/index.tsx`) — Flagship hub commemorating the 2024 uprising with martyr memoirs and reform articles.
+- **District News & Prayer Times Utility** (`services/prayerTimesService.ts`, `components/PrayerTimesWidget.tsx`, `components/DistrictPickerModal.tsx`) — Division-accurate Namaz times with Hijri date and 8-division countrywide selector.
+- **Animated Breaking News Ticker** (`components/BreakingNewsTicker.tsx`) — Live marquee ticker with pulsating red badge.
+
 ### Live News Everywhere (no more hardcoded articles)
 - **Single shared live feed** — new `services/articleStore.ts` is the one source of truth: a single in-flight RSS fetch shared by all screens, cached to AsyncStorage after every successful fetch, with a subscribe API (`useSyncExternalStore`) so screens re-render when fresh data lands.
 - **All screens now read live data** — Search, For You, Bookmarks, and Article Detail previously searched/rendered only the static mock list; they now resolve against the live feed (mock data only as last-resort offline fallback).

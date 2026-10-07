@@ -16,6 +16,7 @@
     "build:dev": "eas build --profile development",
     "build:preview": "eas build --profile preview",
     "build:prod": "eas build --profile production",
+    "build:apk": "eas build --platform android --profile production-apk",
     "build:android": "eas build --platform android --profile production",
     "build:ios": "eas build --platform ios --profile production",
     "submit:ios": "eas submit --platform ios",
