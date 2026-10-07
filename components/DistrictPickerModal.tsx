@@ -1,34 +1,40 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   Modal,
   TouchableOpacity,
-  ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemedStyles } from '../theme';
-import { BANGLADESH_DIVISIONS } from '../services/prayerTimesService';
 
 interface DistrictPickerModalProps {
   visible: boolean;
-  selectedDivision: string;
-  onSelectDivision: (division: string) => void;
+  selectedDivision?: string;
+  isGps?: boolean;
+  onSelectDivision?: (division: string) => void;
+  onRequestGps: () => Promise<void> | void;
+  onResetDhaka: () => Promise<void> | void;
   onClose: () => void;
 }
 
 export const DistrictPickerModal: React.FC<DistrictPickerModalProps> = ({
   visible,
-  selectedDivision,
-  onSelectDivision,
+  selectedDivision = 'ঢাকা',
+  isGps = false,
+  onRequestGps,
+  onResetDhaka,
   onClose,
 }) => {
+  const [loadingGps, setLoadingGps] = useState(false);
+
   const styles = useThemedStyles((tokens) =>
     StyleSheet.create({
       overlay: {
         flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.55)',
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
         justifyContent: 'flex-end',
       },
       content: {
@@ -36,9 +42,8 @@ export const DistrictPickerModal: React.FC<DistrictPickerModalProps> = ({
         borderTopLeftRadius: 24,
         borderTopRightRadius: 24,
         paddingHorizontal: 20,
-        paddingTop: 18,
+        paddingTop: 20,
         paddingBottom: 36,
-        maxHeight: '65%',
         borderWidth: 1,
         borderColor: tokens.border.default,
       },
@@ -46,88 +51,210 @@ export const DistrictPickerModal: React.FC<DistrictPickerModalProps> = ({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingBottom: 14,
+        paddingBottom: 16,
         borderBottomWidth: 1,
         borderBottomColor: tokens.border.default,
       },
+      titleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+      },
       title: {
-        fontSize: 16,
+        fontSize: 17,
         fontWeight: 'bold',
         color: tokens.text.primary,
+        letterSpacing: -0.2,
       },
-      divisionList: {
-        paddingVertical: 8,
+      infoBox: {
+        backgroundColor: tokens.surface.elevated,
+        borderRadius: 12,
+        padding: 14,
+        marginTop: 16,
+        marginBottom: 18,
+        borderWidth: 1,
+        borderColor: tokens.border.subtle,
       },
-      divisionItem: {
+      infoText: {
+        fontSize: 13,
+        lineHeight: 20,
+        color: tokens.text.secondary,
+      },
+      optionCard: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingVertical: 14,
-        paddingHorizontal: 8,
-        borderRadius: 8,
-        borderBottomWidth: 1,
-        borderBottomColor: tokens.border.subtle,
+        padding: 16,
+        borderRadius: 12,
+        borderWidth: 1.5,
+        borderColor: tokens.border.default,
+        marginBottom: 12,
+        backgroundColor: tokens.surface.base,
       },
-      activeDivisionItem: {
+      activeOptionCard: {
+        borderColor: tokens.brand.primary,
         backgroundColor: tokens.brand.surface,
       },
-      divisionText: {
-        fontSize: 15,
-        color: tokens.text.primary,
+      optionLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        flex: 1,
       },
-      activeDivisionText: {
+      iconCircle: {
+        width: 42,
+        height: 42,
+        borderRadius: 21,
+        backgroundColor: tokens.surface.elevated,
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      activeIconCircle: {
+        backgroundColor: tokens.brand.primary,
+      },
+      textCol: {
+        flex: 1,
+      },
+      optionTitle: {
+        fontSize: 15,
+        fontWeight: '700',
+        color: tokens.text.primary,
+        marginBottom: 3,
+      },
+      activeOptionTitle: {
         color: tokens.brand.primary,
-        fontWeight: 'bold',
+      },
+      optionDesc: {
+        fontSize: 12,
+        color: tokens.text.secondary,
+        lineHeight: 16,
+      },
+      closeBtn: {
+        marginTop: 6,
+        paddingVertical: 13,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 10,
+        backgroundColor: tokens.surface.elevated,
+        borderWidth: 1,
+        borderColor: tokens.border.default,
       },
       closeBtnText: {
+        fontSize: 14,
+        fontWeight: '600',
         color: tokens.text.secondary,
       },
     })
   );
 
+  const handleGpsPress = async () => {
+    try {
+      setLoadingGps(true);
+      await onRequestGps();
+      onClose();
+    } finally {
+      setLoadingGps(false);
+    }
+  };
+
+  const handleDhakaPress = async () => {
+    await onResetDhaka();
+    onClose();
+  };
+
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <View style={styles.content}>
+          {/* Header */}
           <View style={styles.headerRow}>
-            <Text style={styles.title}>আপনার বিভাগ নির্বাচন করুন</Text>
-            <TouchableOpacity onPress={onClose} activeOpacity={0.7}>
+            <View style={styles.titleRow}>
+              <Ionicons name="moon-outline" size={20} color={styles.activeOptionTitle.color} />
+              <Text style={styles.title}>নামাজের সময়সূচি নির্ধারণ</Text>
+            </View>
+            <TouchableOpacity onPress={onClose} activeOpacity={0.7} accessibilityLabel="বন্ধ করুন">
               <Ionicons name="close" size={24} color={styles.closeBtnText.color} />
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.divisionList} showsVerticalScrollIndicator={false}>
-            {BANGLADESH_DIVISIONS.map((div) => {
-              const isSelected = div === selectedDivision;
-              return (
-                <TouchableOpacity
-                  key={div}
-                  style={[styles.divisionItem, isSelected && styles.activeDivisionItem]}
-                  onPress={() => {
-                    onSelectDivision(div);
-                    onClose();
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <Text
-                    style={[
-                      styles.divisionText,
-                      isSelected && styles.activeDivisionText,
-                    ]}
-                  >
-                    {div} বিভাগ
-                  </Text>
-                  {isSelected && (
-                    <Ionicons
-                      name="checkmark-circle"
-                      size={20}
-                      color={styles.activeDivisionText.color}
-                    />
-                  )}
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
+          {/* Explanation Info Box */}
+          <View style={styles.infoBox}>
+            <Text style={styles.infoText}>
+              সারাদেশের জন্য ডিফল্ট হিসেবে <Text style={{ fontWeight: 'bold' }}>ঢাকার সময়সূচি</Text> দেখানো হয়। আপনার এলাকার শতভাগ নির্ভুল ও স্থানীয় নামাজের সময়সূচি পেতে GPS লোকেশন ব্যবহার করুন।
+            </Text>
+          </View>
+
+          {/* Option 1: Use GPS */}
+          <TouchableOpacity
+            style={[styles.optionCard, isGps && styles.activeOptionCard]}
+            onPress={handleGpsPress}
+            activeOpacity={0.75}
+            disabled={loadingGps}
+          >
+            <View style={styles.optionLeft}>
+              <View style={[styles.iconCircle, isGps && styles.activeIconCircle]}>
+                {loadingGps ? (
+                  <ActivityIndicator size="small" color={isGps ? '#fff' : styles.activeOptionTitle.color} />
+                ) : (
+                  <Ionicons
+                    name="navigate"
+                    size={20}
+                    color={isGps ? '#fff' : styles.activeOptionTitle.color}
+                  />
+                )}
+              </View>
+              <View style={styles.textCol}>
+                <Text style={[styles.optionTitle, isGps && styles.activeOptionTitle]}>
+                  GPS দিয়ে স্থানীয় সময়সূচি
+                </Text>
+                <Text style={styles.optionDesc}>
+                  {isGps
+                    ? `বর্তমান অবস্থান: ${selectedDivision} (GPS সক্রিয়)`
+                    : 'ডিভাইসের রিয়েল-টাইম অবস্থান অনুযায়ী স্থানীয় সময় হিসাব করুন'}
+                </Text>
+              </View>
+            </View>
+            {isGps ? (
+              <Ionicons name="checkmark-circle" size={22} color={styles.activeOptionTitle.color} />
+            ) : (
+              <Ionicons name="chevron-forward" size={18} color={styles.optionDesc.color} />
+            )}
+          </TouchableOpacity>
+
+          {/* Option 2: Dhaka Default */}
+          <TouchableOpacity
+            style={[styles.optionCard, !isGps && styles.activeOptionCard]}
+            onPress={handleDhakaPress}
+            activeOpacity={0.75}
+          >
+            <View style={styles.optionLeft}>
+              <View style={[styles.iconCircle, !isGps && styles.activeIconCircle]}>
+                <Ionicons
+                  name="time-outline"
+                  size={20}
+                  color={!isGps ? '#fff' : styles.activeOptionTitle.color}
+                />
+              </View>
+              <View style={styles.textCol}>
+                <Text style={[styles.optionTitle, !isGps && styles.activeOptionTitle]}>
+                  ঢাকা (ডিফল্ট প্রমিত সময়)
+                </Text>
+                <Text style={styles.optionDesc}>
+                  {!isGps ? 'বর্তমানে সক্রিয়' : 'সারাদেশের প্রমিত হিসেবে ঢাকার সময়সূচি বহাল রাখুন'}
+                </Text>
+              </View>
+            </View>
+            {!isGps ? (
+              <Ionicons name="checkmark-circle" size={22} color={styles.activeOptionTitle.color} />
+            ) : (
+              <Ionicons name="chevron-forward" size={18} color={styles.optionDesc.color} />
+            )}
+          </TouchableOpacity>
+
+          {/* Close Button */}
+          <TouchableOpacity style={styles.closeBtn} onPress={onClose} activeOpacity={0.75}>
+            <Text style={styles.closeBtnText}>বন্ধ করুন</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </Modal>

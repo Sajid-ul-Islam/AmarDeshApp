@@ -13,6 +13,29 @@ jest.mock('expo-secure-store', () => ({
   deleteItemAsync: jest.fn(),
 }));
 
+// Mock expo-location
+jest.mock('expo-location', () => ({
+  requestForegroundPermissionsAsync: jest.fn(async () => ({ status: 'granted' })),
+  getCurrentPositionAsync: jest.fn(async () => ({
+    coords: {
+      latitude: 22.3569,
+      longitude: 91.7832,
+    },
+  })),
+  reverseGeocodeAsync: jest.fn(async () => [
+    {
+      city: 'Chittagong',
+      district: 'Chattogram',
+      region: 'Chittagong Division',
+      country: 'Bangladesh',
+    },
+  ]),
+  Accuracy: {
+    Balanced: 3,
+    High: 4,
+  },
+}));
+
 // In-memory table for expo-sqlite (prefixed with 'mock' for Jest scope rule)
 const mockSqliteStore = new Map();
 

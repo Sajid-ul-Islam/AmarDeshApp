@@ -19,7 +19,7 @@ export const PrayerTimesWidget: React.FC<PrayerTimesWidgetProps> = ({
         backgroundColor: tokens.surface.base,
         marginHorizontal: 16,
         marginVertical: 10,
-        borderRadius: 4,
+        borderRadius: 8,
         padding: 14,
         borderWidth: 1,
         borderColor: tokens.border.default,
@@ -28,7 +28,7 @@ export const PrayerTimesWidget: React.FC<PrayerTimesWidgetProps> = ({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: 12,
+        marginBottom: 10,
       },
       titleLeft: {
         flexDirection: 'row',
@@ -42,24 +42,28 @@ export const PrayerTimesWidget: React.FC<PrayerTimesWidgetProps> = ({
         letterSpacing: -0.2,
       },
       hijriBadge: {
-        fontSize: 12,
+        fontSize: 11.5,
         color: tokens.text.secondary,
       },
-      divisionBtn: {
+      locationBtn: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 4,
         backgroundColor: tokens.surface.elevated,
         paddingHorizontal: 8,
         paddingVertical: 4,
-        borderRadius: 4,
+        borderRadius: 6,
         borderWidth: 1,
         borderColor: tokens.border.default,
       },
-      divisionText: {
-        fontSize: 12,
+      activeGpsBtn: {
+        backgroundColor: tokens.brand.surface,
+        borderColor: tokens.brand.primary,
+      },
+      locationText: {
+        fontSize: 11.5,
         color: tokens.brand.primary,
-        fontWeight: '600',
+        fontWeight: '700',
       },
       timesRow: {
         flexDirection: 'row',
@@ -93,6 +97,21 @@ export const PrayerTimesWidget: React.FC<PrayerTimesWidgetProps> = ({
       activeWaqtTime: {
         color: tokens.brand.primary,
       },
+      gpsPromptBar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 5,
+        marginTop: 10,
+        paddingTop: 8,
+        borderTopWidth: 1,
+        borderTopColor: tokens.border.subtle,
+      },
+      gpsPromptText: {
+        fontSize: 11.5,
+        color: tokens.brand.primary,
+        fontWeight: '600',
+      },
     })
   );
 
@@ -104,6 +123,11 @@ export const PrayerTimesWidget: React.FC<PrayerTimesWidgetProps> = ({
     { name: 'এশা', time: prayerData.isha },
   ];
 
+  const isGpsActive = Boolean(prayerData.isGps);
+  const locationLabel = isGpsActive
+    ? `${prayerData.division} (GPS)`
+    : `${prayerData.division || 'ঢাকা'} (ডিফল্ট)`;
+
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
@@ -114,19 +138,24 @@ export const PrayerTimesWidget: React.FC<PrayerTimesWidgetProps> = ({
         </View>
 
         <TouchableOpacity
-          style={styles.divisionBtn}
+          style={[styles.locationBtn, isGpsActive && styles.activeGpsBtn]}
           onPress={onChangeDivision}
           activeOpacity={0.7}
+          accessibilityLabel="নামাজের অবস্থান পরিবর্তন করুন"
         >
-          <Ionicons name="location-outline" size={12} color={styles.divisionText.color} />
-          <Text style={styles.divisionText}>{prayerData.division}</Text>
-          <Ionicons name="chevron-down" size={12} color={styles.divisionText.color} />
+          <Ionicons
+            name={isGpsActive ? 'navigate' : 'location-outline'}
+            size={12}
+            color={styles.locationText.color}
+          />
+          <Text style={styles.locationText}>{locationLabel}</Text>
+          <Ionicons name="chevron-down" size={12} color={styles.locationText.color} />
         </TouchableOpacity>
       </View>
 
       <View style={styles.timesRow}>
         {prayers.map((p, idx) => {
-          // Highlight second waqt (e.g. current or next)
+          // Highlight current/upcoming waqt
           const isHighlight = idx === 1;
           return (
             <View
@@ -143,6 +172,20 @@ export const PrayerTimesWidget: React.FC<PrayerTimesWidgetProps> = ({
           );
         })}
       </View>
+
+      {/* GPS Prompt to ask user for local time if still using default */}
+      {!isGpsActive && (
+        <TouchableOpacity
+          style={styles.gpsPromptBar}
+          onPress={onChangeDivision}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="navigate-circle-outline" size={14} color={styles.gpsPromptText.color} />
+          <Text style={styles.gpsPromptText}>
+            আপনার এলাকার সঠিক সময়ের জন্য GPS ব্যবহার করুন ↗
+          </Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };

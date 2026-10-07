@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Platform,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -31,16 +32,15 @@ import { DistrictPickerModal } from '../../components/DistrictPickerModal';
 import { ContinueReadingCard } from '../../components/ContinueReadingCard';
 import {
   getPrayerTimesForDivision,
+  getSavedPrayerData,
+  requestGpsPrayerTimes,
+  resetToDhakaDefault,
   PrayerTimeData,
 } from '../../services/prayerTimesService';
 import {
   SITE_CATEGORIES,
   getArticlesByCategory,
 } from '../../services/contentService';
-import {
-  getSelectedDivision,
-  saveSelectedDivision,
-} from '../../services/districtService';
 import {
   getUnreadNotificationCount,
   subscribeToInbox,
@@ -62,7 +62,6 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('সর্বশেষ');
-  const [selectedDivision, setSelectedDivision] = useState('ঢাকা');
   const [showDistrictModal, setShowDistrictModal] = useState(false);
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
   const language = useAppStore((state) => state.language);
@@ -81,15 +80,24 @@ export default function HomeScreen() {
   const isUserReady = useUserStore((state) => state.isInitialized);
   const getPersonalizedFeed = useUserStore((state) => state.getPersonalizedFeed);
 
-  // Load saved division on mount
+  // Load saved prayer schedule on mount (Dhaka default or GPS)
   useEffect(() => {
-    getSelectedDivision().then(setSelectedDivision);
+    getSavedPrayerData().then(setPrayerData);
   }, []);
 
-  // Update prayer times when division changes
-  useEffect(() => {
-    setPrayerData(getPrayerTimesForDivision(selectedDivision));
-  }, [selectedDivision]);
+  const handleRequestGps = async () => {
+    const result = await requestGpsPrayerTimes();
+    if (result.success && result.data) {
+      setPrayerData(result.data);
+    } else if (result.error) {
+      Alert.alert('লোকেশন বার্তা', result.error);
+    }
+  };
+
+  const handleResetDhaka = async () => {
+    const defaultData = await resetToDhakaDefault();
+    setPrayerData(defaultData);
+  };
 
   // Load bookmarks on mount
   useEffect(() => {
@@ -563,7 +571,7 @@ export default function HomeScreen() {
           >
             <Ionicons name="location-sharp" size={12} color={styles.divisionBadgeText.color} />
             <Text style={styles.divisionBadgeText}>
-              {selectedDivision} {t('edition_label', language)}
+              {prayerData.division} {t('edition_label', language)}
             </Text>
           </TouchableOpacity>
         </View>
@@ -664,14 +672,13 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
       />
 
-      {/* District / Division Selector Modal */}
+      {/* GPS Location & Prayer Selector Modal */}
       <DistrictPickerModal
         visible={showDistrictModal}
-        selectedDivision={selectedDivision}
-        onSelectDivision={(div) => {
-          setSelectedDivision(div);
-          saveSelectedDivision(div);
-        }}
+        selectedDivision={prayerData.division}
+        isGps={Boolean(prayerData.isGps)}
+        onRequestGps={handleRequestGps}
+        onResetDhaka={handleResetDhaka}
         onClose={() => setShowDistrictModal(false)}
       />
     </View>

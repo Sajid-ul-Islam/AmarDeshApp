@@ -7,7 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Gemini Dynamic Model Auto-Discovery & Resilient Multi-Model Engine
+### Prayer Timetable Dhaka Default & GPS Local Time Auto-Detection
+- **Dhaka Default & Native GPS Prayer Schedule** (`services/prayerTimesService.ts`, `components/PrayerTimesWidget.tsx`, `components/DistrictPickerModal.tsx`, `app/(tabs)/index.tsx`):
+  - Completely removed the "আপনার বিভাগ নির্বাচন করুন" option and 8-division picker list from the application.
+  - Standardized on Dhaka (`ঢাকা`) as the primary nationwide default timetable.
+  - Installed `expo-location` and created `requestGpsPrayerTimes()` with precise solar offset calculation (`calculateSolarOffsetMinutes`), mapping device longitude to accurate local solar prayer times.
+  - Added interactive GPS prompt modal and 1-tap widget prompt allowing readers to effortlessly switch between GPS local time and Dhaka default.
+  - Added reverse geocoding mapping English coordinates/districts to localized Bengali names.
+
 - **Dynamic Google Generative AI Model Discovery** (`services/byokAiService.ts`, `app/settings/ai.tsx`):
   - Implemented `discoverGeminiModels(apiKey)` dynamically querying `/v1beta/models` to discover models permitted for the user's API key.
   - Created automated candidate fallback sequence (`gemini-2.5-flash`, `gemini-flash-latest`, `gemini-2.0-flash`, `gemini-2.5-pro`, `gemini-1.5-flash`, etc.) ensuring **any valid Gemini API key works automatically** even when `gemini-1.5-flash` is unavailable.
