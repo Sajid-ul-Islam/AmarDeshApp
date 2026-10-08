@@ -27,3 +27,8 @@ expo-env.d.ts
 # Native folders (EAS prebuild in cloud)
 android/
 ios/
+
+# Binaries and APK releases
+release/
+*.apk
+*.aab
