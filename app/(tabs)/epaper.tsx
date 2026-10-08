@@ -19,8 +19,9 @@ import { Image } from 'expo-image';
 import { useThemedStyles } from '../../theme';
 import { useAppStore } from '../../store/useAppStore';
 import { t, formatLocalizedNumeral } from '../../services/i18n';
-import { getSafeHeaderPaddingTop } from '../../utils/layout';
+import { getSafeHeaderPaddingTop, getSafeBottomPadding } from '../../utils/layout';
 import { AmarDeshLogo } from '../../components/AmarDeshLogo';
+import { SITE_HOME_URL } from '../../services/deepLinkService';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -387,7 +388,7 @@ export default function EPaperScreen() {
         borderTopLeftRadius: tokens.radii['2xl'],
         borderTopRightRadius: tokens.radii['2xl'],
         padding: 20,
-        paddingBottom: 32,
+        paddingBottom: getSafeBottomPadding(insets.bottom, 32),
         borderTopWidth: 0.5,
         borderTopColor: tokens.border.subtle,
         ...tokens.shadows.lg,
@@ -737,6 +738,8 @@ export default function EPaperScreen() {
         {/* Floating Navigation & Zoom Control Bar */}
         <View style={styles.floatingBar}>
           <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="ফিরে যান"
             onPress={handlePrevPage}
             disabled={currentPageIndex === 0}
             style={{ opacity: currentPageIndex === 0 ? 0.4 : 1 }}
@@ -854,7 +857,7 @@ export default function EPaperScreen() {
                   onPress={() => {
                     Share.share({
                       title: selectedHotspot.title,
-                      message: `${selectedHotspot.title}\n\nদৈনিক আমার দেশ ই-পেপার থেকে সংগৃহীত।\nhttps://www.dailyamardesh.com`,
+                      message: `${selectedHotspot.title}\n\nদৈনিক আমার দেশ ই-পেপার থেকে সংগৃহীত।\n${SITE_HOME_URL}`,
                     });
                   }}
                   activeOpacity={0.7}

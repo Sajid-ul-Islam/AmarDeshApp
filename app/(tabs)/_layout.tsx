@@ -1,12 +1,21 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeTokens } from '../../theme';
 import { useAppStore } from '../../store/useAppStore';
 import { t } from '../../services/i18n';
+import { TAB_BAR_CONTENT_HEIGHT } from '../../utils/layout';
 
 export default function TabLayout() {
   const tokens = useThemeTokens();
   const language = useAppStore((state) => state.language);
+  /**
+   * The tab bar is absolutely positioned by the navigator, so its height must
+   * itself include the home-indicator / gesture-bar inset. With a hard-coded
+   * 60px the labels sat underneath the indicator on iPhones and on Android
+   * gesture navigation, and screen content was hidden behind it.
+   */
+  const insets = useSafeAreaInsets();
 
   return (
     <Tabs
@@ -17,8 +26,8 @@ export default function TabLayout() {
           backgroundColor: tokens.surface.base,
           borderTopColor: tokens.border.default,
           borderTopWidth: 1,
-          height: 60,
-          paddingBottom: 8,
+          height: TAB_BAR_CONTENT_HEIGHT + insets.bottom,
+          paddingBottom: insets.bottom > 0 ? insets.bottom : 8,
           paddingTop: 6,
           elevation: 0,
           shadowOpacity: 0,

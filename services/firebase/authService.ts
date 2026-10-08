@@ -15,11 +15,8 @@
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  signInWithCredential,
   signOut as firebaseSignOut,
   onAuthStateChanged,
-  GoogleAuthProvider,
-  OAuthProvider,
   type User,
   type Auth,
 } from 'firebase/auth';
@@ -33,6 +30,32 @@ type AuthStateCallback = (user: User | null) => void;
 // Current auth state
 let currentUser: User | null = null;
 let authStateCallbacks: AuthStateCallback[] = [];
+
+/**
+ * Error thrown when an operation needs the cloud account system and no Firebase
+ * project is configured. The UI surfaces `message` directly, so it is written
+ * for the reader.
+ */
+export class CloudNotConfiguredError extends Error {
+  constructor() {
+    super(
+      'অ্যাকাউন্ট ও ক্লাউড সিঙ্ক এখনো চালু করা হয়নি। আপনার বুকমার্ক, পড়ার ইতিহাস ও সেটিংস এই ডিভাইসেই নিরাপদে সংরক্ষিত আছে।'
+    );
+    this.name = 'CloudNotConfiguredError';
+  }
+}
+
+/** Whether account-backed features can run. */
+export function isCloudAccountAvailable(): boolean {
+  return isFirebaseConfigured();
+}
+
+function requireAuthOrThrow(): Auth {
+  if (!isFirebaseConfigured()) {
+    throw new CloudNotConfiguredError();
+  }
+  return requireFirebase().auth;
+}
 
 /**
  * Initialize auth state listener
@@ -95,7 +118,7 @@ export async function signInWithEmail(
   email: string,
   password: string
 ): Promise<User> {
-  const { auth } = requireFirebase();
+  const auth = requireAuthOrThrow();
 
   try {
     console.log('[Auth] Signing in with email:', email);
@@ -112,6 +135,7 @@ export async function signInWithEmail(
     console.log('[Auth] Sign in successful:', user.uid);
     return user;
   } catch (error: unknown) {
+    if (error instanceof CloudNotConfiguredError) throw error;
     const fbError = error as { code?: string; message?: string };
     console.error('[Auth] Sign in error:', fbError?.message);
     throw new Error(getAuthErrorMessage(fbError?.code || ''));
@@ -125,7 +149,7 @@ export async function createAccountWithEmail(
   email: string,
   password: string
 ): Promise<User> {
-  const { auth } = requireFirebase();
+  const auth = requireAuthOrThrow();
 
   try {
     console.log('[Auth] Creating account with email:', email);
@@ -139,6 +163,7 @@ export async function createAccountWithEmail(
     console.log('[Auth] Account created successfully:', user.uid);
     return user;
   } catch (error: unknown) {
+    if (error instanceof CloudNotConfiguredError) throw error;
     const fbError = error as { code?: string; message?: string };
     console.error('[Auth] Create account error:', fbError?.message);
     throw new Error(getAuthErrorMessage(fbError?.code || ''));
@@ -146,82 +171,52 @@ export async function createAccountWithEmail(
 }
 
 /**
- * Sign in with Google
+ * Third-party sign-in is NOT implemented.
  *
- * Note: In a real app, you'd use @react-native-google-signin/google-signin
- * to obtain a real Google ID token. The current placeholder token will be
- * rejected by Firebase, surfacing a friendly error to the user.
+ * The previous implementation called `signInWithCredential` with the literal
+ * strings `'mock_google_id_token'` / `'mock_id_token'` + `'mock_nonce'`. Those
+ * are not real OIDC tokens, so Firebase always rejected them and the reader saw
+ * a generic "authentication error" with no way to succeed.
+ *
+ * A real implementation needs a provider SDK to obtain a genuine ID token:
+ *   - Google: `@react-native-google-signin/google-signin`, then
+ *     `GoogleAuthProvider.credential(idToken)`
+ *   - Apple:  `expo-apple-authentication`, then
+ *     `new OAuthProvider('apple.com').credential({ idToken, rawNonce })`
+ * Both need native configuration (OAuth client ids / Apple capability) this
+ * project does not have. Until then these reject with a clear reason rather
+ * than pretending to attempt a sign-in.
  */
 export async function signInWithGoogle(): Promise<User> {
-  const { auth } = requireFirebase();
-
-  try {
-    console.log('[Auth] Signing in with Google');
-
-    const provider = new GoogleAuthProvider();
-    const userCredential = await signInWithCredential(
-      auth,
-      GoogleAuthProvider.credential('mock_google_id_token')
-    );
-    const user = userCredential.user;
-    
-    // Migrate anonymous data
-    await migrateAnonymousData(user.uid);
-    
-    // Pull data from cloud
-    await pullFromCloud(user.uid);
-    
-    console.log('[Auth] Google sign in successful:', user.uid);
-    return user;
-  } catch (error: unknown) {
-    const fbError = error as { code?: string; message?: string };
-    console.error('[Auth] Google sign in error:', fbError?.message);
-    throw new Error(getAuthErrorMessage(fbError?.code || ''));
+  if (!isFirebaseConfigured()) {
+    throw new CloudNotConfiguredError();
   }
+  throw new Error(
+    'Google দিয়ে সাইন-ইন এখনো চালু করা হয়নি। ইমেইল ও পাসওয়ার্ড ব্যবহার করুন।'
+  );
 }
 
-/**
- * Sign in with Apple (iOS only)
- *
- * Note: In a real app, you'd use expo-apple-authentication to obtain a real
- * Apple identity token and a fresh nonce. The current placeholder token will
- * be rejected by Firebase, surfacing a friendly error to the user.
- */
 export async function signInWithApple(): Promise<User> {
-  const { auth } = requireFirebase();
-
-  try {
-    console.log('[Auth] Signing in with Apple');
-
-    const provider = new OAuthProvider('apple.com');
-    const userCredential = await signInWithCredential(
-      auth,
-      provider.credential({
-        idToken: 'mock_id_token',
-        rawNonce: 'mock_nonce',
-      })
-    );
-    const user = userCredential.user;
-    
-    // Migrate anonymous data
-    await migrateAnonymousData(user.uid);
-    
-    // Pull data from cloud
-    await pullFromCloud(user.uid);
-    
-    console.log('[Auth] Apple sign in successful:', user.uid);
-    return user;
-  } catch (error: unknown) {
-    const fbError = error as { code?: string; message?: string };
-    console.error('[Auth] Apple sign in error:', fbError?.message);
-    throw new Error(getAuthErrorMessage(fbError?.code || ''));
+  if (!isFirebaseConfigured()) {
+    throw new CloudNotConfiguredError();
   }
+  throw new Error(
+    'Apple দিয়ে সাইন-ইন এখনো চালু করা হয়নি। ইমেইল ও পাসওয়ার্ড ব্যবহার করুন।'
+  );
 }
 
 /**
  * Sign out
+ *
+ * A no-op (not an error) when nothing is signed in, so the UI can always offer
+ * "sign out" without surfacing a failure on an already-signed-out device.
  */
 export async function signOut(): Promise<void> {
+  if (!isFirebaseConfigured() || !currentUser) {
+    currentUser = null;
+    return;
+  }
+
   const { auth } = requireFirebase();
 
   try {

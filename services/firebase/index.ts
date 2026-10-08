@@ -10,6 +10,8 @@ export {
   onAuthStateChange,
   getCurrentUser,
   isAuthenticated,
+  isCloudAccountAvailable,
+  CloudNotConfiguredError,
   signInWithEmail,
   createAccountWithEmail,
   signInWithGoogle,

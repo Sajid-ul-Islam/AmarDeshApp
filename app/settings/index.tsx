@@ -58,8 +58,6 @@ import {
   getPrayerTimesForDivision,
 } from '../../services/prayerTimesService';
 
-const LOW_DATA_STORAGE_KEY = '@amar_desh_low_data_mode';
-
 export default function OneStopSettingsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -72,11 +70,13 @@ export default function OneStopSettingsScreen() {
   const setThemePreference = useAppStore((state) => state.setThemePreference);
   const feedLayout = useAppStore((state) => state.feedLayout);
   const setFeedLayout = useAppStore((state) => state.setFeedLayout);
+  // Low-data mode lives in the store so OptimizedImage and the feed can act on it.
+  const lowDataMode = useAppStore((state) => state.lowDataMode);
+  const setLowDataMode = useAppStore((state) => state.setLowDataMode);
   const userId = useUserStore((state) => state.userId);
 
   // Local settings state
   const [fontSize, setFontSize] = useState<string>('M');
-  const [lowDataMode, setLowDataMode] = useState<boolean>(false);
   const [cachedCount, setCachedCount] = useState<number>(0);
   const [isClearingCache, setIsClearingCache] = useState<boolean>(false);
   const [checkingUpdate, setCheckingUpdate] = useState<boolean>(false);
@@ -113,10 +113,6 @@ export default function OneStopSettingsScreen() {
   useEffect(() => {
     loadFontSize().then(setFontSize);
 
-    AsyncStorage.getItem(LOW_DATA_STORAGE_KEY).then((val) => {
-      if (val !== null) setLowDataMode(JSON.parse(val));
-    });
-
     getOfflineArticleCount().then(setCachedCount);
 
     getByokAiConfig().then((cfg) => {
@@ -133,8 +129,9 @@ export default function OneStopSettingsScreen() {
 
   const handleToggleLowData = async (value: boolean) => {
     Haptics.selectionAsync();
+    // Persisted through the store so image/feed code can react to it. Keeping a
+    // local copy meant this switch changed nothing about what the app downloaded.
     setLowDataMode(value);
-    await AsyncStorage.setItem(LOW_DATA_STORAGE_KEY, JSON.stringify(value));
   };
 
   const handleSelectAiProvider = async (prov: AiProvider) => {
@@ -205,14 +202,39 @@ export default function OneStopSettingsScreen() {
     const res = await syncAccountData(userId || 'reader-account');
     const newState = await getCloudSyncState();
     setSyncState(newState);
+
     if (res.success) {
       Alert.alert(
         language === 'bn' ? 'সিঙ্ক সম্পন্ন' : 'Sync Complete',
         language === 'bn'
-          ? 'ক্লাউডে বুকমার্ক ও রিডিং হিস্ট্রি সফলভাবে সিঙ্ক হয়েছে।'
+          ? 'ক্লাউডে বুকমার্ক ও রিডিং হিস্ট্রি সফলভাবে সিঙ্ক হয়েছে।'
           : 'Bookmarks and reading history successfully synced.'
       );
+      return;
     }
+
+    // Never imply data reached the cloud when it did not. With no backend
+    // configured there is nothing to sync to, and the reader deserves to know
+    // that their data is local-only rather than silently "synced".
+    if (res.notConfigured) {
+      Alert.alert(
+        language === 'bn' ? 'ক্লাউড সিঙ্ক নেই' : 'Cloud sync unavailable',
+        language === 'bn'
+          ? 'ক্লাউড সিঙ্ক এখনো কনফিগার করা হয়নি। আপনার বুকমার্ক, পড়ার ইতিহাস ও রিডিং স্ট্রিক এই ডিভাইসেই নিরাপদে সংরক্ষিত আছে।'
+          : 'Cloud sync is not configured. Your bookmarks, reading history and streak are stored safely on this device only.'
+      );
+      return;
+    }
+
+    Alert.alert(
+      language === 'bn' ? 'সিঙ্ক ব্যর্থ' : 'Sync failed',
+      res.queued
+        ? language === 'bn'
+          ? 'নেটওয়ার্ক সংযোগ পাওয়া যায়নি। আপনার পরিবর্তনগুলো অফলাইন সারিতে রাখা হয়েছে এবং সংযোগ ফিরলে সিঙ্ক হবে।'
+          : 'No network connection. Your changes are queued and will sync when you are back online.'
+        : res.error ||
+            (language === 'bn' ? 'সিঙ্ক করা যায়নি।' : 'Could not sync.')
+    );
   };
 
   const handleCheckOta = async () => {

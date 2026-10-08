@@ -16,7 +16,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { articles as mockArticles, Article } from '../../data/mockData';
+import type { Article } from '../../types';
 import { getArticleById, loadArticles } from '../../services/articleStore';
 import { formatRelativeTime } from '../../utils/bengali';
 import {
@@ -83,40 +83,83 @@ export default function ArticleDetailScreen() {
   const [isResolving, setIsResolving] = useState(false);
   const [scrapedData, setScrapedData] = useState<ScrapedArticleData | null>(null);
 
-  // Resolve base article
+  // Resolve the base article.
+  //
+  // Order: in-memory store → forced feed/cache load → last-resort reconstruction
+  // from the canonical web URL. The last step matters for shared links: a
+  // recipient's cold start has no cache, and the feed may have rotated past the
+  // story, so without it a perfectly valid share link showed "not found".
   useEffect(() => {
     let active = true;
-    const inStore = articleId ? getArticleById(articleId) : undefined;
+
+    const fallbackFromWeb = async (id: string): Promise<Article | null> => {
+      const data = await scrapeFullArticle(id, '', '', '', '', '', undefined);
+      // A scrape that produced no usable title means the id does not exist.
+      const title = data.title?.trim();
+      if (!title) return null;
+
+      return {
+        id,
+        title,
+        excerpt: data.paragraphs?.[0]?.slice(0, 180) ?? title,
+        content: (data.paragraphs ?? []).join('\n\n'),
+        category: '',
+        imageUrl: data.heroImageUrl ?? '',
+        author: data.author || 'আমার দেশ ডেস্ক',
+        publishedAt: data.publishedAt || new Date().toISOString(),
+        link: undefined,
+      };
+    };
+
+    if (!articleId) {
+      setResolvedArticle(null);
+      setIsResolving(false);
+      return () => {
+        active = false;
+      };
+    }
+
+    const inStore = getArticleById(articleId);
     if (inStore) {
       setResolvedArticle(inStore);
       setIsResolving(false);
-      return;
+      return () => {
+        active = false;
+      };
     }
 
-    if (articleId) {
-      setIsResolving(true);
-      loadArticles()
-        .then(() => {
-          if (!active) return;
-          setResolvedArticle(getArticleById(articleId) ?? null);
-        })
-        .catch(() => {
-          if (active) setResolvedArticle(null);
-        })
-        .finally(() => {
-          if (active) setIsResolving(false);
-        });
-    } else {
-      setResolvedArticle(null);
-    }
+    setIsResolving(true);
+
+    loadArticles()
+      .then(() => {
+        if (!active) return null;
+        const fromStore = getArticleById(articleId);
+        if (fromStore) return fromStore;
+        // Not in the current feed: try the article's canonical web page.
+        return fallbackFromWeb(articleId);
+      })
+      .catch(async () => {
+        if (!active) return null;
+        // Feed unavailable (offline first launch) — still try the article URL.
+        return fallbackFromWeb(articleId).catch(() => null);
+      })
+      .then((resolved) => {
+        if (!active) return;
+        setResolvedArticle(resolved ?? null);
+      })
+      .catch(() => {
+        if (active) setResolvedArticle(null);
+      })
+      .finally(() => {
+        if (active) setIsResolving(false);
+      });
 
     return () => {
       active = false;
     };
   }, [articleId]);
 
-  const mockArticle = mockArticles.find((a) => a.id === articleId);
-  const article: Article | undefined = mockArticle ?? (resolvedArticle ?? undefined);
+  const article: Article | undefined = resolvedArticle ?? undefined;
 
   // On-demand full-text scraper & rich paragraphs
   useEffect(() => {
@@ -567,6 +610,8 @@ export default function ArticleDetailScreen() {
           সংবাদটি হয়তো সরানো হয়েছে বা লিংকটি সঠিক নয়।
         </Text>
         <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="ফিরে যান"
           onPress={() => (router.canGoBack() ? router.back() : router.replace('/' as any))}
           style={{
             flexDirection: 'row',
@@ -657,6 +702,8 @@ export default function ArticleDetailScreen() {
         /* Standard Header Bar */
         <View style={styles.header}>
           <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="ফিরে যান"
             onPress={() => router.back()}
             style={styles.backButton}
             activeOpacity={0.7}
@@ -824,6 +871,8 @@ export default function ArticleDetailScreen() {
                 style={styles.navCard}
                 onPress={() => router.push(`/article/${prevArticle.id}` as any)}
                 activeOpacity={0.75}
+                accessibilityRole="button"
+                accessibilityLabel={`${t('prev_article', language)}: ${prevArticle.title}`}
               >
                 <View style={styles.navCardHeader}>
                   <Ionicons name="arrow-back" size={14} color="#006B3F" />

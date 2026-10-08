@@ -21,7 +21,7 @@ import {
   signOut,
   onAuthStateChange,
 } from '../../services/firebase';
-import { getSafeHeaderPaddingTop } from '../../utils/layout';
+import { getSafeHeaderPaddingTop, getSafeBottomPadding } from '../../utils/layout';
 import { AmarDeshLogo } from '../../components/AmarDeshLogo';
 import { checkForOtaUpdate, applyOtaUpdate } from '../../services/otaUpdateService';
 import { DistrictPickerModal } from '../../components/DistrictPickerModal';
@@ -255,7 +255,7 @@ export default function ProfileScreen() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={{
-        paddingBottom: 32,
+        paddingBottom: getSafeBottomPadding(insets.bottom, 32),
       }}
     >
       <View style={styles.header}>

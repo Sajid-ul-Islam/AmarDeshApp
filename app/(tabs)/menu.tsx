@@ -15,7 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useThemedStyles, useThemeTokens } from '../../theme';
 import { useAppStore } from '../../store/useAppStore';
 import { t, getLocalizedCategoryName, SupportedLanguage } from '../../services/i18n';
-import { getSafeHeaderPaddingTop } from '../../utils/layout';
+import { getSafeHeaderPaddingTop, getSafeBottomPadding } from '../../utils/layout';
 import { AmarDeshLogo } from '../../components/AmarDeshLogo';
 import { DistrictPickerModal } from '../../components/DistrictPickerModal';
 import { PrayerTimesWidget } from '../../components/PrayerTimesWidget';
@@ -59,7 +59,7 @@ export default function MenuScreen() {
   const setThemePreference = useAppStore((state) => state.setThemePreference);
   const language = useAppStore((state) => state.language);
   const setLanguage = useAppStore((state) => state.setLanguage);
-  const [lowDataMode, setLowDataMode] = useState(false);
+  // Low-data mode is owned by the store (see app/settings) — no local mirror.
   const [prayerData, setPrayerData] = useState<PrayerTimeData>(
     getPrayerTimesForDivision('ঢাকা')
   );
@@ -92,7 +92,7 @@ export default function MenuScreen() {
       header: {
         paddingTop: getSafeHeaderPaddingTop(insets.top, 8),
         paddingHorizontal: 20,
-        paddingBottom: 16,
+        paddingBottom: getSafeBottomPadding(insets.bottom, 16),
         backgroundColor: tokens.surface.base,
         borderBottomWidth: 1,
         borderBottomColor: tokens.border.default,
@@ -124,7 +124,7 @@ export default function MenuScreen() {
         ...tokens.shadows.sm,
       },
       scrollContent: {
-        paddingBottom: 40,
+        paddingBottom: getSafeBottomPadding(insets.bottom, 40),
       },
       quickBar: {
         flexDirection: 'row',

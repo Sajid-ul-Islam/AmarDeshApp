@@ -12,7 +12,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { articles as mockArticles, Article } from '../../data/mockData';
+import type { Article } from '../../types';
 import { toBengaliNumeral } from '../../utils/bengali';
 import { loadBookmarks } from '../../services/storage';
 import { ArticleThumbnail, ArticleHeroImage } from '../../components/OptimizedImage';
@@ -27,7 +27,7 @@ import {
   formatLocalizedNumeral,
   formatLocalizedRelativeTime,
 } from '../../services/i18n';
-import { getSafeHeaderPaddingTop } from '../../utils/layout';
+import { getSafeHeaderPaddingTop, getSafeBottomPadding } from '../../utils/layout';
 import { AmarDeshLogo } from '../../components/AmarDeshLogo';
 
 export default function BookmarksScreen() {
@@ -50,9 +50,11 @@ export default function BookmarksScreen() {
     }
   }, [params.tab]);
 
-  // Live news from dailyamardesh.com
+  // Live news from dailyamardesh.com.
+  // No mock fallback: a bookmark whose article has rotated out of the feed
+  // should read as unavailable rather than resolve to an unrelated fixture.
   const liveArticles = useSyncExternalStore(subscribeToArticles, getArticles);
-  const allArticles: Article[] = liveArticles.length > 0 ? liveArticles : mockArticles;
+  const allArticles: Article[] = liveArticles;
 
   // Saved Bookmarks state
   const [bookmarkedArticles, setBookmarkedArticles] = useState<Article[]>([]);
@@ -121,7 +123,7 @@ export default function BookmarksScreen() {
       header: {
         paddingTop: getSafeHeaderPaddingTop(insets.top, 6),
         paddingHorizontal: 16,
-        paddingBottom: 12,
+        paddingBottom: getSafeBottomPadding(insets.bottom, 12),
         backgroundColor: tokens.surface.base,
         borderBottomWidth: 1,
         borderBottomColor: tokens.border.default,
@@ -287,7 +289,7 @@ export default function BookmarksScreen() {
       // Article lists
       listContent: {
         padding: 16,
-        paddingBottom: 32,
+        paddingBottom: getSafeBottomPadding(insets.bottom, 32),
       },
       articleCard: {
         flexDirection: 'row',

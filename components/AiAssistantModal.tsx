@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemedStyles, useThemeTokens } from '../theme';
-import { Article } from '../data/mockData';
+import type { Article } from '../types';
 import {
   askArticleAiQuestion,
   getByokAiConfig,

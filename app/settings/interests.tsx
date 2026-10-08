@@ -197,6 +197,8 @@ export default function InterestsScreen() {
       <View style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="ফিরে যান"
             onPress={() => router.back()}
             style={styles.backButton}
           >
@@ -217,6 +219,8 @@ export default function InterestsScreen() {
       <View style={styles.header}>
         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
           <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="ফিরে যান"
             onPress={() => router.back()}
             style={styles.backButton}
           >

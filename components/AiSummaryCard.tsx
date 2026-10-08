@@ -9,7 +9,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useThemedStyles, useThemeTokens } from '../theme';
-import { Article } from '../data/mockData';
+import type { Article } from '../types';
 import { generateArticleSummary } from '../services/byokAiService';
 import { toBengaliNumeral } from '../utils/bengali';
 

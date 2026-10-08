@@ -36,6 +36,8 @@ export interface SyncResult {
   bookmarksCount: number;
   streakCount: number;
   queued?: boolean;
+  /** True when no cloud backend is configured, so nothing was transmitted. */
+  notConfigured?: boolean;
   error?: string;
 }
 
@@ -86,8 +88,16 @@ export const getCloudSyncState = async (): Promise<CloudSyncState> => {
 };
 
 /**
- * Perform bidirectional sync between local AsyncStorage and Cloud Store.
- * Supports offline queuing and automatic union conflict resolution.
+ * Perform bidirectional sync between local AsyncStorage and a cloud backend.
+ *
+ * IMPORTANT: this only ever reports success for a sync that actually talked to a
+ * server. An earlier version, when called without `customCloudUrl`, echoed the
+ * local payload back as if it were the server's response and returned
+ * `success: true` — so Settings told the reader their data was "synced to the
+ * cloud" when nothing had left the device.
+ *
+ * With no backend configured, the honest answer is `{ success: false }` plus a
+ * `notConfigured` flag, and the UI says so.
  */
 export const syncAccountData = async (
   userId: string = 'guest-reader',
@@ -116,52 +126,57 @@ export const syncAccountData = async (
       clientTimestamp: Date.now(),
     };
 
-    let remoteData: Partial<SyncPayload> | null = null;
+    // 2. No backend configured: report it plainly instead of simulating a sync.
+    if (!customCloudUrl) {
+      currentSyncState.isSyncing = false;
+      currentSyncState.lastError = 'ক্লাউড সিঙ্ক কনফিগার করা নেই';
+      notifyListeners();
 
-    // 2. Transmit to remote endpoint if available
-    if (customCloudUrl) {
-      try {
-        const response = await fetch(customCloudUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Amar-Desh-Client': 'Expo-Mobile-2026',
-          },
-          body: JSON.stringify(payload),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Cloud server returned HTTP ${response.status}`);
-        }
-        remoteData = await response.json();
-      } catch (networkErr: unknown) {
-        // Queue for later sync
-        await queueFailedSync(payload);
-        currentSyncState.isSyncing = false;
-        currentSyncState.pendingChanges += 1;
-        currentSyncState.lastError = 'নেটওয়ার্ক সংযোগ পাওয়া যায়নি, অফলাইন সারিতে রাখা হয়েছে';
-        notifyListeners();
-
-        return {
-          success: false,
-          syncedAt: Date.now(),
-          bookmarksCount: bookmarks.length,
-          streakCount: streak.count || 0,
-          queued: true,
-          error: 'Offline queued',
-        };
-      }
-    } else {
-      // Standalone cloud sync simulator (persists client-side sync record)
-      remoteData = {
-        bookmarks: payload.bookmarks,
-        readingStreak: payload.readingStreak,
-        reactions: payload.reactions,
-        preferences: payload.preferences,
+      return {
+        success: false,
+        syncedAt: Date.now(),
+        bookmarksCount: bookmarks.length,
+        streakCount: streak.count || 0,
+        notConfigured: true,
+        error: 'Cloud sync is not configured',
       };
     }
 
-    // 3. Conflict resolution & merge
+    // 3. Transmit to the remote endpoint.
+    let remoteData: Partial<SyncPayload> | null = null;
+    try {
+      const response = await fetch(customCloudUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Amar-Desh-Client': 'Expo-Mobile-2026',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Cloud server returned HTTP ${response.status}`);
+      }
+      remoteData = await response.json();
+    } catch (networkErr: unknown) {
+      // Queue for later sync
+      await queueFailedSync(payload);
+      currentSyncState.isSyncing = false;
+      currentSyncState.pendingChanges += 1;
+      currentSyncState.lastError = 'নেটওয়ার্ক সংযোগ পাওয়া যায়নি, অফলাইন সারিতে রাখা হয়েছে';
+      notifyListeners();
+
+      return {
+        success: false,
+        syncedAt: Date.now(),
+        bookmarksCount: bookmarks.length,
+        streakCount: streak.count || 0,
+        queued: true,
+        error: 'Offline queued',
+      };
+    }
+
+    // 4. Conflict resolution & merge
     const mergedBookmarks = Array.from(
       new Set([...bookmarks, ...(remoteData?.bookmarks || [])])
     );

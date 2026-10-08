@@ -20,3 +20,30 @@ export function getSafeHeaderPaddingTop(insetsTop: number = 0, extraOffset: numb
 
   return effectiveTop + extraOffset;
 }
+
+/** Content height of the bottom tab bar, excluding the device's bottom inset. */
+export const TAB_BAR_CONTENT_HEIGHT = 60;
+
+/**
+ * Bottom padding that keeps scrollable content clear of the floating bottom tab
+ * bar and the device's home indicator / gesture bar.
+ *
+ * The tab bar is positioned over the screen content by the navigator, so a
+ * scroll view whose content ends flush with the viewport has its last row
+ * (and any "load more" affordance) hidden behind the bar. This returns a value
+ * that clears the bar plus the device inset, with extra room for an overlay
+ * such as the floating video player.
+ *
+ * @param insetsBottom - Bottom inset from useSafeAreaInsets()
+ * @param extraOffset - Additional breathing room above the bar (default: 16px)
+ * @param includeTabBar - Set false on screens rendered outside the tab
+ *                        navigator (settings, article, auth, ...)
+ */
+export function getSafeBottomPadding(
+  insetsBottom: number = 0,
+  extraOffset: number = 16,
+  includeTabBar: boolean = true
+): number {
+  const bar = includeTabBar ? TAB_BAR_CONTENT_HEIGHT : 0;
+  return bar + Math.max(insetsBottom, 0) + extraOffset;
+}

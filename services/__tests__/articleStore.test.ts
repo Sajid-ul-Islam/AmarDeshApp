@@ -9,7 +9,7 @@
  * - subscriber notification and synchronous reads
  */
 
-import { Article } from '../../data/mockData';
+import type { Article } from '../../types';
 
 jest.mock('../../services/rssService', () => ({
   fetchRSSFeed: jest.fn(),

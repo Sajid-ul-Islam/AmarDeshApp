@@ -43,7 +43,7 @@ import {
   getRecommendations,
   getUserInterests,
 } from './personalizationEngine';
-import { Article } from '../data/mockData';
+import type { Article } from '../types';
 
 // Persisted privacy preference: opt-out must survive app restarts.
 const TRACKING_ENABLED_KEY = '@amar_desh_tracking_enabled';

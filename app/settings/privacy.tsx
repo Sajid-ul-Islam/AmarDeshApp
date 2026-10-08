@@ -202,6 +202,8 @@ export default function PrivacySettingsScreen() {
       <View style={styles.header}>
         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
           <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="ফিরে যান"
             onPress={() => router.back()}
             style={styles.backButton}
           >

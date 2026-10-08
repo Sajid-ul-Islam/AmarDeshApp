@@ -1,13 +1,7 @@
-import { Article } from '../data/mockData';
+import { Article, CategoryMeta } from '../types';
 import { getArticles } from './articleStore';
 
-export interface CategoryMeta {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  isSpecial?: boolean;
-}
+export type { CategoryMeta };
 
 export const SITE_CATEGORIES: CategoryMeta[] = [
   { id: 'all', name: 'সর্বশেষ', slug: 'latest' },
@@ -17,6 +11,9 @@ export const SITE_CATEGORIES: CategoryMeta[] = [
   { id: 'business', name: 'বাণিজ্য', slug: 'business' },
   { id: 'bangladesh', name: 'সারা দেশ', slug: 'bangladesh' },
   { id: 'entertainment', name: 'বিনোদন', slug: 'entertainment' },
+  // The live feed emits a `ভিডিও` category (verified 2026-10-08); it maps to the
+  // video tab rather than a list screen.
+  { id: 'video', name: 'ভিডিও', slug: 'video', isSpecial: true },
   { id: 'world', name: 'বিশ্ব', slug: 'world' },
   { id: 'sports', name: 'খেলা', slug: 'sports' },
   { id: 'islam', name: 'ইসলাম ও জীবন', slug: 'religion-islam' },
@@ -143,28 +140,95 @@ export const CATEGORY_ARTICLES: Record<string, Article[]> = {
 };
 
 /**
- * Get all available articles combining live RSS feed and vertical fallbacks
+ * Bengali text normalization.
+ *
+ * The site and its RSS feed are inconsistent about `য়`: the feed emits the
+ * precomposed `য়` (U+09DF) in the label `জাতীয়`, while several UI strings use
+ * the decomposed `য` + `়` (U+09AF + U+09BC). These are different byte
+ * sequences for the same word, so a strict comparison silently fails to match
+ * and a whole section renders empty.
+ *
+ * NFC does not unify the two (both are valid precomposed/decomposed forms), so
+ * the equivalent pairs are folded explicitly before comparing.
+ */
+const BENGALI_EQUIVALENTS: ReadonlyArray<[RegExp, string]> = [
+  [/\u09af\u09bc/g, '\u09df'], // decomposed য + ়  →  precomposed য়
+  [/\u09b0\u09bc/g, '\u09dc'], // decomposed র + ়  →  ড়
+  [/\u09a1\u09bc/g, '\u09dc'], // ড + ়           →  ড়
+  [/\u09a2\u09bc/g, '\u09dd'], // ঢ + ়           →  ঢ়
+];
+
+/** Fold Bengali orthographic variants and collapse whitespace/case. */
+export function normalizeBengali(input: string): string {
+  if (!input) return '';
+  let out = input.normalize('NFC');
+  for (const [pattern, replacement] of BENGALI_EQUIVALENTS) {
+    out = out.replace(pattern, replacement);
+  }
+  return out.replace(/\s+/g, ' ').trim().toLowerCase();
+}
+
+/**
+ * Resolve a section from either a slug or a Bengali label.
+ *
+ * The category screen receives a slug from its route (`/category/sports`), while
+ * the home screen and the RSS feed work in Bengali labels (`খেলা`). Matching on
+ * only one of the two silently produced empty feeds, so both are accepted here
+ * and every caller goes through this single lookup. Bengali labels are compared
+ * with `normalizeBengali` so orthographic variants (`জাতীয়` vs `জাতীয়`) match.
+ */
+export function lookupCategory(slugOrLabel: string): CategoryMeta | undefined {
+  if (!slugOrLabel || !slugOrLabel.trim()) return undefined;
+  const needle = normalizeBengali(slugOrLabel);
+
+  return (
+    SITE_CATEGORIES.find((c) => c.slug.toLowerCase() === needle) ??
+    SITE_CATEGORIES.find((c) => c.id.toLowerCase() === needle) ??
+    SITE_CATEGORIES.find((c) => normalizeBengali(c.name) === needle)
+  );
+}
+
+/** The URL section slug for a Bengali category label (for share/reader URLs). */
+export function sectionSlugForCategory(categoryLabel: string): string | undefined {
+  return lookupCategory(categoryLabel)?.slug;
+}
+
+/**
+ * Get all available articles combining live RSS feed and vertical fallbacks.
+ *
+ * Accepts a slug (`sports`), an id, or a Bengali label (`খেলা`); unknown input
+ * returns an empty list rather than unrelated placeholder articles.
  */
 export function getArticlesByCategory(categoryName: string): Article[] {
   const live = getArticles();
+  const meta = lookupCategory(categoryName);
 
-  if (categoryName === 'all' || categoryName === 'সর্বশেষ') {
+  if (!meta) {
+    // Unknown vertical: match on the raw string so a newly added site section
+    // still filters, but never fall back to unrelated stubs.
+    const needle = normalizeBengali(categoryName);
+    return live.filter((a) => normalizeBengali(a.category) === needle);
+  }
+
+  // `latest` / সর্বশেষ is the combined feed.
+  if (meta.slug === 'latest' || meta.name === 'সর্বশেষ') {
     return live.length > 0 ? live : Object.values(CATEGORY_ARTICLES).flat();
   }
 
-  // Filter live articles matching the category
+  const needle = normalizeBengali(meta.name);
+
+  // Filter live articles matching the category.
   const matchedLive = live.filter(
-    (a) =>
-      a.category.toLowerCase().includes(categoryName.toLowerCase()) ||
-      categoryName.toLowerCase().includes(a.category.toLowerCase())
+    (a) => normalizeBengali(a.category) === needle
   );
 
-  // Match category fallbacks
+  // Match category fallbacks by id/slug/name.
   let fallbackList: Article[] = [];
   for (const [key, list] of Object.entries(CATEGORY_ARTICLES)) {
     if (
-      key.toLowerCase() === categoryName.toLowerCase() ||
-      list.some((a) => a.category.toLowerCase().includes(categoryName.toLowerCase()))
+      key.toLowerCase() === meta.slug.toLowerCase() ||
+      key.toLowerCase() === meta.id.toLowerCase() ||
+      list.some((a) => normalizeBengali(a.category) === needle)
     ) {
       fallbackList = list;
       break;

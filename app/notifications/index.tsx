@@ -303,6 +303,8 @@ export default function NotificationCenterScreen() {
         <View style={styles.headerTop}>
           <View style={styles.headerLeft}>
             <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+              accessibilityRole="button"
+              accessibilityLabel="ফিরে যান"
               <Ionicons name="arrow-back" size={24} color={tokens.text.primary} />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>নোটিফিকেশন ইনবক্স</Text>

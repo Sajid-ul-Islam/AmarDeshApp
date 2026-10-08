@@ -4,7 +4,7 @@
 
 import { rankArticles, generateForYouFeed, getRecommendations } from '../personalizationEngine';
 import * as affinityCalculator from '../affinityCalculator';
-import { Article } from '../../data/mockData';
+import type { Article } from '../../types';
 
 // Mock dependencies
 jest.mock('../affinityCalculator');

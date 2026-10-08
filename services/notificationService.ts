@@ -1,8 +1,10 @@
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Linking from 'expo-linking';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import type * as NotificationsType from 'expo-notifications';
+import { getEasProjectId, isEasProjectConfigured } from './appConfig';
+import { openArticle } from './navigationService';
+import { parseDeepLink, openURL } from './deepLinkService';
 
 /**
  * expo-notifications must be loaded lazily.
@@ -155,22 +157,14 @@ export async function requestNotificationPermissions(): Promise<NotificationsTyp
 }
 
 /**
- * EAS project ID used for Expo push tokens and OTA updates.
- * Keep in sync with `expo.extra.eas.projectId` in app.json.
+ * Remote push requires a linked EAS project (`getExpoPushTokenAsync` fails with
+ * a placeholder id). `isEasProjectConfigured()` is the single source of truth —
+ * see services/appConfig.ts. Local notifications work without it.
  */
-const EAS_PROJECT_ID = process.env.EXPO_PUBLIC_EAS_PROJECT_ID || 'your-project-id';
 
 /**
- * Check whether push notifications can actually work.
- * Placeholder project IDs cause getExpoPushTokenAsync to fail at runtime,
- * so we skip the call entirely until a real ID is configured.
- */
-function hasValidProjectId(): boolean {
-  return !!EAS_PROJECT_ID && EAS_PROJECT_ID !== 'your-project-id';
-}
-
-/**
- * Get push token for remote notifications
+ * Get push token for remote notifications.
+ * Returns null (without throwing) when push cannot work on this device.
  */
 export async function getPushToken(): Promise<string | null> {
   const Notifications = loadNotifications();
@@ -180,26 +174,29 @@ export async function getPushToken(): Promise<string | null> {
     return null;
   }
 
-  if (!hasValidProjectId()) {
-    console.log('[Notifications] EAS project ID not configured, skipping push token');
+  const projectId = getEasProjectId();
+  if (!projectId) {
+    console.log(
+      '[Notifications] EAS project not linked; remote push disabled (local notifications still work)'
+    );
     return null;
   }
 
   try {
     const { status } = await Notifications.getPermissionsAsync();
-    
+
     if (status !== 'granted') {
       console.log('Notification permissions not granted');
       return null;
     }
 
-    const token = (await Notifications.getExpoPushTokenAsync({
-      projectId: EAS_PROJECT_ID,
-    })).data;
+    const token = (
+      await Notifications.getExpoPushTokenAsync({ projectId })
+    ).data;
 
     // Store token for backend registration
     await AsyncStorage.setItem('@amar_desh_push_token', token);
-    
+
     return token;
   } catch (error) {
     console.error('Error getting push token:', error);
@@ -265,10 +262,10 @@ export async function sendBreakingNewsNotification(
   return await scheduleLocalNotification(
     '🔴 ব্রেকিং নিউজ',
     title,
-    { 
+    {
       type: 'breaking-news',
       articleId,
-      url: `amardesh://article/${articleId}`,
+      source: 'notification',
     },
     CHANNELS.BREAKING
   );
@@ -285,11 +282,11 @@ export async function sendCategoryUpdateNotification(
   return await scheduleLocalNotification(
     `${category} আপডেট`,
     title,
-    { 
+    {
       type: 'category-update',
       category,
       articleId,
-      url: `amardesh://article/${articleId}`,
+      source: 'notification',
     },
     CHANNELS.CATEGORY
   );
@@ -391,25 +388,51 @@ export function addNotificationReceivedListener(
 }
 
 /**
- * Handle notification tap and navigate
- * Appends source=notification so article_opened attribution records
- * where the user came from.
+ * Handle a notification tap and route the user to the relevant content.
+ *
+ * Navigation goes through `navigationService` so a tap opens the article
+ * *inside* the app. (The previous implementation called
+ * `Linking.openURL('amardesh://article/…')`, which cannot route expo-router and
+ * left the user on whatever screen was already open.)
+ *
+ * Returns the route that was opened, or `null` when the payload carried no
+ * usable destination.
  */
 export async function handleNotificationTap(
   response: NotificationsType.NotificationResponse
-): Promise<void> {
-  const { data } = response.notification.request.content;
-  
-  if (typeof data?.url === 'string') {
-    // Deep link to article (append attribution param if not present)
-    const url = data.url.includes('source=')
-      ? data.url
-      : `${data.url}${data.url.includes('?') ? '&' : '?'}source=notification`;
-    await Linking.openURL(url);
-  } else if (data?.articleId) {
-    // Fallback: construct URL with attribution
-    await Linking.openURL(`amardesh://article/${data.articleId}?source=notification`);
+): Promise<string | null> {
+  const data = response?.notification?.request?.content?.data as
+    | Record<string, unknown>
+    | undefined;
+
+  // 1. Preferred payload: an explicit article id.
+  const articleId =
+    typeof data?.articleId === 'string' ? data.articleId : undefined;
+  if (articleId) {
+    return openArticle(articleId);
   }
+
+  // 2. A URL payload may be an app-scheme link, a web article URL, or an
+  //    external link. Route in-app when we recognise it, otherwise hand the
+  //    URL to the OS (browser/mail/etc.).
+  const url = typeof data?.url === 'string' ? data.url : undefined;
+  if (url) {
+    const parsed = parseDeepLink(url);
+    if (parsed.type === 'article' && parsed.id) {
+      return openArticle(parsed.id);
+    }
+
+    if (parsed.type !== 'unknown') {
+      // Category / tab / search deep link: reuse the shared gateway.
+      const { handleIncomingUrl } = await import('./navigationService');
+      return handleIncomingUrl(url);
+    }
+
+    await openURL(url);
+    return null;
+  }
+
+  return null;
 }
 
 /**

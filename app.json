@@ -6,20 +6,10 @@
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "scheme": "amardesh",
-    "splash": {
-      "image": "./assets/amardesh_logo.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#FFFFFF"
-    },
     "androidStatusBar": {
       "barStyle": "dark-content",
       "backgroundColor": "#00000000",
       "translucent": true
-    },
-    "androidNavigationBar": {
-      "visible": "sticky-immersive",
-      "barStyle": "dark-content",
-      "backgroundColor": "#00000000"
     },
     "ios": {
       "supportsTablet": true,
@@ -55,7 +45,10 @@
               "pathPrefix": "/"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ],
       "permissions": [
@@ -78,7 +71,30 @@
           "color": "#006B3F",
           "sounds": []
         }
-      ]
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/amardesh_logo.png",
+          "imageWidth": 220,
+          "resizeMode": "contain",
+          "backgroundColor": "#FFFFFF",
+          "dark": {
+            "image": "./assets/amardesh_logo.png",
+            "backgroundColor": "#0A0A0A"
+          }
+        }
+      ],
+      [
+        "expo-navigation-bar",
+        {
+          "enforceContrast": false,
+          "hidden": false,
+          "style": "auto"
+        }
+      ],
+      "expo-sharing",
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true
@@ -92,10 +108,9 @@
       }
     },
     "updates": {
-      "enabled": true,
-      "checkAutomatically": "ON_LOAD",
-      "fallbackToCacheTimeout": 0,
-      "url": "https://u.expo.dev/your-project-id"
+      "enabled": false,
+      "checkAutomatically": "NEVER",
+      "fallbackToCacheTimeout": 0
     },
     "runtimeVersion": {
       "policy": "sdkVersion"

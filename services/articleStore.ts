@@ -13,7 +13,7 @@
  * in airplane mode).
  */
 
-import { Article } from '../data/mockData';
+import type { Article } from '../types';
 import {
   fetchRSSFeed,
   cacheRSSFeed,
@@ -114,4 +114,16 @@ export function __resetArticleStoreForTests(): void {
   articles = [];
   loadPromise = null;
   listeners.clear();
+}
+
+/**
+ * Test-only: seed the in-memory list without a network request.
+ *
+ * Screens read the store through `useSyncExternalStore`, so any code path that
+ * filters live articles needs a way to be exercised without hitting RSS.
+ */
+export function setArticlesForTests(next: Article[]): void {
+  articles = next;
+  loadPromise = Promise.resolve(next);
+  notify();
 }

@@ -1,11 +1,11 @@
 import * as Sharing from 'expo-sharing';
 import * as Clipboard from 'expo-clipboard';
-import * as Linking from 'expo-linking';
 import { Share } from 'react-native';
-import { Article } from '../data/mockData';
-import { generateArticleLink } from './deepLinkService';
+import { Article } from '../types';
+import { buildWebArticleUrl, openURL } from './deepLinkService';
+import { sectionSlugForCategory } from './contentService';
 
-export type SharePlatform = 
+export type SharePlatform =
   | 'whatsapp'
   | 'facebook'
   | 'twitter'
@@ -18,8 +18,25 @@ export const generateShareText = (article: Article): string => {
   return `আমার দেশ থেকে একটি সংবাদ: ${article.title}`;
 };
 
+/**
+ * Build the URL to share.
+ *
+ * UX: this must be a public `https://` link. An earlier version shared
+ * `amardesh://article/<id>`, which is unopenable for a recipient who does not
+ * have the app installed and, even with the app installed, cannot route through
+ * expo-router's URL handling — so the article never actually opened.
+ *
+ * Preference order:
+ *   1. `article.link` — the canonical CMS URL from the RSS feed (always correct).
+ *   2. `https://www.dailyamardesh.com/<section>/<id>` for app-local articles,
+ *      using the section derived from the Bengali category label.
+ */
 export const generateShareURL = (article: Article): string => {
-  return generateArticleLink(article.id);
+  const canonical = article.link?.trim();
+  if (canonical && /^https?:\/\//i.test(canonical)) {
+    return canonical;
+  }
+  return buildWebArticleUrl(article.id, sectionSlugForCategory(article.category));
 };
 
 /**
@@ -27,14 +44,13 @@ export const generateShareURL = (article: Article): string => {
  *
  * Note: `Sharing.shareAsync` only accepts local file URIs — passing remote
  * https URLs throws at runtime, so platform intents use `Linking.openURL`.
+ * Falls back to the system share sheet when no app can handle the intent.
  */
 const openShareURL = async (url: string): Promise<void> => {
   try {
-    const supported = await Linking.canOpenURL(url);
-    if (supported) {
-      await Linking.openURL(url);
-    } else {
-      // Fallback to the system share sheet
+    const opened = await openURL(url);
+    if (!opened) {
+      // No handler for this intent: let the user pick any target.
       await Share.share({ message: url });
     }
   } catch (error) {

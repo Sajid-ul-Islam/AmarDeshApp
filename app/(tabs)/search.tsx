@@ -3,13 +3,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useState, useEffect, useSyncExternalStore } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { Article } from '../../data/mockData';
+import type { Article } from '../../types';
 import { formatRelativeTime, toBengaliNumeral } from '../../utils/bengali';
 import { ArticleThumbnail } from '../../components/OptimizedImage';
 import { useUserStore } from '../../user';
 import { loadArticles, getArticles, subscribeToArticles } from '../../services/articleStore';
 import { useThemedStyles, useThemeTokens } from '../../theme';
-import { getSafeHeaderPaddingTop } from '../../utils/layout';
+import { getSafeHeaderPaddingTop, getSafeBottomPadding } from '../../utils/layout';
 import { AmarDeshLogo } from '../../components/AmarDeshLogo';
 
 const POPULAR_SEARCH_TAGS = [
@@ -80,7 +80,7 @@ export default function SearchScreen() {
       header: {
         paddingHorizontal: 16,
         paddingTop: getSafeHeaderPaddingTop(insets.top, 8),
-        paddingBottom: 12,
+        paddingBottom: getSafeBottomPadding(insets.bottom, 12),
         backgroundColor: tokens.surface.base,
         borderBottomWidth: 0.5,
         borderBottomColor: tokens.border.subtle,

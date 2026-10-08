@@ -106,10 +106,15 @@ describe('ByokAiService', () => {
       return { ok: false, status: 404 } as any;
     });
 
+    // Signature: (apiKey, contents, preferredModel, generationConfig).
+    // This call previously passed the model string as `contents`, which threw at
+    // runtime because a string has no `.map`. The test still "passed" because it
+    // only asserted on the result, so the bug went unnoticed until the test file
+    // was included in `tsc`.
     const result = await executeGeminiGenerateContent(
       'valid_test_api_key_12345',
-      'gemini-2.5-flash',
-      [{ role: 'user', parts: [{ text: 'হ্যালো' }] }]
+      [{ role: 'user', parts: [{ text: 'হ্যালো' }] }],
+      'gemini-2.5-flash'
     );
 
     expect(result).not.toBeNull();

@@ -6,7 +6,7 @@
  */
 
 import * as SQLite from 'expo-sqlite';
-import { Article } from '../data/mockData';
+import type { Article } from '../types';
 
 const DB_NAME = 'amar_desh_offline.db';
 let dbInstance: SQLite.SQLiteDatabase | null = null;

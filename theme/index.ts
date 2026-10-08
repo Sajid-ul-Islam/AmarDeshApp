@@ -32,7 +32,8 @@ export {
   useThemeTokens, 
   useIsDarkMode, 
   useBrandColors, 
-  useSocialColors 
+  useSocialColors,
+  useFontFamily
 } from './ThemeProvider';
 
 // Export style utilities

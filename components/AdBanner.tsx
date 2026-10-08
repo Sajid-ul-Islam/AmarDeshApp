@@ -21,26 +21,29 @@ export interface AdData {
   targetUrl?: string;
 }
 
-const DEFAULT_EDITORIAL_ADS: AdData[] = [
+/**
+ * House advertisements.
+ *
+ * These are placeholder editorial units, not paid inventory: there is no ad SDK,
+ * no impression/click tracking, and no consent flow in this build. They must not
+ * masquerade as commercial advertising.
+ *
+ * A previous entry advertised the app developer's own agency (cybrcraft.com).
+ * It was removed: shipping a supplier's own promotion inside the newspaper's
+ * reader is not a house ad and reads as an undisclosed advertorial. Replace this
+ * list with real inventory (sponsoredProductService or an ad network) before
+ * enabling any revenue reporting.
+ */
+const HOUSE_ADS: AdData[] = [
   {
     id: 'ad-amar-desh-print',
     brandName: 'আমার দেশ প্রকাশনা',
-    badge: 'বিশেষ পার্টনারশিপ',
+    badge: 'আমার দেশ',
     title: 'দৈনিক আমার দেশ প্রিন্ট ও ই-পেপার বার্ষিক গ্রাহক সেবা',
-    description: 'সত্য ও নির্ভীক সাংবাদিকতার পাশে থাকুন। আজই গ্রাহক হয়ে বিশেষ ছাড় উপভোগ করুন।',
+    description: 'সত্য ও নির্ভীক সাংবাদিকতার পাশে থাকুন। আজই গ্রাহক হয়ে বিশেষ ছাড় উপভোগ করুন।',
     ctaText: 'গ্রাহক হন',
     imageUrl: 'https://images.dailyamardesh.com/ad/amardesh-shadhinotar-kotha-bole.jpg',
     targetUrl: 'https://www.dailyamardesh.com/subscription',
-  },
-  {
-    id: 'ad-tech-cloud',
-    brandName: 'সাইবারক্রাফট ডিজিটাল',
-    badge: 'টেক পার্টনার',
-    title: 'আধুনিক মিডিয়া ও মোবাইল অ্যাপ প্ল্যাটফর্ম সল্যুশন',
-    description: 'সংবাদমাধ্যম ও এন্টারপ্রাইজ প্রতিষ্ঠানের জন্য এআই-চালিত নেক্সট-জেন অ্যাপ আর্কিটেকচার।',
-    ctaText: 'বিস্তারিত জানুন',
-    imageUrl: 'https://images.dailyamardesh.com/original_images/imf-24dba6-720x405.webp',
-    targetUrl: 'https://cybrcraft.com/',
   },
 ];
 
@@ -56,7 +59,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
   onDismiss,
 }) => {
   const [isDismissed, setIsDismissed] = useState(false);
-  const ad = customAd || DEFAULT_EDITORIAL_ADS[variant === 'articleFooter' ? 1 : 0];
+  const ad = customAd || HOUSE_ADS[0];
 
   const styles = useThemedStyles((tokens) =>
     StyleSheet.create({

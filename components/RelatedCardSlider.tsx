@@ -10,7 +10,7 @@ import {
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemedStyles, useThemeTokens } from '../theme';
-import { Article } from '../data/mockData';
+import type { Article } from '../types';
 import { stripCDATA } from '../services/rssService';
 import {
   getLocalizedCategoryName,

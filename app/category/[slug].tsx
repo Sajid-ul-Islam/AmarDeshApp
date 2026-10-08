@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useSyncExternalStore } from 'react';
 import {
   View,
   Text,
@@ -6,15 +6,24 @@ import {
   FlatList,
   TouchableOpacity,
   RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemedStyles, useThemeTokens } from '../../theme';
 import { ArticleThumbnail } from '../../components/OptimizedImage';
-import { getArticlesByCategory, SITE_CATEGORIES } from '../../services/contentService';
+import {
+  getArticlesByCategory,
+  lookupCategory,
+} from '../../services/contentService';
+import {
+  getArticles,
+  subscribeToArticles,
+  loadArticles,
+} from '../../services/articleStore';
 import { formatRelativeTime, toBengaliNumeral } from '../../utils/bengali';
-import { Article } from '../../data/mockData';
+import type { Article } from '../../types';
 import { getSafeHeaderPaddingTop } from '../../utils/layout';
 import { AmarDeshLogo } from '../../components/AmarDeshLogo';
 
@@ -24,6 +33,7 @@ export default function CategoryScreen() {
   const insets = useSafeAreaInsets();
   const tokens = useThemeTokens();
   const [refreshing, setRefreshing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -35,14 +45,50 @@ export default function CategoryScreen() {
   }, []);
 
   const categorySlug = Array.isArray(slug) ? slug[0] : slug || 'latest';
+  // Accept a slug from the route; fall back to the raw value for unknown
+  // sections so a newly added site vertical still renders instead of blanking.
   const categoryMeta =
-    SITE_CATEGORIES.find((c) => c.slug === categorySlug || c.id === categorySlug) || {
+    lookupCategory(categorySlug) ?? {
       id: categorySlug,
       name: categorySlug,
       slug: categorySlug,
     };
 
-  const articles = getArticlesByCategory(categoryMeta.name);
+  // Subscribe to the shared article store. Without this the screen read the
+  // store once at mount and never repainted when the live feed arrived, so a
+  // cold start showed only placeholder articles.
+  const liveArticles = useSyncExternalStore(subscribeToArticles, getArticles);
+
+  const articles = useMemo(
+    () => getArticlesByCategory(categoryMeta.slug || categoryMeta.name),
+    // liveArticles is the store's snapshot; categoryMeta drives the filter.
+    [liveArticles, categoryMeta.slug, categoryMeta.name]
+  );
+
+  // Kick off a fetch if the store is still empty, and always clear the
+  // loading state once the store reports something (or the fetch settles).
+  useEffect(() => {
+    let active = true;
+
+    const settle = () => {
+      if (active) setIsLoading(false);
+    };
+
+    if (liveArticles.length > 0) {
+      settle();
+      return () => {
+        active = false;
+      };
+    }
+
+    loadArticles()
+      .catch((error) => console.error('[Category] Feed load failed:', error))
+      .finally(settle);
+
+    return () => {
+      active = false;
+    };
+  }, [liveArticles.length]);
 
   const styles = useThemedStyles((tokens) =>
     StyleSheet.create({
@@ -152,17 +198,67 @@ export default function CategoryScreen() {
         color: tokens.text.secondary,
         marginTop: 8,
       },
+      retryButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        marginTop: 16,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderRadius: tokens.radii.pill,
+        borderWidth: 1,
+        borderColor: tokens.brand.primary,
+        minHeight: 44,
+      },
+      retryText: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: tokens.brand.primary,
+      },
     })
   );
 
-  const onRefresh = () => {
+  const onRefresh = async () => {
     setRefreshing(true);
-    if (refreshTimerRef.current) {
-      clearTimeout(refreshTimerRef.current);
+    try {
+      // Force a real network refresh rather than a cosmetic spinner delay.
+      await loadArticles(true);
+    } catch (error) {
+      console.error('[Category] Refresh failed:', error);
+    } finally {
+      if (refreshTimerRef.current) {
+        clearTimeout(refreshTimerRef.current);
+      }
+      refreshTimerRef.current = setTimeout(() => setRefreshing(false), 300);
     }
-    refreshTimerRef.current = setTimeout(() => {
-      setRefreshing(false);
-    }, 800);
+  };
+
+  const renderEmpty = () => {
+    if (isLoading) {
+      return (
+        <View style={styles.emptyContainer}>
+          <ActivityIndicator size="small" color={tokens.brand.primary} />
+          <Text style={styles.emptyText}>সংবাদ লোড হচ্ছে…</Text>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.emptyContainer}>
+        <Ionicons name="newspaper-outline" size={40} color={tokens.text.tertiary} />
+        <Text style={styles.emptyText}>এই বিভাগে এখন কোনো সংবাদ নেই</Text>
+        <TouchableOpacity
+          style={styles.retryButton}
+          onPress={onRefresh}
+          activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel="আবার চেষ্টা করুন"
+        >
+          <Ionicons name="refresh" size={15} color={tokens.brand.primary} />
+          <Text style={styles.retryText}>আবার চেষ্টা করুন</Text>
+        </TouchableOpacity>
+      </View>
+    );
   };
 
   return (
@@ -171,9 +267,10 @@ export default function CategoryScreen() {
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="ফিরে যান"
             style={styles.backButton}
             onPress={() => router.back()}
-            accessibilityLabel="ফিরে যান"
           >
             <Ionicons name="arrow-back" size={24} color={tokens.text.primary} />
           </TouchableOpacity>
@@ -201,8 +298,10 @@ export default function CategoryScreen() {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.card}
-            onPress={() => router.push(`/article/${item.id}` as any)}
+            onPress={() => router.push(`/article/${item.id}` as never)}
             activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel={item.title}
           >
             <View style={styles.cardContent}>
               <Text style={styles.cardTitle} numberOfLines={2}>
@@ -225,12 +324,7 @@ export default function CategoryScreen() {
             />
           </TouchableOpacity>
         )}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Ionicons name="newspaper-outline" size={40} color={tokens.text.tertiary} />
-            <Text style={styles.emptyText}>এই বিভাগে কোনো সংবাদ পাওয়া যায়নি</Text>
-          </View>
-        }
+        ListEmptyComponent={renderEmpty()}
       />
     </View>
   );

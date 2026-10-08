@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useThemedStyles, useThemeTokens, getThemeTokens, ThemeMode } from '../theme';
 import { AmarDeshLogo } from './AmarDeshLogo';
+import { SITE_HOME_URL } from '../services/deepLinkService';
 
 interface QuoteCardModalProps {
   visible: boolean;
@@ -27,7 +28,7 @@ interface QuoteCardModalProps {
 export const QuoteCardModal: React.FC<QuoteCardModalProps> = ({
   visible,
   articleTitle,
-  articleUrl = 'https://dailyamardesh.com',
+  articleUrl = SITE_HOME_URL,
   authorName = 'আমার দেশ বিশেষ প্রতিবেদন',
   initialQuote,
   onClose,

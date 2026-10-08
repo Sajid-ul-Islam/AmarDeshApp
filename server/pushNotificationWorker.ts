@@ -16,8 +16,21 @@ export interface PushDeliveryReport {
 }
 
 /**
+ * Android notification channel id.
+ *
+ * MUST match `CHANNELS.BREAKING` in services/notificationService.ts, otherwise
+ * Android silently drops the notification (no such channel). The previous value
+ * was `breaking_news` while the app created `breaking-news`.
+ */
+const BREAKING_CHANNEL_ID = 'breaking-news';
+
+/**
  * Batches and dispatches push notifications to active mobile app readers
- * using Expo Push API / FCM backend.
+ * using the Expo Push API.
+ *
+ * `data.articleId` (app-scheme-free) is the preferred payload: the client
+ * routes it through `navigationService.openArticle()`. A `url` is not sent,
+ * because the app must not be asked to open its own custom scheme.
  */
 export const dispatchBreakingPushNotification = async (
   payload: PushNotificationPayload,
@@ -35,10 +48,10 @@ export const dispatchBreakingPushNotification = async (
       data: {
         articleId: payload.articleId,
         category: payload.category,
-        url: `/article/${payload.articleId}`,
+        source: 'push',
       },
       priority: 'high',
-      channelId: 'breaking_news',
+      channelId: BREAKING_CHANNEL_ID,
       _displayInForeground: true,
     })
   );

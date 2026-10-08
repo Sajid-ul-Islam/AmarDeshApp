@@ -15,12 +15,14 @@
     "esModuleInterop": true,
     "isolatedModules": true,
     "noEmit": true,
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "types": ["jest", "node"]
   },
   "include": [
     "app",
     "components",
     "data",
+    "server",
     "services",
     "store",
     "theme",
@@ -30,6 +32,6 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
   ],
-  "exclude": ["node_modules", "user/__tests__", "services/__tests__"],
+  "exclude": ["node_modules"],
   "extends": "expo/tsconfig.base"
 }

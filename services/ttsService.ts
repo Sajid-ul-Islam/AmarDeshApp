@@ -1,5 +1,5 @@
 import * as Speech from 'expo-speech';
-import { Article } from '../data/mockData';
+import type { Article } from '../types';
 
 export interface TTSOptions {
   rate?: number; // 0.1 to 10 (1 is normal speed)

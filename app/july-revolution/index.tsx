@@ -14,7 +14,7 @@ import { useThemedStyles } from '../../theme';
 import { ArticleThumbnail } from '../../components/OptimizedImage';
 import { formatRelativeTime } from '../../utils/bengali';
 import { CATEGORY_ARTICLES } from '../../services/contentService';
-import { Article } from '../../data/mockData';
+import type { Article } from '../../types';
 import { getSafeHeaderPaddingTop } from '../../utils/layout';
 import { AmarDeshLogo } from '../../components/AmarDeshLogo';
 
@@ -196,6 +196,8 @@ export default function JulyRevolutionScreen() {
       <View style={styles.header}>
         <View style={styles.headerTop}>
           <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="ফিরে যান"
             style={styles.backBtn}
             onPress={() => router.back()}
           >

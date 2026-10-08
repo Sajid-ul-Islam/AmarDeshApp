@@ -530,6 +530,8 @@ export default function AiSettingsScreen() {
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="ফিরে যান"
             style={styles.backButton}
             onPress={() => router.back()}
             activeOpacity={0.7}

@@ -1,5 +1,5 @@
 import { createHmac } from 'crypto';
-import { Article } from '../data/mockData';
+import type { Article } from '../types';
 import { dispatchBreakingPushNotification } from './pushNotificationWorker';
 
 export interface CMSWebhookPayload {
@@ -62,10 +62,15 @@ export const verifyCmsWebhookSignature = (
 export const normalizeCmsArticle = (
   raw: CMSWebhookPayload['article']
 ): Article => {
+  const content = raw.content.trim();
+
   return {
     id: raw.id || `ad-${Date.now()}`,
     title: raw.title.trim(),
-    content: raw.content.trim(),
+    // Short teaser for cards. Derived from the body so CMS-published articles
+    // render the same way as RSS ones, which always carry an excerpt.
+    excerpt: content.slice(0, 180),
+    content,
     category: raw.category || 'জাতীয়',
     author: raw.author || 'দৈনিক আমার দেশ ডেস্ক',
     publishedAt: raw.publishedAt || new Date().toISOString(),

@@ -9,11 +9,12 @@ import {
   ScrollView,
   Platform,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { articles as mockArticles, Article } from '../../data/mockData';
+import type { Article } from '../../types';
 import { formatRelativeTime } from '../../utils/bengali';
 import {
   loadArticles,
@@ -32,6 +33,7 @@ import {
   SITE_CATEGORIES,
   getArticlesByCategory,
 } from '../../services/contentService';
+import { LOW_DATA_FEED_LIMIT } from '../../utils/imageUrl';
 import {
   getUnreadNotificationCount,
   subscribeToInbox,
@@ -48,7 +50,7 @@ import {
   formatLocalizedNumeral,
   formatLocalizedRelativeTime,
 } from '../../services/i18n';
-import { getSafeHeaderPaddingTop } from '../../utils/layout';
+import { getSafeHeaderPaddingTop, getSafeBottomPadding } from '../../utils/layout';
 import { AmarDeshLogo } from '../../components/AmarDeshLogo';
 import { SideNavDrawer } from '../../components/SideNavDrawer';
 import { FeaturedCardSlider } from '../../components/FeaturedCardSlider';
@@ -66,13 +68,17 @@ export default function HomeScreen() {
   const language = useAppStore((state) => state.language);
   const feedLayout = useAppStore((state) => state.feedLayout);
   const setFeedLayout = useAppStore((state) => state.setFeedLayout);
+  const lowDataMode = useAppStore((state) => state.lowDataMode);
 
-  // Live news from dailyamardesh.com shared store
+  // Live news from dailyamardesh.com shared store.
+  //
+  // No mock-data fallback: showing month-old fixture stories as if they were
+  // today's news is worse than showing an honest empty state. The offline cache
+  // inside the store already covers the no-network case.
   const liveArticles = useSyncExternalStore(subscribeToArticles, getArticles);
-  const baseArticles: Article[] =
-    liveArticles.length > 0 ? liveArticles : mockArticles;
+  const [isFeedLoading, setIsFeedLoading] = useState(liveArticles.length === 0);
 
-  const [displayArticles, setDisplayArticles] = useState<Article[]>(baseArticles);
+  const [displayArticles, setDisplayArticles] = useState<Article[]>(liveArticles);
   const [bookmarks, setBookmarks] = useState<string[]>([]);
   const isUserReady = useUserStore((state) => state.isInitialized);
   const getPersonalizedFeed = useUserStore((state) => state.getPersonalizedFeed);
@@ -82,19 +88,42 @@ export default function HomeScreen() {
     loadBookmarks().then(setBookmarks);
   }, []);
 
-  // Update articles when category or live store changes
+  // Clear the loading state once the store has anything to show (live or cached).
   useEffect(() => {
+    if (liveArticles.length > 0) setIsFeedLoading(false);
+  }, [liveArticles.length]);
+
+  // Update articles when category or live store changes.
+  //
+  // Low-data mode also caps how many items are rendered, so the saving is real
+  // rather than a label on a switch.
+  useEffect(() => {
+    let active = true;
+
+    const apply = (next: Article[]) => {
+      if (!active) return;
+      setDisplayArticles(
+        lowDataMode ? next.slice(0, LOW_DATA_FEED_LIMIT) : next
+      );
+    };
+
     if (selectedCategory === 'সর্বশেষ') {
-      if (isUserReady && baseArticles.length > 0) {
-        getPersonalizedFeed(baseArticles).then(setDisplayArticles);
+      if (isUserReady && liveArticles.length > 0) {
+        getPersonalizedFeed(liveArticles).then(apply).catch(() => apply(liveArticles));
       } else {
-        setDisplayArticles(baseArticles);
+        apply(liveArticles);
       }
     } else {
-      const filtered = getArticlesByCategory(selectedCategory);
-      setDisplayArticles(filtered);
+      // Pass the slug/label through the shared lookup so a Bengali chip label
+      // and a route slug resolve to the same section.
+      apply(getArticlesByCategory(selectedCategory));
     }
-  }, [selectedCategory, baseArticles, isUserReady]);
+
+    return () => {
+      active = false;
+    };
+  }, [selectedCategory, liveArticles, isUserReady, getPersonalizedFeed, lowDataMode]);
+
 
   // Subscribe to notification inbox for unread count
   useEffect(() => {
@@ -116,7 +145,7 @@ export default function HomeScreen() {
     }
   };
 
-  const breakingHeadlines = baseArticles
+  const breakingHeadlines = liveArticles
     .filter((a) => a.isBreaking || a.category === 'জাতীয়' || a.category === 'রাজনীতি')
     .slice(0, 5)
     .map((a) => ({ id: a.id, title: a.title }));
@@ -275,7 +304,34 @@ export default function HomeScreen() {
       listContent: {
         paddingHorizontal: 16,
         paddingTop: 12,
-        paddingBottom: 40,
+        paddingBottom: getSafeBottomPadding(insets.bottom, 40),
+      },
+      emptyFeedContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 48,
+      },
+      emptyFeedText: {
+        fontSize: 14,
+        color: tokens.text.secondary,
+        marginTop: 8,
+      },
+      emptyFeedRetry: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        marginTop: 16,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderRadius: tokens.radii.pill,
+        borderWidth: 1,
+        borderColor: tokens.brand.primary,
+        minHeight: 44,
+      },
+      emptyFeedRetryText: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: tokens.brand.primary,
       },
       heroCard: {
         borderRadius: tokens.radii.lg,
@@ -688,6 +744,37 @@ export default function HomeScreen() {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
           showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <View style={styles.emptyFeedContainer}>
+              {isFeedLoading ? (
+                <>
+                  <ActivityIndicator size="small" color={tokens.brand.primary} />
+                  <Text style={styles.emptyFeedText}>সংবাদ লোড হচ্ছে…</Text>
+                </>
+              ) : (
+                <>
+                  <Ionicons
+                    name="cloud-offline-outline"
+                    size={40}
+                    color={tokens.text.tertiary}
+                  />
+                  <Text style={styles.emptyFeedText}>
+                    এই বিভাগে এখন কোনো সংবাদ নেই
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.emptyFeedRetry}
+                    onPress={onRefresh}
+                    activeOpacity={0.8}
+                    accessibilityRole="button"
+                    accessibilityLabel="আবার চেষ্টা করুন"
+                  >
+                    <Ionicons name="refresh" size={15} color={tokens.brand.primary} />
+                    <Text style={styles.emptyFeedRetryText}>আবার চেষ্টা করুন</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+          }
         />
       )}
 

@@ -355,6 +355,8 @@ export default function SponsoredMarketplaceScreen() {
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="ফিরে যান"
             style={styles.backBtn}
             onPress={() => router.back()}
             activeOpacity={0.7}

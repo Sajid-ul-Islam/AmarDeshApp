@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Article } from '../data/mockData';
+import type { Article } from '../types';
 
 export type AiProvider = 'gemini' | 'openai' | 'groq' | 'deepseek';
 
@@ -177,18 +177,23 @@ export const GEMINI_CANDIDATE_MODELS = [
   'gemini-pro',
 ];
 
-const ENV_GEMINI_KEY =
-  (typeof process !== 'undefined' &&
-    (process.env?.EXPO_PUBLIC_GEMINI_API_KEY ||
-      process.env?.Gemini_Api_Key ||
-      process.env?.GEMINI_API_KEY)) ||
-  '';
-
+/**
+ * Default AI configuration.
+ *
+ * SECURITY: this deliberately ships **no** API key. `EXPO_PUBLIC_*` values are
+ * inlined into the JavaScript bundle by Metro, so any key referenced here would
+ * be readable by anyone who unzips the shipped app and could be spent by every
+ * installation. AI features therefore start disabled and require the user to
+ * paste their own key in Settings → AI (BYOK).
+ *
+ * Never reintroduce a bundled key. If an operator wants to offer a hosted key,
+ * it must be proxied through a server with per-user rate limiting, not inlined.
+ */
 const DEFAULT_CONFIG: ByokAiConfig = {
   provider: 'gemini',
-  apiKey: ENV_GEMINI_KEY,
+  apiKey: '',
   model: 'gemini-2.5-flash',
-  enabled: true,
+  enabled: false,
 };
 
 /**
@@ -250,11 +255,7 @@ export async function getByokAiConfig(): Promise<ByokAiConfig> {
     const raw = await AsyncStorage.getItem(STORAGE_KEY);
     if (!raw) return DEFAULT_CONFIG;
     const parsed = JSON.parse(raw);
-    const config = { ...DEFAULT_CONFIG, ...parsed };
-    if (!config.apiKey && ENV_GEMINI_KEY) {
-      config.apiKey = ENV_GEMINI_KEY;
-    }
-    return config;
+    return { ...DEFAULT_CONFIG, ...parsed };
   } catch (error) {
     console.error('[BYOK AI] Failed to load config:', error);
     return DEFAULT_CONFIG;

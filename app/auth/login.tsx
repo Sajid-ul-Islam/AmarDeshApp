@@ -16,6 +16,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme, radii, shadows } from '../../theme';
 import {
+  CloudNotConfiguredError,
+  isCloudAccountAvailable,
   signInWithEmail,
   createAccountWithEmail,
   signInWithGoogle,
@@ -29,6 +31,14 @@ export default function AuthScreen() {
   // Edge-to-edge: pad content below the status bar
   const insets = useSafeAreaInsets();
   const { tokens } = useTheme();
+  /**
+   * Whether a Firebase project is configured.
+   *
+   * With no project, every auth call fails; the screen says so plainly instead
+   * of offering buttons that cannot work. See T0-2 in the gap plan.
+   */
+  const cloudAvailable = isCloudAccountAvailable();
+  const socialSignInAvailable = false; // no provider SDK wired up yet
   const colors = {
     background: tokens.surface.base,
     text: tokens.text.primary,
@@ -127,6 +137,8 @@ export default function AuthScreen() {
         <View style={styles.header}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
             <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="ফিরে যান"
               style={styles.backButton}
               onPress={() => router.back()}
             >
@@ -213,35 +225,67 @@ export default function AuthScreen() {
             <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
           </View>
 
-          {/* Social Login Buttons */}
-          <TouchableOpacity
-            style={[styles.socialButton, { borderColor: colors.border }]}
-            onPress={handleGoogleSignIn}
-            disabled={isLoading}
-          >
-            <Ionicons name="logo-google" size={20} color="#DB4437" />
-            <Text style={[styles.socialButtonText, { color: colors.text }]}>
-              Google দিয়ে চালিয়ে যান
-            </Text>
-          </TouchableOpacity>
+          {/* Social Login Buttons — only when a provider is actually wired up.
+              These used to send hard-coded mock tokens that Firebase always
+              rejected, so the reader got a generic error with no path forward. */}
+          {socialSignInAvailable && (
+            <>
+              <TouchableOpacity
+                style={[styles.socialButton, { borderColor: colors.border }]}
+                onPress={handleGoogleSignIn}
+                disabled={isLoading}
+                accessibilityRole="button"
+                accessibilityLabel="Google দিয়ে চালিয়ে যান"
+              >
+                <Ionicons name="logo-google" size={20} color="#DB4437" />
+                <Text style={[styles.socialButtonText, { color: colors.text }]}>
+                  Google দিয়ে চালিয়ে যান
+                </Text>
+              </TouchableOpacity>
 
-          {Platform.OS === 'ios' && (
-            <TouchableOpacity
-              style={[styles.socialButton, { borderColor: colors.border }]}
-              onPress={handleAppleSignIn}
-              disabled={isLoading}
+              {Platform.OS === 'ios' && (
+                <TouchableOpacity
+                  style={[styles.socialButton, { borderColor: colors.border }]}
+                  onPress={handleAppleSignIn}
+                  disabled={isLoading}
+                  accessibilityRole="button"
+                  accessibilityLabel="Apple দিয়ে চালিয়ে যান"
+                >
+                  <Ionicons name="logo-apple" size={20} color={colors.text} />
+                  <Text style={[styles.socialButtonText, { color: colors.text }]}>
+                    Apple দিয়ে চালিয়ে যান
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </>
+          )}
+
+          {!cloudAvailable && (
+            <View
+              style={[
+                styles.notConfiguredNotice,
+                { borderColor: colors.border, backgroundColor: colors.background },
+              ]}
             >
-              <Ionicons name="logo-apple" size={20} color={colors.text} />
-              <Text style={[styles.socialButtonText, { color: colors.text }]}>
-                Apple দিয়ে চালিয়ে যান
+              <Ionicons
+                name="information-circle-outline"
+                size={18}
+                color={colors.textSecondary}
+              />
+              <Text style={[styles.notConfiguredText, { color: colors.textSecondary }]}>
+                {getErrorMessage(new CloudNotConfiguredError())}
               </Text>
-            </TouchableOpacity>
+            </View>
           )}
 
           {/* Toggle Login/Signup */}
           <TouchableOpacity
             style={styles.toggleButton}
             onPress={() => setIsLogin(!isLogin)}
+            accessibilityRole="button"
+            accessibilityLabel={
+              isLogin ? 'অ্যাকাউন্ট তৈরি করুন' : 'লগইন করুন'
+            }
           >
             <Text style={[styles.toggleText, { color: colors.primary }]}>
               {isLogin
@@ -343,6 +387,23 @@ const styles = StyleSheet.create({
   toggleButton: {
     alignItems: 'center',
     marginTop: 24,
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  notConfiguredNotice: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    borderWidth: 0.5,
+    borderRadius: radii.md,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginBottom: 8,
+  },
+  notConfiguredText: {
+    flex: 1,
+    fontSize: 12,
+    lineHeight: 18,
   },
   toggleText: {
     fontSize: 14,
