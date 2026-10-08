@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 💎 Editorial UI/UX Upgrades Suite (v1.4.0)
+- **New 3rd Reading Theme: "সংবাদপত্র সেপিয়া" (Parchment Sepia Mode)** (`theme/tokens.ts`, `theme/index.ts`, `theme/ThemeProvider.tsx`, `store/useAppStore.ts`, `app/(tabs)/menu.tsx`, `components/ReaderSettingsModal.tsx`):
+  - Engineered dedicated broadsheet newsprint parchment theme (`surface.base: #f4ebd9`, `surface.subtle: #ebdcc4`, `text.primary: #2c221e`, `text.secondary: #6c5b51`, `brand.primary: #9e1b1b`, `border.default: #ded1bb`, warm diffused shadows `#3c2e24`).
+  - Added 3-way theme selectors across Drawer/Menu and Article Reader settings modal (`☀️ লাইট`, `📜 সেপিয়া`, `🌙 ডার্ক`).
+- **Editorial Quote Card Generator Modal** (`components/QuoteCardModal.tsx`, `app/article/[id].tsx`):
+  - Modal component allowing readers to generate beautiful, branded visual quote cards from article excerpts.
+  - Features 4 editorial palette themes (ডার্ক, লাইট, ক্লাসিক লাল, বোটানিক্যাল গ্রিন), editable quotes, Amar Desh masthead branding, 1-tap clipboard copying, and native share sheet integration.
+- **"আজকের দৃষ্টিপাত" Visual Web Stories Rail & Full-Screen Viewer** (`components/VisualStoriesBar.tsx`, `components/VisualStoryModal.tsx`, `data/storiesData.ts`, `app/(tabs)/index.tsx`):
+  - Story preview rail on Home feed featuring visual thumbnails, category badges, and unread indicator borders.
+  - Full-screen story experience with auto-advancing progress timers, touch tap navigation (left for prev, right for next), bottom takeaway summary card, and direct deep-linking into full article.
+- **Focus Reading Mode (ডিস্ট্র্যাকশন-মুক্ত পাঠ)** (`app/article/[id].tsx`):
+  - Distraction-free reading toggle in article view that hides all navigation chrome, audio player, AI cards, and reaction widgets to focus solely on Bengali editorial typography.
+  - Floating pill controller to quickly return to standard reading layout.
+- **Feed Presentation Switcher (Magazine vs Compact)** (`store/useAppStore.ts`, `app/(tabs)/index.tsx`):
+  - Header toggle allowing readers to seamlessly switch between rich editorial "ম্যাগাজিন ভিউ" (hero cards with excerpts) and high-density "কমপ্যাক্ট ভিউ" (fast-scan list layout with thumbnails).
+  - Preserves user preference in persistent AsyncStorage (`@amar_desh_feed_layout`).
+- **Animated Speech Waveform & Dockable Mini-Pill** (`components/AudioNewsBar.tsx`):
+  - Upgraded TTS audio player with an animated 4-bar equalizer reflecting speech playback.
+  - Added dockable mini-pill button mode that stays out of the way while scrolling through articles and smoothly expands into full audio controls upon tapping.
+- **Reaction Particle Burst & Haptic Feedback** (`components/ArticleReactions.tsx`):
+  - Interactive micro-animation with floating `+1` bubble particle burst upon selecting emoji reactions (পছন্দ, ভালোবাসা, দারুণ, মন খারাপ, প্রতিবাদ).
+  - Tactile physical response powered by `expo-haptics`.
+- **Contextual Milestone Timeline Scrubber** (`components/ArticleTimeline.tsx`, `app/article/[id].tsx`):
+  - Vertical chronological timeline for ongoing news, investigations, and developing national stories.
+  - Visual nodes with date badges, milestone summaries, and highlighted current status node.
+- **AI Tone & Simplification Switcher ("সহজ ভাষায় পড়ুন")** (`components/AiSummaryCard.tsx`):
+  - 3-mode perspective switcher: `মূল পয়েন্ট` (Key Takeaways), `সহজ ভাষায়` (Simplified Bengali for youth and quick scan), and `প্রেক্ষাপট` (Historical Context & Background).
+- **Live Cricket Scores & Market Indicators Ticker** (`components/LiveRatesTicker.tsx`, `data/ratesData.ts`, `app/(tabs)/index.tsx`):
+  - Real-time financial and sports ticker at top of Home feed featuring Bangladesh live cricket, DSEX index, USD/BDT currency rate, and 22-carat gold price.
+- **ePaper Magnifier Loupe Lens** (`app/(tabs)/epaper.tsx`):
+  - Interactive 2.5x circular magnifier lens with responsive touch pan responder for inspecting fine column print, editorials, and classified ads.
+  - Floating toggle control in bottom action bar.
+- **Complete Automated Test Coverage & Isolated Modules Compliance** (`services/__tests__/uiUxEnhancements.test.ts`):
+  - Added dedicated test suite verifying Sepia tokens, theme switcher, feed layout store actions, stories dataset, and live indicators.
+  - Maintained 100% test pass rate (18 test suites, 126 tests) and zero TypeScript errors (`tsc --noEmit`).
+
 ### Complete Production Specifications & Engineering Documentation Suite
 - **Updated Product Requirements Document (`PRD.md`, `docs/PRD.md`)**:
   - Overhauled PRD to Version 2.0.0 reflecting the complete native Expo React Native mobile application.

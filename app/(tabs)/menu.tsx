@@ -652,31 +652,54 @@ export default function MenuScreen() {
             </View>
           </TouchableOpacity>
 
-          {/* Dark Mode Toggle */}
+          {/* Reading Theme Selector */}
           <View style={styles.utilityRow}>
             <View style={styles.utilityLeft}>
               <View style={styles.catIconBox}>
                 <Ionicons
-                  name={themePreference === 'dark' ? 'moon' : 'sunny'}
+                  name={themePreference === 'dark' ? 'moon' : themePreference === 'sepia' ? 'book-outline' : 'sunny'}
                   size={20}
                   color={tokens.brand.primary}
                 />
               </View>
               <View>
-                <Text style={styles.utilityTitle}>{t('dark_mode', language)}</Text>
+                <Text style={styles.utilityTitle}>রিডিং থিম (Reading Theme)</Text>
                 <Text style={styles.utilitySubtitle}>
                   {themePreference === 'dark'
-                    ? t('dark_mode_active', language)
-                    : t('dark_mode_inactive', language)}
+                    ? 'ওলেড ডার্ক মোড'
+                    : themePreference === 'sepia'
+                      ? 'সংবাদপত্র সেপিয়া মোড'
+                      : 'স্বাভাবিক লাইট মোড'}
                 </Text>
               </View>
             </View>
-            <Switch
-              value={themePreference === 'dark'}
-              onValueChange={(val) => setThemePreference(val ? 'dark' : 'light')}
-              trackColor={{ false: tokens.border.strong, true: tokens.brand.primary }}
-              thumbColor="#FFFFFF"
-            />
+            <View style={{ flexDirection: 'row', gap: 6 }}>
+              {[
+                { label: '☀️', value: 'light' as const, title: 'লাইট' },
+                { label: '📜', value: 'sepia' as const, title: 'সেপিয়া' },
+                { label: '🌙', value: 'dark' as const, title: 'ডার্ক' },
+              ].map((opt) => {
+                const isCur = (themePreference || 'light') === opt.value;
+                return (
+                  <TouchableOpacity
+                    key={opt.value}
+                    style={{
+                      paddingVertical: 6,
+                      paddingHorizontal: 10,
+                      borderRadius: tokens.radii.pill,
+                      backgroundColor: isCur ? tokens.brand.primary : tokens.surface.subtle,
+                      borderWidth: 0.5,
+                      borderColor: isCur ? tokens.brand.primary : tokens.border.subtle,
+                    }}
+                    onPress={() => setThemePreference(opt.value)}
+                  >
+                    <Text style={{ fontSize: 13, color: isCur ? '#FFFFFF' : tokens.text.primary, fontWeight: '600' }}>
+                      {opt.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
           </View>
 
           {/* Low Data Mode Toggle */}

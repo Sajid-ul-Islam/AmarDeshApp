@@ -63,6 +63,18 @@ The design tokens are centralized in `theme/tokens.ts` and consumed dynamically 
 | `dark.brand.accent` | `#10B981` | Emerald green confirmation accent. |
 | `dark.border.subtle`| `#27272A` | Subdued hairline divider rules. |
 
+### 2.3 Parchment Sepia Mode Palette ("সংবাদপত্র সেপিয়া")
+| Token Path | Hex Value | Purpose & Application |
+| :--- | :--- | :--- |
+| `sepia.surface.base` | `#F4EBD9` | Warm vintage newsprint parchment background. Ultra-gentle on the eyes. |
+| `sepia.surface.subtle`| `#EBDCC4` | Soft muted warm parchment container for cards and bylines. |
+| `sepia.surface.elevated`| `#FAEDD9`| Elevated parchment card container with warm tonal separation. |
+| `sepia.text.primary` | `#2C221E` | Rich deep sepia printer's ink for headlines and body text. |
+| `sepia.text.secondary`| `#6C5B51`| Soft warm neutral for bylines, author names, and timestamps. |
+| `sepia.brand.primary` | `#9E1B1B` | Vintage terracotta crimson for badges and active pills. |
+| `sepia.border.default`| `#DED1BB` | 1px warm vintage hairline border rules. |
+| `sepia.shadows.card` | `#3C2E24` | Warm tinted diffused ambient shadows. |
+
 ---
 
 ## 3. Curvy Geometry & Shadow Tokens
@@ -197,6 +209,35 @@ export const shadows = {
 - Deep-zoom gesture canvas with boundary clipping.
 - Dynamic bounding box column hotspots tagged with `"কলাম পাঠ"` pills.
 - Crop modal bottom sheet with high-resolution sharing.
+
+### 5.12 Editorial Quote Card Generator (`QuoteCardModal.tsx`)
+- Interactive preview canvas for turning quotes into branded viral social cards.
+- 4 color palettes: Dark, Light, Heritage Crimson, Botanical Green.
+- Amar Desh masthead branding watermark, quotation mark flourishes, and 1-tap native sharing.
+
+### 5.13 "আজকের দৃষ্টিপাত" Visual Web Stories (`VisualStoriesBar.tsx` & `VisualStoryModal.tsx`)
+- Circular preview rail with unread indicators below the home masthead.
+- Immersive full-screen 9:16 story viewer with auto-advancing progress timers, tap-to-step navigation, takeaway badge, and deep link into full article.
+
+### 5.14 Live Cricket Scores & Market Indicators Ticker (`LiveRatesTicker.tsx`)
+- Horizontal real-time indicator bar for cricket scores, DSEX index, USD/BDT rate, and gold price.
+- Live pulse indicator dot, category icons, and high-contrast value pills.
+
+### 5.15 Contextual Article Timeline Scrubber (`ArticleTimeline.tsx`)
+- Vertical chronological milestone scrubber for developing news and investigative series.
+- Expandable event cards with date badges, summary copy, and highlighted current status node.
+
+### 5.16 ePaper Magnifier Loupe Lens (`app/(tabs)/epaper.tsx`)
+- Circular 2.5x high-magnification loupe lens with draggable PanResponder.
+- Inspects fine newspaper print, column text, and classifieds with crystal clarity.
+
+### 5.17 AI Tone & Simplification Switcher ("সহজ ভাষায় পড়ুন") (`AiSummaryCard.tsx`)
+- 3-segment perspective switcher: `মূল পয়েন্ট` (Key Takeaways), `সহজ ভাষায়` (Simplified Bengali), and `প্রেক্ষাপট` (Historical Context).
+- Instant tone transformation of complex news into accessible prose.
+
+### 5.18 Focus Reading Mode (ডিস্ট্র্যাকশন-মুক্ত পাঠ) (`app/article/[id].tsx`)
+- Pure editorial reading mode collapsing all navigation chrome, audio player, AI cards, and reaction widgets.
+- Floating dismiss pill allowing seamless return to standard broadsheet layout.
 
 ---
 

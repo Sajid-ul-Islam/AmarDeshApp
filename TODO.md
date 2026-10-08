@@ -131,6 +131,42 @@ All 6 development phases, the icon-first curvy design system, multi-tier offline
 
 ---
 
+## 💎 Phase UI/UX: Editorial Upgrades & Micro-Interactions (v1.4.0)
+
+### ✅ Completed
+- [x] **"সংবাদপত্র সেপিয়া" (Parchment Sepia Mode)** (`theme/tokens.ts`, `theme/index.ts`, `theme/ThemeProvider.tsx`, `store/useAppStore.ts`):
+  - Added 3rd broadsheet theme with warm parchment palette (`#f4ebd9`), ink typography (`#2c221e`), and diffused warm shadows (`#3c2e24`)
+  - Integrated 3-way theme toggle across Menu and Article Reader settings modal (☀️ লাইট, 📜 সেপিয়া, 🌙 ডার্ক)
+- [x] **Editorial Quote Card Generator Modal** (`components/QuoteCardModal.tsx`, `app/article/[id].tsx`):
+  - Branded editorial quote card creation with 4 palette themes, Amar Desh logo watermark, editable quotes, clipboard copy, and native share sheet
+- [x] **"আজকের দৃষ্টিপাত" Visual Web Stories Rail & Full-Screen Viewer** (`components/VisualStoriesBar.tsx`, `components/VisualStoryModal.tsx`, `data/storiesData.ts`, `app/(tabs)/index.tsx`):
+  - Horizontal circular story preview rail below masthead
+  - Full-screen story viewer with progress timers, tap navigation, takeaway card, and article deep-link
+- [x] **Focus Reading Mode (ডিস্ট্র্যাকশন-মুক্ত পাঠ)** (`app/article/[id].tsx`):
+  - Distraction-free reading toggle collapsing chrome, audio, AI, and reactions to focus on pure typography
+  - Floating restore pill to return to standard broadsheet layout
+- [x] **Feed Presentation Switcher (Magazine vs Compact)** (`store/useAppStore.ts`, `app/(tabs)/index.tsx`):
+  - Quick header toggle between Magazine (hero cards) and Compact list (high-density list with thumbnails)
+  - Persistent AsyncStorage storage (`@amar_desh_feed_layout`)
+- [x] **Animated Speech Waveform & Dockable Mini-Pill** (`components/AudioNewsBar.tsx`):
+  - 4-bar animated equalizer responding to TTS speech playback
+  - Dockable floating mini-pill mode that stays out of the reader's view and expands on tap
+- [x] **Reaction Particle Burst & Haptic Feedback** (`components/ArticleReactions.tsx`):
+  - Floating `+1` particle burst micro-animation with spring scaling and opacity fade
+  - Tactile physical feedback via `expo-haptics`
+- [x] **Contextual Milestone Timeline Scrubber** (`components/ArticleTimeline.tsx`, `app/article/[id].tsx`):
+  - Vertical timeline with date badges, milestone summaries, and highlighted current status node for developing news
+- [x] **AI Tone & Simplification Switcher ("সহজ ভাষায় পড়ুন")** (`components/AiSummaryCard.tsx`):
+  - 3-segment switcher in AI Summary card: `মূল পয়েন্ট` (Key Takeaways), `সহজ ভাষায়` (Simplified Bengali), and `প্রেক্ষাপট` (Historical Context)
+- [x] **Live Cricket Scores & Market Indicators Ticker** (`components/LiveRatesTicker.tsx`, `data/ratesData.ts`, `app/(tabs)/index.tsx`):
+  - Real-time horizontal ticker for Bangladesh cricket, DSEX index, USD/BDT rate, and gold prices
+- [x] **ePaper Magnifier Loupe Lens** (`app/(tabs)/epaper.tsx`):
+  - 2.5x circular magnifier lens with touch responder for inspecting fine column print and classifieds
+- [x] **Automated Test Suite for UI/UX Upgrades** (`services/__tests__/uiUxEnhancements.test.ts`):
+  - 100% pass across all 18 test suites (126/126 tests) with zero TypeScript errors
+
+---
+
 ## 📊 Comprehensive Progress Summary
 
 | Phase / Module | Scope | Status | Test Suites | Progress |
@@ -142,9 +178,10 @@ All 6 development phases, the icon-first curvy design system, multi-tier offline
 | **Phase 4: Notifications & OTA** | Push Channels, Inbox, OTA Update Service | ✅ | 3 Suites | **100%** |
 | **Phase 5: BYOK AI & e-Paper** | Claude/GPT/Gemini/DeepSeek, e-Paper Canvas | ✅ | 2 Suites | **100%** |
 | **Phase 6: Cloud Sync & Specials** | Cloud Sync, July Revolution, 64 Districts, Prayer | ✅ | 3 Suites | **100%** |
-| **Design System (Curvy & Icon-First)**| Tokens, Radii, Shadows, 18 Components Refactored | ✅ | 17 Suites | **100%** |
+| **Design System (Curvy & Icon-First)**| Tokens, Radii, Shadows, 18 Components Refactored | ✅ | Included | **100%** |
+| **UI/UX Upgrades Suite (v1.4.0)** | Sepia Theme, Quote Cards, Web Stories, Loupe, Ticker | ✅ | 1 Suite | **100%** |
 
-**Total Automated Test Coverage:** 17 Test Suites / 120 Unit & Integration Tests Passed (100%).
+**Total Automated Test Coverage:** 18 Test Suites / 126 Unit & Integration Tests Passed (100%).
 
 ---
 
@@ -158,8 +195,7 @@ All 6 development phases, the icon-first curvy design system, multi-tier offline
 - [ ] Connect remote Sentry / Crashlytics DSN for production release exception monitoring
 - [ ] Perform staging build test via `eas build --profile staging --platform android`
 
-### Post-Launch Backlog (v1.4.0+)
-- [ ] Live Cricket Score API integration widget for Bangladesh national matches
+### Post-Launch Backlog (v1.5.0+)
 - [ ] Audio podcast series download for offline morning commute listening
 - [ ] Citizen journalism reporting module with encrypted image upload
 - [ ] Apple Watch & Android Wear glanceable breaking news complication

@@ -1,6 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Animated,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Haptics from 'expo-haptics';
 import { useThemedStyles, useThemeTokens } from '../theme';
 import { toBengaliNumeral } from '../utils/bengali';
 
@@ -27,6 +34,11 @@ export const ArticleReactions: React.FC<ArticleReactionsProps> = ({ articleId })
   const tokens = useThemeTokens();
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [userReaction, setUserReaction] = useState<string | null>(null);
+  const [burstEmoji, setBurstEmoji] = useState<string | null>(null);
+
+  // Animated pop and floating burst
+  const burstAnim = useRef(new Animated.Value(0)).current;
+  const burstOpacity = useRef(new Animated.Value(0)).current;
 
   const storageKey = `@amar_desh_reactions_${articleId}`;
 
@@ -49,9 +61,36 @@ export const ArticleReactions: React.FC<ArticleReactionsProps> = ({ articleId })
     });
   }, [articleId]);
 
-  const handleReact = async (id: string) => {
+  const triggerBurst = (emoji: string) => {
+    setBurstEmoji(emoji);
+    burstAnim.setValue(0);
+    burstOpacity.setValue(1);
+
+    Animated.parallel([
+      Animated.timing(burstAnim, {
+        toValue: -36,
+        duration: 650,
+        useNativeDriver: true,
+      }),
+      Animated.sequence([
+        Animated.delay(350),
+        Animated.timing(burstOpacity, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start(() => setBurstEmoji(null));
+  };
+
+  const handleReact = async (id: string, emoji: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     const isAlreadySelected = userReaction === id;
     const nextUserReaction = isAlreadySelected ? null : id;
+
+    if (!isAlreadySelected) {
+      triggerBurst(emoji);
+    }
 
     const nextCounts = { ...counts };
     if (isAlreadySelected) {
@@ -109,8 +148,12 @@ export const ArticleReactions: React.FC<ArticleReactionsProps> = ({ articleId })
         justifyContent: 'space-between',
         gap: 6,
       },
-      pill: {
+      pillWrapper: {
         flex: 1,
+        alignItems: 'center',
+      },
+      pill: {
+        width: '100%',
         alignItems: 'center',
         paddingVertical: 8,
         borderRadius: tokens.radii.md,
@@ -137,6 +180,24 @@ export const ArticleReactions: React.FC<ArticleReactionsProps> = ({ articleId })
         color: tokens.brand.primary,
         fontWeight: 'bold',
       },
+      burstBubble: {
+        position: 'absolute',
+        top: 0,
+        alignSelf: 'center',
+        zIndex: 10,
+        backgroundColor: tokens.brand.primary,
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderRadius: tokens.radii.pill,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 2,
+      },
+      burstText: {
+        color: '#FFFFFF',
+        fontSize: 11,
+        fontWeight: 'bold',
+      },
     })
   );
 
@@ -153,23 +214,39 @@ export const ArticleReactions: React.FC<ArticleReactionsProps> = ({ articleId })
         {REACTIONS.map((item) => {
           const isSelected = userReaction === item.id;
           const currentCount = counts[item.id] || item.defaultCount;
+          const isBursting = burstEmoji === item.emoji;
+
           return (
-            <TouchableOpacity
-              key={item.id}
-              style={[styles.pill, isSelected && styles.activePill]}
-              onPress={() => handleReact(item.id)}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.emoji}>{item.emoji}</Text>
-              <Text
-                style={[
-                  styles.countText,
-                  isSelected && styles.activeCountText,
-                ]}
+            <View key={item.id} style={styles.pillWrapper}>
+              {isBursting && (
+                <Animated.View
+                  style={[
+                    styles.burstBubble,
+                    {
+                      transform: [{ translateY: burstAnim }],
+                      opacity: burstOpacity,
+                    },
+                  ]}
+                >
+                  <Text style={styles.burstText}>+১ {item.emoji}</Text>
+                </Animated.View>
+              )}
+              <TouchableOpacity
+                style={[styles.pill, isSelected && styles.activePill]}
+                onPress={() => handleReact(item.id, item.emoji)}
+                activeOpacity={0.7}
               >
-                {toBengaliNumeral(currentCount)}
-              </Text>
-            </TouchableOpacity>
+                <Text style={styles.emoji}>{item.emoji}</Text>
+                <Text
+                  style={[
+                    styles.countText,
+                    isSelected && styles.activeCountText,
+                  ]}
+                >
+                  {toBengaliNumeral(currentCount)}
+                </Text>
+              </TouchableOpacity>
+            </View>
           );
         })}
       </View>

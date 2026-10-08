@@ -18,22 +18,28 @@ interface FeatureFlags {
 interface AppState {
   features: FeatureFlags;
   /**
-   * User's theme preference: system (default), light, or dark.
+   * User's theme preference: system (default), light, dark, or sepia.
    * `null` means follow the system setting.
    */
-  themePreference: 'system' | 'light' | 'dark' | null;
+  themePreference: 'system' | 'light' | 'dark' | 'sepia' | null;
   /**
    * User's app language: 'bn' (Bengali) or 'en' (English).
    */
   language: SupportedLanguage;
+  /**
+   * Home feed presentation layout: 'magazine' (large cards) or 'compact' (dense list).
+   */
+  feedLayout: 'magazine' | 'compact';
   setFeatureFlag: (key: keyof FeatureFlags, value: boolean) => void;
-  setThemePreference: (pref: 'system' | 'light' | 'dark') => void;
+  setThemePreference: (pref: 'system' | 'light' | 'dark' | 'sepia') => void;
   setLanguage: (lang: SupportedLanguage) => void;
+  setFeedLayout: (layout: 'magazine' | 'compact') => void;
   loadFeatureFlags: () => Promise<void>;
   saveFeatureFlags: () => Promise<void>;
 }
 
 const STORAGE_KEY = '@amar_desh_feature_flags';
+const FEED_LAYOUT_KEY = '@amar_desh_feed_layout';
 
 const defaultFeatures: FeatureFlags = {
   enableExpoImage: true,
@@ -50,6 +56,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   features: defaultFeatures,
   themePreference: null,
   language: 'bn',
+  feedLayout: 'magazine',
 
   setFeatureFlag: (key, value) => {
     set((state) => ({
@@ -73,6 +80,13 @@ export const useAppStore = create<AppState>((set, get) => ({
     );
   },
 
+  setFeedLayout: (layout) => {
+    set({ feedLayout: layout });
+    AsyncStorage.setItem(FEED_LAYOUT_KEY, JSON.stringify(layout)).catch((error) =>
+      console.error('Error saving feed layout:', error)
+    );
+  },
+
   loadFeatureFlags: async () => {
     try {
       const stored = await AsyncStorage.getItem(STORAGE_KEY);
@@ -85,8 +99,17 @@ export const useAppStore = create<AppState>((set, get) => ({
       const themeStored = await AsyncStorage.getItem(THEME_KEY);
       if (themeStored) {
         const pref = JSON.parse(themeStored) as AppState['themePreference'];
-        if (pref === 'system' || pref === 'light' || pref === 'dark') {
+        if (pref === 'system' || pref === 'light' || pref === 'dark' || pref === 'sepia') {
           set({ themePreference: pref });
+        }
+      }
+
+      // Load feed layout
+      const layoutStored = await AsyncStorage.getItem(FEED_LAYOUT_KEY);
+      if (layoutStored) {
+        const layout = JSON.parse(layoutStored) as AppState['feedLayout'];
+        if (layout === 'magazine' || layout === 'compact') {
+          set({ feedLayout: layout });
         }
       }
 

@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemedStyles, useThemeTokens } from '../theme';
+import { useAppStore } from '../store/useAppStore';
 
 interface ReaderSettingsModalProps {
   visible: boolean;
@@ -17,6 +18,7 @@ export const ReaderSettingsModal: React.FC<ReaderSettingsModalProps> = ({
   onClose,
 }) => {
   const tokens = useThemeTokens();
+  const { themePreference, setThemePreference } = useAppStore();
   const styles = useThemedStyles((tokens) =>
     StyleSheet.create({
       overlay: {
@@ -147,6 +149,34 @@ export const ReaderSettingsModal: React.FC<ReaderSettingsModalProps> = ({
                     ]}
                   >
                     {item.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* Theme Mode Selector */}
+          <Text style={styles.sectionTitle}>রিডিং থিম (Reading Theme)</Text>
+          <View style={styles.sizeBtnRow}>
+            {[
+              { label: '☀️ লাইট', value: 'light' as const },
+              { label: '📜 সেপিয়া', value: 'sepia' as const },
+              { label: '🌙 ডার্ক', value: 'dark' as const },
+            ].map((themeOpt) => {
+              const isSelected = themePreference === themeOpt.value;
+              return (
+                <TouchableOpacity
+                  key={themeOpt.value}
+                  style={[styles.sizeBtn, isSelected && styles.activeSizeBtn]}
+                  onPress={() => setThemePreference(themeOpt.value)}
+                >
+                  <Text
+                    style={[
+                      styles.sizeBtnText,
+                      isSelected && styles.activeSizeBtnText,
+                    ]}
+                  >
+                    {themeOpt.label}
                   </Text>
                 </TouchableOpacity>
               );

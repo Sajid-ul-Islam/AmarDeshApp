@@ -40,6 +40,8 @@ import { AiSummaryCard } from '../../components/AiSummaryCard';
 import { AiAssistantModal } from '../../components/AiAssistantModal';
 import { ArticleReactions } from '../../components/ArticleReactions';
 import { AdBanner } from '../../components/AdBanner';
+import { QuoteCardModal } from '../../components/QuoteCardModal';
+import { ArticleTimeline } from '../../components/ArticleTimeline';
 import { getArticlesByCategory } from '../../services/contentService';
 import { useThemedStyles } from '../../theme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -62,6 +64,8 @@ export default function ArticleDetailScreen() {
   const [showShareSheet, setShowShareSheet] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showAiAssistant, setShowAiAssistant] = useState(false);
+  const [showQuoteModal, setShowQuoteModal] = useState(false);
+  const [isFocusMode, setIsFocusMode] = useState(false);
   const [fontSizeMultiplier, setFontSizeMultiplier] = useState(1.0);
   const [showAudioBar, setShowAudioBar] = useState(false);
   const [readingProgress, setReadingProgress] = useState(0);
@@ -570,73 +574,128 @@ export default function ArticleDetailScreen() {
 
   return (
     <View style={styles.container} {...panResponder.panHandlers}>
-      {/* Header Bar */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-          activeOpacity={0.7}
+      {/* Focus Mode Floating Exit Pill or Standard Header */}
+      {isFocusMode ? (
+        <View
+          style={{
+            position: 'absolute',
+            top: getSafeHeaderPaddingTop(insets.top, 8),
+            right: 16,
+            zIndex: 100,
+          }}
         >
-          <Ionicons name="arrow-back" size={22} color={styles.title.color} />
-        </TouchableOpacity>
-
-        <AmarDeshLogo height={24} variant="png" />
-
-        <View style={styles.headerActions}>
-          {/* AI Assistant */}
           <TouchableOpacity
-            style={styles.iconButton}
-            onPress={() => setShowAiAssistant(true)}
-            activeOpacity={0.7}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 6,
+              backgroundColor: 'rgba(18, 18, 18, 0.78)',
+              paddingHorizontal: 12,
+              paddingVertical: 7,
+              borderRadius: 999,
+            }}
+            onPress={() => setIsFocusMode(false)}
+            accessibilityLabel="ফোকাস মোড ত্যাগ করুন"
           >
-            <Ionicons name="sparkles" size={18} color="#006B3F" />
-          </TouchableOpacity>
-
-          {/* TTS Audio Bar Toggle */}
-          <TouchableOpacity
-            style={[styles.iconButton, showAudioBar && styles.activeIconButton]}
-            onPress={() => setShowAudioBar((prev) => !prev)}
-            activeOpacity={0.7}
-          >
-            <Ionicons
-              name={showAudioBar ? 'volume-high' : 'volume-medium-outline'}
-              size={19}
-              color={showAudioBar ? '#006B3F' : styles.authorName.color}
-            />
-          </TouchableOpacity>
-
-          {/* Reader font size adjuster */}
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={() => setShowSettingsModal(true)}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="text-outline" size={19} color={styles.authorName.color} />
-          </TouchableOpacity>
-
-          {/* Bookmark */}
-          <TouchableOpacity
-            style={[styles.iconButton, isBookmarked && styles.activeIconButton]}
-            onPress={toggleBookmark}
-            activeOpacity={0.7}
-          >
-            <Ionicons
-              name={isBookmarked ? 'bookmark' : 'bookmark-outline'}
-              size={19}
-              color={isBookmarked ? '#006B3F' : styles.authorName.color}
-            />
-          </TouchableOpacity>
-
-          {/* Share */}
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={() => setShowShareSheet(true)}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="share-social-outline" size={19} color={styles.authorName.color} />
+            <Ionicons name="contract-outline" size={16} color="#FFFFFF" />
+            <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: 'bold' }}>
+              ফোকাস ত্যাগ
+            </Text>
           </TouchableOpacity>
         </View>
-      </View>
+      ) : (
+        /* Standard Header Bar */
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backButton}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="arrow-back" size={22} color={styles.title.color} />
+          </TouchableOpacity>
+
+          <AmarDeshLogo height={24} variant="png" />
+
+          <View style={styles.headerActions}>
+            {/* Focus Mode Toggle */}
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => setIsFocusMode(true)}
+              activeOpacity={0.7}
+              accessibilityLabel="ফোকাস রিডিং মোড"
+            >
+              <Ionicons name="scan-outline" size={18} color={styles.authorName.color} />
+            </TouchableOpacity>
+
+            {/* Quote Card Generator */}
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => setShowQuoteModal(true)}
+              activeOpacity={0.7}
+              accessibilityLabel="উদ্ধৃতি কার্ড তৈরি করুন"
+            >
+              <Ionicons
+                name="chatbubble-ellipses-outline"
+                size={18}
+                color={styles.authorName.color}
+              />
+            </TouchableOpacity>
+
+            {/* AI Assistant */}
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => setShowAiAssistant(true)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="sparkles" size={18} color="#006B3F" />
+            </TouchableOpacity>
+
+            {/* TTS Audio Bar Toggle */}
+            <TouchableOpacity
+              style={[styles.iconButton, showAudioBar && styles.activeIconButton]}
+              onPress={() => setShowAudioBar((prev) => !prev)}
+              activeOpacity={0.7}
+            >
+              <Ionicons
+                name={showAudioBar ? 'volume-high' : 'volume-medium-outline'}
+                size={19}
+                color={showAudioBar ? '#006B3F' : styles.authorName.color}
+              />
+            </TouchableOpacity>
+
+            {/* Reader font size adjuster */}
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => setShowSettingsModal(true)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="text-outline" size={19} color={styles.authorName.color} />
+            </TouchableOpacity>
+
+            {/* Bookmark */}
+            <TouchableOpacity
+              style={[styles.iconButton, isBookmarked && styles.activeIconButton]}
+              onPress={toggleBookmark}
+              activeOpacity={0.7}
+            >
+              <Ionicons
+                name={isBookmarked ? 'bookmark' : 'bookmark-outline'}
+                size={19}
+                color={isBookmarked ? '#006B3F' : styles.authorName.color}
+              />
+            </TouchableOpacity>
+
+            {/* Share */}
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => setShowShareSheet(true)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="share-social-outline" size={19} color={styles.authorName.color} />
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
 
       {/* Reading Progress Bar */}
       <View style={styles.progressBarTrack}>
@@ -791,6 +850,9 @@ export default function ArticleDetailScreen() {
             <Text style={styles.swipeHintText}>{t('swipe_hint', language)}</Text>
           </View>
 
+          {/* Contextual Timeline */}
+          <ArticleTimeline />
+
           {/* Editorial Sponsored Card */}
           <AdBanner variant="articleFooter" />
 
@@ -853,6 +915,19 @@ export default function ArticleDetailScreen() {
             <View style={styles.shareOptions}>
               <TouchableOpacity
                 style={styles.shareOption}
+                onPress={() => {
+                  setShowShareSheet(false);
+                  setShowQuoteModal(true);
+                }}
+              >
+                <View style={[styles.shareIcon, { backgroundColor: '#BA131A' }]}>
+                  <Ionicons name="chatbubble-ellipses" size={24} color="#FFFFFF" />
+                </View>
+                <Text style={styles.shareLabel}>উদ্ধৃতি কার্ড</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.shareOption}
                 onPress={() => handleShare('whatsapp')}
               >
                 <View style={[styles.shareIcon, { backgroundColor: '#25D366' }]}>
@@ -910,6 +985,16 @@ export default function ArticleDetailScreen() {
         article={article}
         onClose={() => setShowAiAssistant(false)}
         onOpenSettings={() => router.push('/settings/ai' as any)}
+      />
+
+      {/* Quote Card Generator Modal */}
+      <QuoteCardModal
+        visible={showQuoteModal}
+        articleTitle={article.title}
+        articleUrl={article.link || 'https://dailyamardesh.com'}
+        authorName={article.author || 'আমার দেশ বিশেষ প্রতিবেদন'}
+        initialQuote={article.excerpt || article.content.slice(0, 140)}
+        onClose={() => setShowQuoteModal(false)}
       />
     </View>
   );

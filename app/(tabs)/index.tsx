@@ -38,6 +38,9 @@ import {
 } from '../../services/notificationInboxService';
 import { toBengaliNumeral } from '../../utils/bengali';
 import { AdBanner } from '../../components/AdBanner';
+import { VisualStoriesBar } from '../../components/VisualStoriesBar';
+import { LiveRatesTicker } from '../../components/LiveRatesTicker';
+import * as Haptics from 'expo-haptics';
 import { useAppStore } from '../../store/useAppStore';
 import {
   t,
@@ -55,6 +58,8 @@ export default function HomeScreen() {
   const [selectedCategory, setSelectedCategory] = useState('সর্বশেষ');
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
   const language = useAppStore((state) => state.language);
+  const feedLayout = useAppStore((state) => state.feedLayout);
+  const setFeedLayout = useAppStore((state) => state.setFeedLayout);
 
   // Live news from dailyamardesh.com shared store
   const liveArticles = useSyncExternalStore(subscribeToArticles, getArticles);
@@ -379,6 +384,12 @@ export default function HomeScreen() {
 
   const renderHeader = () => (
     <View>
+      {/* Live Cricket Scores & Financial Market Ticker */}
+      <LiveRatesTicker />
+
+      {/* Visual Web Stories Carousel */}
+      <VisualStoriesBar />
+
       {/* Continue Reading Shelf (if last read exists) */}
       <ContinueReadingCard />
 
@@ -414,7 +425,7 @@ export default function HomeScreen() {
   );
 
   const renderArticle = ({ item, index }: { item: Article; index: number }) => {
-    if (index === 0) {
+    if (feedLayout === 'magazine' && index === 0) {
       return (
         <TouchableOpacity
           style={styles.heroCard}
@@ -516,6 +527,23 @@ export default function HomeScreen() {
                 </Text>
               </View>
             )}
+          </TouchableOpacity>
+
+          {/* Feed Layout Toggle (Magazine vs Compact List) */}
+          <TouchableOpacity
+            style={styles.iconBtn}
+            onPress={() => {
+              Haptics.selectionAsync();
+              setFeedLayout(feedLayout === 'magazine' ? 'compact' : 'magazine');
+            }}
+            activeOpacity={0.7}
+            accessibilityLabel="ফিড লেআউট পরিবর্তন"
+          >
+            <Ionicons
+              name={feedLayout === 'magazine' ? 'list-outline' : 'grid-outline'}
+              size={17}
+              color={styles.mastheadTitle.color}
+            />
           </TouchableOpacity>
 
           {/* Search */}

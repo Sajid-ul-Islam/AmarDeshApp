@@ -202,6 +202,8 @@ export default function EPaperScreen() {
   const language = useAppStore((state) => state.language);
   const [showHotspots, setShowHotspots] = useState(true);
   const [selectedHotspot, setSelectedHotspot] = useState<ArticleHotspot | null>(null);
+  const [isLoupeMode, setIsLoupeMode] = useState(false);
+  const [loupePos, setLoupePos] = useState({ x: 120, y: 160 });
 
   const styles = useThemedStyles((tokens) =>
     StyleSheet.create({
@@ -589,6 +591,36 @@ export default function EPaperScreen() {
 
       {/* Main Image Gallery Viewer */}
       <View style={styles.viewerContainer}>
+        {/* Loupe Mode Banner */}
+        {isLoupeMode && (
+          <View
+            style={{
+              position: 'absolute',
+              top: 10,
+              left: 16,
+              right: 16,
+              backgroundColor: 'rgba(18, 18, 18, 0.88)',
+              paddingHorizontal: 14,
+              paddingVertical: 7,
+              borderRadius: 999,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              zIndex: 100,
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Ionicons name="search" size={15} color="#FBBF24" />
+              <Text style={{ color: '#FFFFFF', fontSize: 11.5, fontWeight: 'bold' }}>
+                ম্যাগনিফায়ার লেন্স অন (২.৫× জুম) • কলামে ট্যাপ করুন
+              </Text>
+            </View>
+            <TouchableOpacity onPress={() => setIsLoupeMode(false)}>
+              <Ionicons name="close-circle" size={18} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
+        )}
+
         <ScrollView
           style={styles.pageScrollView}
           contentContainerStyle={styles.pageScrollContent}
@@ -611,6 +643,52 @@ export default function EPaperScreen() {
               priority="high"
               cachePolicy="memory-disk"
             />
+
+            {/* Loupe Lens Glass Overlay */}
+            {isLoupeMode && (
+              <View
+                style={{
+                  position: 'absolute',
+                  top: loupePos.y,
+                  left: loupePos.x,
+                  width: 140,
+                  height: 140,
+                  borderRadius: 70,
+                  borderWidth: 3,
+                  borderColor: '#BA131A',
+                  overflow: 'hidden',
+                  backgroundColor: '#FFFFFF',
+                  shadowColor: '#000000',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.35,
+                  shadowRadius: 10,
+                  elevation: 8,
+                  zIndex: 50,
+                }}
+              >
+                <Image
+                  source={{ uri: activePage.hdImageUrl || activePage.imageUrl }}
+                  style={{
+                    width: (SCREEN_WIDTH - 32) * 2.2,
+                    height: (SCREEN_WIDTH - 32) * 1.45 * 2.2,
+                    transform: [{ translateX: -loupePos.x * 2.2 }, { translateY: -loupePos.y * 2.2 }],
+                  }}
+                  contentFit="cover"
+                />
+                <View
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    width: 8,
+                    height: 8,
+                    borderRadius: 4,
+                    backgroundColor: '#BA131A',
+                    transform: [{ translateX: -4 }, { translateY: -4 }],
+                  }}
+                />
+              </View>
+            )}
 
             {/* Interactive Article Hotspots */}
             {showHotspots &&
@@ -670,6 +748,22 @@ export default function EPaperScreen() {
               name={showHotspots ? 'scan' : 'scan-outline'}
               size={20}
               color={showHotspots ? '#4ADE80' : '#FFFFFF'}
+            />
+          </TouchableOpacity>
+
+          <View style={styles.barDivider} />
+
+          {/* Toggle Magnifier Loupe Lens */}
+          <TouchableOpacity
+            onPress={() => {
+              setIsLoupeMode((prev) => !prev);
+            }}
+            accessibilityLabel="ম্যাগনিফায়ার লেন্স"
+          >
+            <Ionicons
+              name={isLoupeMode ? 'search' : 'search-outline'}
+              size={20}
+              color={isLoupeMode ? '#FBBF24' : '#FFFFFF'}
             />
           </TouchableOpacity>
 

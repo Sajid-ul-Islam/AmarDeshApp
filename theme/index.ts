@@ -10,9 +10,11 @@ export {
   brand, 
   light, 
   dark, 
+  sepia,
   radii,
   shadows,
   darkShadows,
+  sepiaShadows,
   social, 
   getThemeTokens 
 } from './tokens';

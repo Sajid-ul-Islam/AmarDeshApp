@@ -165,6 +165,56 @@ export const dark = {
 };
 
 // ============================================================================
+// SEPIA MODE TOKENS (WARM NATURAL NEWSPRINT PARCHMENT)
+// ============================================================================
+
+export const sepia = {
+  surface: {
+    base: '#f4ebd9',        // Warm vintage newsprint parchment
+    subtle: '#ebdcc4',      // Soft muted warm parchment
+    elevated: '#faedd9',    // Elevated parchment card
+    overlay: '#e2d2b8',     // Modals and action sheets
+  },
+  
+  text: {
+    primary: '#2c221e',     // Rich deep sepia printer's ink
+    secondary: '#6c5b51',   // Soft warm neutral for bylines
+    tertiary: '#8c7b70',    // Auxiliary labels
+    inverse: '#ffffff',     // Text on badges
+  },
+  
+  brand: {
+    primary: '#9e1b1b',     // Vintage crimson
+    secondary: '#7e1212',   // Deep crimson accent
+    heritageGreen: '#1b633f', // Vintage forest green
+    onPrimary: '#ffffff',   // Text on primary
+    surface: '#ebdcc4',     // Sepia warm surface
+    crimsonSurface: '#fae3e3', // Subdued warm crimson container
+    accent: '#1b633f',      // Natural green accent
+  },
+  
+  border: {
+    default: '#ded1bb',     // 1px warm vintage hairline
+    subtle: '#e7dcce',      // Micro separators
+    strong: '#2c221e',      // Focused dark sepia borders
+  },
+  
+  status: {
+    success: '#1b7a42',     // Forest green
+    error: '#9e1b1b',       // Warm crimson
+    warning: '#b8790b',     // Amber
+    info: '#1d54aa',        // Muted sapphire
+  },
+  
+  interactive: {
+    active: '#9e1b1b',      // Active pill
+    inactive: '#6c5b51',    // Inactive text
+    hover: '#faedd9',       // Hover surface
+    pressed: '#e2d2b8',     // Pressed surface
+  },
+};
+
+// ============================================================================
 // TYPOGRAPHY SYSTEM (NEWSREADER & INTER SCALES)
 // ============================================================================
 
@@ -386,7 +436,18 @@ export const darkShadows = {
   },
 };
 
-export type ThemeMode = 'light' | 'dark';
+export const sepiaShadows = {
+  ...shadows,
+  card: {
+    shadowColor: '#3c2e24',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.16,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+};
+
+export type ThemeMode = 'light' | 'dark' | 'sepia';
 
 export interface ThemeTokens {
   surface: typeof light.surface;
@@ -402,11 +463,12 @@ export interface ThemeTokens {
 }
 
 export const getThemeTokens = (mode: ThemeMode): ThemeTokens => {
-  const base = mode === 'dark' ? dark : light;
+  const base = mode === 'dark' ? dark : mode === 'sepia' ? sepia : light;
+  const activeShadows = mode === 'dark' ? darkShadows : mode === 'sepia' ? sepiaShadows : shadows;
   return {
     ...base,
     radii,
-    shadows: mode === 'dark' ? darkShadows : shadows,
+    shadows: activeShadows,
     typography,
     spacing,
   };
@@ -425,11 +487,13 @@ export const tokens = {
   brand,
   light,
   dark,
+  sepia,
   typography,
   spacing,
   radii,
   shadows,
   darkShadows,
+  sepiaShadows,
   social,
   getThemeTokens,
 };

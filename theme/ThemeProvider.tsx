@@ -49,11 +49,13 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     forcedMode ||
     (themePreference === 'dark'
       ? 'dark'
-      : themePreference === 'light'
-        ? 'light'
-        : systemColorScheme === 'dark'
-          ? 'dark'
-          : 'light');
+      : themePreference === 'sepia'
+        ? 'sepia'
+        : themePreference === 'light'
+          ? 'light'
+          : systemColorScheme === 'dark'
+            ? 'dark'
+            : 'light');
   
   // Get tokens for current mode
   const tokens = useMemo(() => getThemeTokens(mode), [mode]);

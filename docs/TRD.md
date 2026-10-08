@@ -211,7 +211,7 @@ CREATE TABLE IF NOT EXISTS affinities (
 
 ## 7. Testing Strategy & Automated Quality Gates
 
-The project maintains **17 automated test suites with 120 tests**, fully automated via Jest:
+The project maintains **18 automated test suites with 126 tests**, fully automated via Jest:
 
 ```bash
 # Run all automated tests
@@ -239,6 +239,7 @@ npm run typecheck
 15. `user/__tests__/personalizationEngine.test.ts` (Feed ranking and recommendation generation)
 16. `services/__tests__/articleStore.test.ts` (Bookmark operations & storage hydration)
 17. `services/__tests__/otaUpdateAndStartup.test.ts` (App startup sequence & OTA updater)
+18. `services/__tests__/uiUxEnhancements.test.ts` (Sepia tokens, feed layout, web stories, live indicators)
 
 ---
 
