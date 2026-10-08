@@ -635,6 +635,24 @@ export default function EPaperScreen() {
                 transform: [{ scale: zoomLevel }],
               },
             ]}
+            onTouchStart={(e) => {
+              if (isLoupeMode) {
+                const { locationX, locationY } = e.nativeEvent;
+                setLoupePos({
+                  x: Math.max(0, locationX - 70),
+                  y: Math.max(0, locationY - 70),
+                });
+              }
+            }}
+            onTouchMove={(e) => {
+              if (isLoupeMode) {
+                const { locationX, locationY } = e.nativeEvent;
+                setLoupePos({
+                  x: Math.max(0, locationX - 70),
+                  y: Math.max(0, locationY - 70),
+                });
+              }
+            }}
           >
             <Image
               source={{ uri: activePage.hdImageUrl }}

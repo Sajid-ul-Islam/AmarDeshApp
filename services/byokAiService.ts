@@ -202,12 +202,12 @@ export async function discoverGeminiModels(apiKey: string): Promise<string[]> {
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data?.models)) {
-        const supported = data.models
-          .filter((m: any) => {
+        const supported = (data.models as Array<{ name?: string; supportedGenerationMethods?: string[] }>)
+          .filter((m) => {
             const methods = m?.supportedGenerationMethods || [];
             return methods.includes('generateContent');
           })
-          .map((m: any) => (m.name || '').replace(/^models\//, ''))
+          .map((m) => (m.name || '').replace(/^models\//, ''))
           .filter((name: string) => name.length > 0);
 
         if (supported.length > 0) {
@@ -431,10 +431,11 @@ export async function testAiConnection(
     }
 
     return { success: false, message: 'অজানা প্রোভাইডার নির্বাচন করা হয়েছে।' };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errMessage = error instanceof Error ? error.message : String(error);
     return {
       success: false,
-      message: `ইন্টারনেট বা নেটওয়ার্ক সংযোগ ত্রুটি: ${error?.message || error}`,
+      message: `ইন্টারনেট বা নেটওয়ার্ক সংযোগ ত্রুটি: ${errMessage}`,
     };
   }
 }
@@ -442,9 +443,18 @@ export async function testAiConnection(
 /**
  * Executes a Gemini generateContent call with resilient auto-discovery and candidate model fallback
  */
+export interface GeminiContentPart {
+  text: string;
+}
+
+export interface GeminiContentItem {
+  role?: string;
+  parts: GeminiContentPart[];
+}
+
 export async function executeGeminiGenerateContent(
   apiKey: string,
-  contents: any[],
+  contents: GeminiContentItem[],
   preferredModel: string = 'gemini-2.5-flash',
   generationConfig: { temperature?: number; maxOutputTokens?: number } = {}
 ): Promise<{ text: string; workingModel: string } | null> {
@@ -796,9 +806,10 @@ ${textContent.slice(0, 3000)}`;
         }
       }
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errMessage = error instanceof Error ? error.message : String(error);
     return {
-      answer: `দুঃখিত, এআই সার্ভারের সাথে সংযোগ করতে ত্রুটি হয়েছে: ${error?.message || error}`,
+      answer: `দুঃখিত, এআই সার্ভারের সাথে সংযোগ করতে ত্রুটি হয়েছে: ${errMessage}`,
       isAiGenerated: false,
     };
   }

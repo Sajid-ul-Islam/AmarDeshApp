@@ -77,6 +77,10 @@ export const LiveRatesTicker: React.FC = () => {
         color: tokens.status.success,
         backgroundColor: 'rgba(22, 163, 74, 0.1)',
       },
+      negativeBadge: {
+        color: tokens.status.error,
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+      },
     })
   );
 
@@ -109,7 +113,7 @@ export const LiveRatesTicker: React.FC = () => {
                 <Text
                   style={[
                     styles.changeBadge,
-                    item.isPositive && styles.positiveBadge,
+                    item.isPositive === false ? styles.negativeBadge : styles.positiveBadge,
                   ]}
                 >
                   {item.change}

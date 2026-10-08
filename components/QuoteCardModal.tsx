@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,9 +7,9 @@ import {
   TouchableOpacity,
   ScrollView,
   Share,
-  Clipboard,
   Alert,
 } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useThemedStyles, useThemeTokens, getThemeTokens, ThemeMode } from '../theme';
@@ -35,6 +35,13 @@ export const QuoteCardModal: React.FC<QuoteCardModalProps> = ({
   const currentTokens = useThemeTokens();
   const [selectedTheme, setSelectedTheme] = useState<ThemeMode>('light');
   const [copied, setCopied] = useState(false);
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+    };
+  }, []);
 
   // Fallback quote text if not passed
   const quoteText =
@@ -55,13 +62,18 @@ export const QuoteCardModal: React.FC<QuoteCardModalProps> = ({
     }
   };
 
-  const handleCopy = () => {
+  const handleCopy = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    Clipboard.setString(
-      `${quoteText}\n\n— ${authorName}\nসূত্র: দৈনিক আমার দেশ (${articleUrl})`
-    );
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await Clipboard.setStringAsync(
+        `${quoteText}\n\n— ${authorName}\nসূত্র: দৈনিক আমার দেশ (${articleUrl})`
+      );
+      setCopied(true);
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000);
+    } catch (e) {
+      console.error('Error copying quote to clipboard:', e);
+    }
   };
 
   const styles = useThemedStyles((tokens) =>

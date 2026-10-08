@@ -6,6 +6,9 @@ export interface TTSOptions {
   pitch?: number; // 0 to 2 (1 is normal pitch)
   volume?: number; // 0 to 1
   language?: string;
+  onDone?: () => void;
+  onStopped?: () => void;
+  onError?: (error: Error) => void;
 }
 
 const DEFAULT_OPTIONS: TTSOptions = {
@@ -24,6 +27,9 @@ export const speak = (text: string, options: TTSOptions = {}): void => {
     pitch: mergedOptions.pitch,
     volume: mergedOptions.volume,
     language: mergedOptions.language,
+    onDone: mergedOptions.onDone,
+    onStopped: mergedOptions.onStopped,
+    onError: mergedOptions.onError,
   });
 };
 

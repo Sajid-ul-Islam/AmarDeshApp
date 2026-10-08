@@ -67,6 +67,7 @@ export const TRANSLATIONS = {
     loading_article: 'সংবাদ লোড হচ্ছে...',
     share_news: 'সংবাদটি শেয়ার করুন',
     close: 'বন্ধ করুন',
+    back: 'ফিরে যান',
 
     // ePaper
     epaper_header: 'ই-পেপার সংস্করণ',
@@ -182,6 +183,7 @@ export const TRANSLATIONS = {
     loading_article: 'Loading article...',
     share_news: 'Share this story',
     close: 'Close',
+    back: 'Go Back',
 
     // ePaper
     epaper_header: 'ePaper Edition',

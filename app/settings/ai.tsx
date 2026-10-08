@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -45,6 +45,15 @@ export default function AiSettingsScreen() {
   );
   const [saving, setSaving] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimerRef.current) {
+        clearTimeout(copyTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     getByokAiConfig().then((cfg) => {
@@ -79,7 +88,10 @@ export default function AiSettingsScreen() {
   const handleCopyLink = async () => {
     await Clipboard.setStringAsync(meta.keyHelpUrl);
     setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2500);
+    if (copyTimerRef.current) {
+      clearTimeout(copyTimerRef.current);
+    }
+    copyTimerRef.current = setTimeout(() => setCopiedLink(false), 2500);
     Alert.alert('লিংক কপি হয়েছে', `${meta.portalName}-এর অফিসিয়াল পেজ লিংক ক্লিপবোর্ডে কপি করা হয়েছে:\n${meta.keyHelpUrl}`);
   };
 

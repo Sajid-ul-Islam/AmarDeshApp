@@ -132,7 +132,7 @@ export const ArticleTimeline: React.FC<ArticleTimelineProps> = ({
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <Ionicons name="git-network-outline" size={18} color={tokens.brand.primary} />
-        <Text style={styles.headerTitle}>ঘটনাপ্রবাহের টাইমলাইন (Context Timeline)</Text>
+        <Text style={styles.headerTitle}>ঘটনাপ্রবাহের ধারাবাহিক প্রেক্ষাপট</Text>
       </View>
 
       <View style={styles.timelineList}>
@@ -142,7 +142,7 @@ export const ArticleTimeline: React.FC<ArticleTimelineProps> = ({
 
           return (
             <TouchableOpacity
-              key={index}
+              key={`${item.date}-${index}`}
               style={styles.nodeRow}
               onPress={() => toggleExpand(index)}
               activeOpacity={0.8}

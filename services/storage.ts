@@ -1,4 +1,18 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Article } from '../src/types';
+
+export interface ReadingStreak {
+  count: number;
+  lastRead: string | null;
+}
+
+export interface StoredComment {
+  id: string;
+  articleId: string;
+  text: string;
+  author: string;
+  createdAt: string;
+}
 
 const STORAGE_KEYS = {
   BOOKMARKS: '@amardesh_bookmarks',
@@ -51,7 +65,7 @@ export const loadReadingHistory = async (): Promise<string[]> => {
 };
 
 // Preferences
-export const savePreferences = async (prefs: any) => {
+export const savePreferences = async (prefs: Record<string, unknown>) => {
   try {
     await AsyncStorage.setItem(STORAGE_KEYS.PREFERENCES, JSON.stringify(prefs));
   } catch (error) {
@@ -59,7 +73,7 @@ export const savePreferences = async (prefs: any) => {
   }
 };
 
-export const loadPreferences = async () => {
+export const loadPreferences = async (): Promise<Record<string, unknown>> => {
   try {
     const data = await AsyncStorage.getItem(STORAGE_KEYS.PREFERENCES);
     return data ? JSON.parse(data) : {};
@@ -70,7 +84,7 @@ export const loadPreferences = async () => {
 };
 
 // Reactions
-export const saveReactions = async (reactions: any) => {
+export const saveReactions = async (reactions: Record<string, string | number>) => {
   try {
     await AsyncStorage.setItem(STORAGE_KEYS.REACTIONS, JSON.stringify(reactions));
   } catch (error) {
@@ -78,7 +92,7 @@ export const saveReactions = async (reactions: any) => {
   }
 };
 
-export const loadReactions = async () => {
+export const loadReactions = async (): Promise<Record<string, string | number>> => {
   try {
     const data = await AsyncStorage.getItem(STORAGE_KEYS.REACTIONS);
     return data ? JSON.parse(data) : {};
@@ -89,7 +103,7 @@ export const loadReactions = async () => {
 };
 
 // Comments
-export const saveComments = async (comments: any[]) => {
+export const saveComments = async (comments: StoredComment[]) => {
   try {
     await AsyncStorage.setItem(STORAGE_KEYS.COMMENTS, JSON.stringify(comments));
   } catch (error) {
@@ -97,7 +111,7 @@ export const saveComments = async (comments: any[]) => {
   }
 };
 
-export const loadComments = async (): Promise<any[]> => {
+export const loadComments = async (): Promise<StoredComment[]> => {
   try {
     const data = await AsyncStorage.getItem(STORAGE_KEYS.COMMENTS);
     return data ? JSON.parse(data) : [];
@@ -108,7 +122,7 @@ export const loadComments = async (): Promise<any[]> => {
 };
 
 // Reading Streak
-export const saveStreak = async (streak: any) => {
+export const saveStreak = async (streak: ReadingStreak) => {
   try {
     await AsyncStorage.setItem(STORAGE_KEYS.STREAK, JSON.stringify(streak));
   } catch (error) {
@@ -116,7 +130,7 @@ export const saveStreak = async (streak: any) => {
   }
 };
 
-export const loadStreak = async () => {
+export const loadStreak = async (): Promise<ReadingStreak> => {
   try {
     const data = await AsyncStorage.getItem(STORAGE_KEYS.STREAK);
     return data ? JSON.parse(data) : { count: 0, lastRead: null };
@@ -165,7 +179,7 @@ export const loadDarkMode = async (): Promise<boolean | null> => {
 };
 
 // Offline Articles
-export const saveOfflineArticles = async (articles: any[]) => {
+export const saveOfflineArticles = async (articles: Article[]) => {
   try {
     await AsyncStorage.setItem(STORAGE_KEYS.OFFLINE_ARTICLES, JSON.stringify(articles));
   } catch (error) {
@@ -173,7 +187,7 @@ export const saveOfflineArticles = async (articles: any[]) => {
   }
 };
 
-export const loadOfflineArticles = async (): Promise<any[]> => {
+export const loadOfflineArticles = async (): Promise<Article[]> => {
   try {
     const data = await AsyncStorage.getItem(STORAGE_KEYS.OFFLINE_ARTICLES);
     return data ? JSON.parse(data) : [];

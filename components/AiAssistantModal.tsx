@@ -101,7 +101,7 @@ export const AiAssistantModal: React.FC<AiAssistantModalProps> = ({
       };
 
       setMessages((prev) => [...prev, aiMsg]);
-    } catch (err: any) {
+    } catch (_err: unknown) {
       setMessages((prev) => [
         ...prev,
         {

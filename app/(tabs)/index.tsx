@@ -22,7 +22,7 @@ import {
 } from '../../services/articleStore';
 import { loadBookmarks } from '../../services/storage';
 import { stripCDATA } from '../../services/rssService';
-import { useThemedStyles } from '../../theme';
+import { useThemedStyles, useThemeTokens } from '../../theme';
 import { ArticleThumbnail, ArticleHeroImage } from '../../components/OptimizedImage';
 import { useUserStore, trackCategoryViewed } from '../../user';
 import ReadingStreak from '../../components/ReadingStreak';
@@ -54,6 +54,7 @@ import { AmarDeshLogo } from '../../components/AmarDeshLogo';
 export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const tokens = useThemeTokens();
   const [refreshing, setRefreshing] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('সর্বশেষ');
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
@@ -418,7 +419,7 @@ export default function HomeScreen() {
               {t('july_spotlight_sub', language)}
             </Text>
           </View>
-          <Ionicons name="arrow-forward" size={18} color="#DC2626" />
+          <Ionicons name="arrow-forward" size={18} color={tokens.brand.primary} />
         </TouchableOpacity>
       )}
     </View>
@@ -510,7 +511,7 @@ export default function HomeScreen() {
             onPress={() => router.push('/settings/ai' as any)}
             activeOpacity={0.7}
           >
-            <Ionicons name="sparkles" size={16} color="#006B3F" />
+            <Ionicons name="sparkles" size={16} color={tokens.brand.heritageGreen} />
           </TouchableOpacity>
 
           {/* Notification Center */}

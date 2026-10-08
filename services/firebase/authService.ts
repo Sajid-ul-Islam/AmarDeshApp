@@ -111,9 +111,10 @@ export async function signInWithEmail(
     
     console.log('[Auth] Sign in successful:', user.uid);
     return user;
-  } catch (error: any) {
-    console.error('[Auth] Sign in error:', error.message);
-    throw new Error(getAuthErrorMessage(error.code));
+  } catch (error: unknown) {
+    const fbError = error as { code?: string; message?: string };
+    console.error('[Auth] Sign in error:', fbError?.message);
+    throw new Error(getAuthErrorMessage(fbError?.code || ''));
   }
 }
 
@@ -137,9 +138,10 @@ export async function createAccountWithEmail(
     
     console.log('[Auth] Account created successfully:', user.uid);
     return user;
-  } catch (error: any) {
-    console.error('[Auth] Create account error:', error.message);
-    throw new Error(getAuthErrorMessage(error.code));
+  } catch (error: unknown) {
+    const fbError = error as { code?: string; message?: string };
+    console.error('[Auth] Create account error:', fbError?.message);
+    throw new Error(getAuthErrorMessage(fbError?.code || ''));
   }
 }
 
@@ -171,9 +173,10 @@ export async function signInWithGoogle(): Promise<User> {
     
     console.log('[Auth] Google sign in successful:', user.uid);
     return user;
-  } catch (error: any) {
-    console.error('[Auth] Google sign in error:', error.message);
-    throw new Error(getAuthErrorMessage(error.code));
+  } catch (error: unknown) {
+    const fbError = error as { code?: string; message?: string };
+    console.error('[Auth] Google sign in error:', fbError?.message);
+    throw new Error(getAuthErrorMessage(fbError?.code || ''));
   }
 }
 
@@ -208,9 +211,10 @@ export async function signInWithApple(): Promise<User> {
     
     console.log('[Auth] Apple sign in successful:', user.uid);
     return user;
-  } catch (error: any) {
-    console.error('[Auth] Apple sign in error:', error.message);
-    throw new Error(getAuthErrorMessage(error.code));
+  } catch (error: unknown) {
+    const fbError = error as { code?: string; message?: string };
+    console.error('[Auth] Apple sign in error:', fbError?.message);
+    throw new Error(getAuthErrorMessage(fbError?.code || ''));
   }
 }
 
@@ -232,8 +236,9 @@ export async function signOut(): Promise<void> {
     currentUser = null;
     
     console.log('[Auth] Sign out successful');
-  } catch (error: any) {
-    console.error('[Auth] Sign out error:', error.message);
+  } catch (error: unknown) {
+    const errMessage = error instanceof Error ? error.message : String(error);
+    console.error('[Auth] Sign out error:', errMessage);
     throw new Error('Failed to sign out');
   }
 }

@@ -6,10 +6,10 @@ import {
   Modal,
   TouchableOpacity,
   Dimensions,
-  Image,
   SafeAreaView,
   StatusBar,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
@@ -51,21 +51,24 @@ export const VisualStoryModal: React.FC<VisualStoryModalProps> = ({
 
     const timer = setInterval(() => {
       setProgress((prev) => {
-        if (prev >= 100) {
-          if (currentIndex < stories.length - 1) {
-            setCurrentIndex((idx) => idx + 1);
-            return 0;
-          } else {
-            onClose();
-            return 100;
-          }
-        }
-        return prev + step;
+        const next = prev + step;
+        return next > 100 ? 100 : next;
       });
     }, interval);
 
     return () => clearInterval(timer);
   }, [visible, currentIndex, stories.length]);
+
+  useEffect(() => {
+    if (progress >= 100) {
+      if (currentIndex < stories.length - 1) {
+        setCurrentIndex((idx) => idx + 1);
+        setProgress(0);
+      } else {
+        onClose();
+      }
+    }
+  }, [progress, currentIndex, stories.length, onClose]);
 
   if (!visible || stories.length === 0) return null;
 
@@ -104,7 +107,7 @@ export const VisualStoryModal: React.FC<VisualStoryModalProps> = ({
         <Image
           source={{ uri: currentStory.imageUrl }}
           style={styles.backgroundImage}
-          resizeMode="cover"
+          contentFit="cover"
         />
 
         {/* Dark Gradient / Scrim Overlay */}
@@ -113,8 +116,8 @@ export const VisualStoryModal: React.FC<VisualStoryModalProps> = ({
         {/* Top Story Controls & Progress Bars */}
         <SafeAreaView style={styles.topSafeArea}>
           <View style={styles.progressRow}>
-            {stories.map((_, i) => (
-              <View key={i} style={styles.progressTrack}>
+            {stories.map((story, i) => (
+              <View key={story.id || i} style={styles.progressTrack}>
                 <View
                   style={[
                     styles.progressBar,

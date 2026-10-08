@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -24,6 +24,15 @@ export default function CategoryScreen() {
   const insets = useSafeAreaInsets();
   const tokens = useThemeTokens();
   const [refreshing, setRefreshing] = useState(false);
+  const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (refreshTimerRef.current) {
+        clearTimeout(refreshTimerRef.current);
+      }
+    };
+  }, []);
 
   const categorySlug = Array.isArray(slug) ? slug[0] : slug || 'latest';
   const categoryMeta =
@@ -141,7 +150,10 @@ export default function CategoryScreen() {
 
   const onRefresh = () => {
     setRefreshing(true);
-    setTimeout(() => {
+    if (refreshTimerRef.current) {
+      clearTimeout(refreshTimerRef.current);
+    }
+    refreshTimerRef.current = setTimeout(() => {
       setRefreshing(false);
     }, 800);
   };

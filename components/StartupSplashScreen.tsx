@@ -26,6 +26,8 @@ export const StartupSplashScreen: React.FC<StartupSplashScreenProps> = ({
   const mottoAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
     // 1. Entrance animation: Fade in logo and smoothly scale up
     Animated.parallel([
       Animated.timing(fadeAnim, {
@@ -48,7 +50,7 @@ export const StartupSplashScreen: React.FC<StartupSplashScreenProps> = ({
       }).start();
 
       // 3. Exit animation after displayDuration
-      const timer = setTimeout(() => {
+      timer = setTimeout(() => {
         Animated.timing(fadeAnim, {
           toValue: 0,
           duration: 350,
@@ -57,9 +59,13 @@ export const StartupSplashScreen: React.FC<StartupSplashScreenProps> = ({
           onFinish?.();
         });
       }, displayDuration);
-
-      return () => clearTimeout(timer);
     });
+
+    return () => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
   }, [fadeAnim, scaleAnim, mottoAnim, displayDuration, onFinish]);
 
   return (

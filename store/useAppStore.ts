@@ -98,7 +98,12 @@ export const useAppStore = create<AppState>((set, get) => ({
       // Load theme preference alongside feature flags
       const themeStored = await AsyncStorage.getItem(THEME_KEY);
       if (themeStored) {
-        const pref = JSON.parse(themeStored) as AppState['themePreference'];
+        let pref: unknown = themeStored;
+        try {
+          pref = JSON.parse(themeStored);
+        } catch {
+          pref = themeStored;
+        }
         if (pref === 'system' || pref === 'light' || pref === 'dark' || pref === 'sepia') {
           set({ themePreference: pref });
         }
@@ -107,7 +112,12 @@ export const useAppStore = create<AppState>((set, get) => ({
       // Load feed layout
       const layoutStored = await AsyncStorage.getItem(FEED_LAYOUT_KEY);
       if (layoutStored) {
-        const layout = JSON.parse(layoutStored) as AppState['feedLayout'];
+        let layout: unknown = layoutStored;
+        try {
+          layout = JSON.parse(layoutStored);
+        } catch {
+          layout = layoutStored;
+        }
         if (layout === 'magazine' || layout === 'compact') {
           set({ feedLayout: layout });
         }

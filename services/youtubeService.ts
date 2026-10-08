@@ -399,25 +399,27 @@ export async function getAmarDeshVideos(forceRefresh: boolean = false): Promise<
 
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 6000);
+    try {
+      const res = await fetch(AMAR_DESH_YT_RSS_FEED, {
+        signal: controller.signal,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; AmarDeshApp/1.3.0)',
+        },
+      });
 
-    const res = await fetch(AMAR_DESH_YT_RSS_FEED, {
-      signal: controller.signal,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; AmarDeshApp/1.3.0)',
-      },
-    });
-    clearTimeout(timer);
-
-    if (res.ok) {
-      const xml = await res.text();
-      const parsedVideos = parseYouTubeFeedXml(xml);
-      if (parsedVideos.length > 0) {
-        await AsyncStorage.setItem(
-          CACHE_KEY,
-          JSON.stringify({ timestamp: Date.now(), data: parsedVideos })
-        );
-        return parsedVideos;
+      if (res.ok) {
+        const xml = await res.text();
+        const parsedVideos = parseYouTubeFeedXml(xml);
+        if (parsedVideos.length > 0) {
+          await AsyncStorage.setItem(
+            CACHE_KEY,
+            JSON.stringify({ timestamp: Date.now(), data: parsedVideos })
+          );
+          return parsedVideos;
+        }
       }
+    } finally {
+      clearTimeout(timer);
     }
   } catch (error) {
     console.warn('[YouTube Service] Feed fetch warning, using fallback:', error);

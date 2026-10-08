@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 🐛 Codebase-Wide Bug Fixes & Resiliency Hardening (v1.4.1)
+- **Resolved Deprecated Clipboard API & Unmount Timer Leak** (`components/QuoteCardModal.tsx`):
+  - Migrated from deprecated `Clipboard` in `react-native` to `* as Clipboard from 'expo-clipboard'` (`setStringAsync`).
+  - Added `copyTimeoutRef` typed as `ReturnType<typeof setTimeout> | null` and wired unmount cleanup.
+- **Fixed Impure React 18/19 State Updater Side-Effect Pattern** (`components/VisualStoryModal.tsx`):
+  - Separated state progression interval from navigation side-effects (`setCurrentIndex`, `onClose`), eliminating React concurrent render warnings and navigation race conditions.
+- **Enhanced Story Asset Performance & Fixed Progress Bar Keys** (`components/VisualStoriesBar.tsx`, `components/VisualStoryModal.tsx`):
+  - Upgraded standard React Native `Image` to high-performance `expo-image` with `contentFit="cover"` and `priority="high"`.
+  - Replaced index-based `key={i}` with guaranteed unique composite identifiers (`key={story.id || i}`).
+- **Safeguarded AI Summary Regeneration against Network Drops** (`components/AiSummaryCard.tsx`):
+  - Wrapped `generateArticleSummary()` invocation in defensive `try/catch/finally` block to prevent unhandled promise rejections.
+- **Resolved TTS Speech Synthesis Background Leaks** (`services/ttsService.ts`, `components/AudioNewsBar.tsx`):
+  - Added lifecycle callbacks (`onDone`, `onStopped`, `onError`) to `TTSOptions` and bound to `Speech.speak`.
+  - Added unmount cleanup hook in `AudioNewsBar` to cancel ongoing speech synthesis when readers navigate away.
+  - Automatically resets playback state and pauses waveform equalization when speech completes.
+- **Resolved Trapped Blank Screen on Missing / Loading Articles** (`app/article/[id].tsx`):
+  - Added native `ActivityIndicator` loading spinner during deep link / RSS article resolution.
+  - Provided graceful fallback screen with a back navigation button (`router.back()`) and friendly Bengali guidance (`'সংবাদটি হয়তো সরানো হয়েছে বা লিংকটি সঠিক নয়'`).
+- **Fixed Market Ticker Negative Badge Styling** (`components/LiveRatesTicker.tsx`):
+  - Added missing `negativeBadge` style token for negative financial and sports changes.
+- **Resolved Hardcoded English UI Strings** (`components/ArticleTimeline.tsx`, `services/i18n.ts`):
+  - Replaced English `(Context Timeline)` with pure Bengali `ঘটনাপ্রবাহের ধারাবাহিক প্রেক্ষাপট`.
+  - Added missing `back: 'ফিরে যান'` / `back: 'Go Back'` i18n localization keys.
+- **Prevented Unhandled Network Hangs & Timer Leaks in Ingestion Services** (`services/youtubeService.ts`, `services/articleScraper.ts`):
+  - Wrapped `clearTimeout(timer)` inside `finally` blocks in `fetchTrendingVideos` and `scrapeFullArticle`.
+  - Added 5-second `AbortController` timeout to article scraping pipeline.
+- **Defensive Storage Preference Deserialization** (`store/useAppStore.ts`):
+  - Wrapped `themeStored` and `layoutStored` parsing in try/catch to prevent malformed raw strings from corrupting user state hydration.
+- **Fixed e-Paper Magnifier Loupe Interactive Pan Tracking** (`app/(tabs)/epaper.tsx`):
+  - Attached touch responders (`onTouchStart`, `onTouchMove`) to e-Paper page canvas to ensure magnifying loupe smoothly tracks finger movement.
+- **Eliminated Unmount Timer Leaks Across App Screens** (`components/StartupSplashScreen.tsx`, `app/category/[slug].tsx`, `app/settings/ai.tsx`):
+  - Added cleanup logic to clear pending `setTimeout` calls when users navigate away or dismiss modals.
+- **Codebase-Wide TypeScript Strict Compliance (Elimination of `any` types)** (`services/storage.ts`, `services/byokAiService.ts`, `services/cloudSyncService.ts`, `services/firebase/authService.ts`, `services/offlineDatabase.ts`, `components/AiAssistantModal.tsx`):
+  - Defined explicit interfaces (`ReadingStreak`, `StoredComment`, `CachedArticleRow`, `GeminiContentItem`, `FirebaseErrorLike`) and replaced `any` types with strictly typed contracts and `unknown` catch blocks.
+
 ### 💎 Editorial UI/UX Upgrades Suite (v1.4.0)
 - **New 3rd Reading Theme: "সংবাদপত্র সেপিয়া" (Parchment Sepia Mode)** (`theme/tokens.ts`, `theme/index.ts`, `theme/ThemeProvider.tsx`, `store/useAppStore.ts`, `app/(tabs)/menu.tsx`, `components/ReaderSettingsModal.tsx`):
   - Engineered dedicated broadsheet newsprint parchment theme (`surface.base: #f4ebd9`, `surface.subtle: #ebdcc4`, `text.primary: #2c221e`, `text.secondary: #6c5b51`, `brand.primary: #9e1b1b`, `border.default: #ded1bb`, warm diffused shadows `#3c2e24`).

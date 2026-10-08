@@ -66,6 +66,12 @@ export const AudioNewsBar: React.FC<AudioNewsBarProps> = ({
     return () => animLoop?.stop();
   }, [isPlaying]);
 
+  useEffect(() => {
+    return () => {
+      stopSpeaking();
+    };
+  }, []);
+
   const styles = useThemedStyles((tokens) =>
     StyleSheet.create({
       container: {
@@ -158,7 +164,12 @@ export const AudioNewsBar: React.FC<AudioNewsBarProps> = ({
     } else {
       setIsPlaying(true);
       const rateNum = playbackSpeed === '1.0x' ? 1.0 : playbackSpeed === '1.25x' ? 1.25 : 1.5;
-      speak(textToSpeak, { rate: rateNum });
+      speak(textToSpeak, {
+        rate: rateNum,
+        onDone: () => setIsPlaying(false),
+        onStopped: () => setIsPlaying(false),
+        onError: () => setIsPlaying(false),
+      });
     }
   };
 

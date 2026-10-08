@@ -5,8 +5,8 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Image,
 } from 'react-native';
+import { Image } from 'expo-image';
 import * as Haptics from 'expo-haptics';
 import { useThemedStyles, useThemeTokens } from '../theme';
 import { VisualStoryModal } from './VisualStoryModal';

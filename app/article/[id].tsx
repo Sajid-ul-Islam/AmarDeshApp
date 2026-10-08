@@ -10,6 +10,7 @@ import {
   NativeSyntheticEvent,
   PanResponder,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -43,7 +44,7 @@ import { AdBanner } from '../../components/AdBanner';
 import { QuoteCardModal } from '../../components/QuoteCardModal';
 import { ArticleTimeline } from '../../components/ArticleTimeline';
 import { getArticlesByCategory } from '../../services/contentService';
-import { useThemedStyles } from '../../theme';
+import { useThemedStyles, useThemeTokens } from '../../theme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAppStore } from '../../store/useAppStore';
 import {
@@ -56,6 +57,7 @@ import { AmarDeshLogo } from '../../components/AmarDeshLogo';
 
 export default function ArticleDetailScreen() {
   const language = useAppStore((state) => state.language);
+  const tokens = useThemeTokens();
   const { id } = useLocalSearchParams();
   const articleId = Array.isArray(id) ? id[0] : id;
   const router = useRouter();
@@ -524,15 +526,39 @@ export default function ArticleDetailScreen() {
   if (isResolving && !article) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={{ color: '#6B7280' }}>{t('loading_article', language)}</Text>
+        <ActivityIndicator size="large" color={tokens.brand.primary} style={{ marginBottom: 12 }} />
+        <Text style={{ color: tokens.text.secondary, fontSize: 14 }}>{t('loading_article', language)}</Text>
       </View>
     );
   }
 
   if (!article) {
     return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={{ color: '#6B7280' }}>{t('article_not_found', language)}</Text>
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', padding: 24 }]}>
+        <Ionicons name="newspaper-outline" size={54} color={tokens.text.tertiary} style={{ marginBottom: 16 }} />
+        <Text style={{ fontSize: 18, fontWeight: '700', color: tokens.text.primary, marginBottom: 8, textAlign: 'center' }}>
+          {t('article_not_found', language)}
+        </Text>
+        <Text style={{ fontSize: 13, color: tokens.text.secondary, marginBottom: 24, textAlign: 'center' }}>
+          সংবাদটি হয়তো সরানো হয়েছে বা লিংকটি সঠিক নয়।
+        </Text>
+        <TouchableOpacity
+          onPress={() => (router.canGoBack() ? router.back() : router.replace('/' as any))}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            backgroundColor: tokens.brand.primary,
+            paddingHorizontal: 20,
+            paddingVertical: 12,
+            borderRadius: 999,
+          }}
+        >
+          <Ionicons name="arrow-back" size={18} color="#FFFFFF" />
+          <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 14 }}>
+            {t('back', language) || 'ফিরে যান'}
+          </Text>
+        </TouchableOpacity>
       </View>
     );
   }

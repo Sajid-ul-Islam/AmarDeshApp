@@ -53,8 +53,11 @@ export async function scrapeFullArticle(
 
   // 3. Attempt live extraction if we have a valid HTTP URL
   if (targetUrl.startsWith('http')) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 5000);
     try {
       const response = await fetch(targetUrl, {
+        signal: controller.signal,
         headers: {
           'User-Agent': 'Mozilla/5.0 (Linux; Android 14) AmarDeshApp/1.3',
           Accept: 'text/html',
@@ -79,6 +82,8 @@ export async function scrapeFullArticle(
       }
     } catch (fetchErr) {
       console.warn('[ArticleScraper] Live fetch failed, using fallback:', fetchErr);
+    } finally {
+      clearTimeout(timer);
     }
   }
 

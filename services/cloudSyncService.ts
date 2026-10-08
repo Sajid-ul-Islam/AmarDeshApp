@@ -25,8 +25,8 @@ export interface SyncPayload {
   userId: string;
   bookmarks: string[];
   readingStreak: { count: number; lastRead: string | null };
-  reactions: Record<string, string>;
-  preferences: Record<string, any>;
+  reactions: Record<string, string | number>;
+  preferences: Record<string, unknown>;
   clientTimestamp: number;
 }
 
@@ -134,7 +134,7 @@ export const syncAccountData = async (
           throw new Error(`Cloud server returned HTTP ${response.status}`);
         }
         remoteData = await response.json();
-      } catch (networkErr: any) {
+      } catch (networkErr: unknown) {
         // Queue for later sync
         await queueFailedSync(payload);
         currentSyncState.isSyncing = false;
@@ -212,9 +212,10 @@ export const syncAccountData = async (
       bookmarksCount: mergedBookmarks.length,
       streakCount: mergedStreak.count,
     };
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'সিঙ্ক করতে ত্রুটি দেখা দিয়েছে';
     currentSyncState.isSyncing = false;
-    currentSyncState.lastError = err?.message || 'সিঙ্ক করতে ত্রুটি দেখা দিয়েছে';
+    currentSyncState.lastError = errorMessage;
     notifyListeners();
 
     return {
@@ -222,7 +223,7 @@ export const syncAccountData = async (
       syncedAt: Date.now(),
       bookmarksCount: 0,
       streakCount: 0,
-      error: err?.message,
+      error: errorMessage,
     };
   }
 };

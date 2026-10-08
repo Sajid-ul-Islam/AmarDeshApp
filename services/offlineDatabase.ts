@@ -80,20 +80,35 @@ export async function saveArticlesToOfflineDb(
   }
 }
 
+interface CachedArticleRow {
+  id: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  category: string;
+  imageUrl: string;
+  author: string;
+  publishedAt: string;
+  isBreaking?: number | boolean;
+  isVideo?: number | boolean;
+  sourceUrl?: string;
+  cachedAt?: number;
+}
+
 /**
  * Get all cached articles by category
  */
 export async function getCachedArticlesByCategory(category?: string): Promise<Article[]> {
   const db = await getOfflineDb();
-  let rows: any[];
+  let rows: CachedArticleRow[];
 
   if (category && category !== 'all' && category !== 'সর্বশেষ') {
-    rows = await db.getAllAsync(
+    rows = await db.getAllAsync<CachedArticleRow>(
       `SELECT * FROM cached_articles WHERE category = ? ORDER BY cachedAt DESC`,
       [category]
     );
   } else {
-    rows = await db.getAllAsync(
+    rows = await db.getAllAsync<CachedArticleRow>(
       `SELECT * FROM cached_articles ORDER BY cachedAt DESC LIMIT 100`
     );
   }
@@ -119,7 +134,7 @@ export async function searchCachedArticles(query: string): Promise<Article[]> {
   const db = await getOfflineDb();
   const wildcard = `%${query.trim()}%`;
 
-  const rows = await db.getAllAsync<any>(
+  const rows = await db.getAllAsync<CachedArticleRow>(
     `SELECT * FROM cached_articles 
      WHERE title LIKE ? OR excerpt LIKE ? OR content LIKE ?
      ORDER BY cachedAt DESC LIMIT 50`,

@@ -64,6 +64,8 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({
       setPoints(res.points);
       setIsAiGenerated(res.isAiGenerated);
       setProviderUsed(res.providerUsed);
+    } catch (err) {
+      console.error('Error generating summary:', err);
     } finally {
       setLoading(false);
     }
