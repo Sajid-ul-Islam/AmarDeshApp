@@ -32,3 +32,6 @@ ios/
 release/
 *.apk
 *.aab
+
+# Test coverage reports (generated)
+coverage/
