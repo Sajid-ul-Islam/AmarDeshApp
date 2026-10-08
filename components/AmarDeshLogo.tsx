@@ -13,7 +13,7 @@ import { useThemeTokens, useIsDarkMode } from '../theme';
 
 // Local asset files
 const PNG_LOGO = require('../assets/amardesh_logo.png');
-const BANNER_LOGO = require('../assets/amardesh_logo.jpg');
+const BANNER_LOGO = require('../assets/amardesh_logo_banner.jpg');
 const ICON_LOGO = require('../assets/icon.png');
 
 // Aspect ratios of original asset files

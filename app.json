@@ -104,7 +104,12 @@
         "origin": false
       },
       "eas": {
-        "projectId": "your-project-id"
+        "projectId": "0ea4bfdf-df15-4a62-8bb4-7ad00b0f8dd7"
+      },
+      "expo-navigation-bar": {
+        "enforceContrast": false,
+        "style": "auto",
+        "hidden": false
       }
     },
     "updates": {
@@ -114,6 +119,7 @@
     },
     "runtimeVersion": {
       "policy": "sdkVersion"
-    }
+    },
+    "owner": "sajid.islam"
   }
 }
