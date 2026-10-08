@@ -20,8 +20,8 @@ import { useThemeTokens } from '../theme';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
-  /** Optional custom fallback (receives a reset callback). */
-  fallback?: (reset: () => void) => React.ReactNode;
+  /** Optional custom fallback (receives a reset callback or React node). */
+  fallback?: ((reset: () => void) => React.ReactNode) | React.ReactNode;
 }
 
 interface ErrorBoundaryState {
@@ -108,7 +108,9 @@ export class ErrorBoundary extends React.Component<
     }
 
     if (this.props.fallback) {
-      return this.props.fallback(this.reset);
+      return typeof this.props.fallback === 'function'
+        ? this.props.fallback(this.reset)
+        : this.props.fallback;
     }
 
     return <ErrorFallback message={error.message} onRetry={this.reset} />;
@@ -164,7 +166,6 @@ const styles = StyleSheet.create({
   debug: {
     marginTop: 24,
     fontSize: 11,
-    textAlign: 'center',
   },
 });
 
