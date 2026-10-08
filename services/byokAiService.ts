@@ -474,7 +474,7 @@ export async function executeGeminiGenerateContent(
           contents,
           generationConfig: {
             temperature: generationConfig.temperature ?? 0.2,
-            maxOutputTokens: generationConfig.maxOutputTokens ?? 500,
+            maxOutputTokens: generationConfig.maxOutputTokens ?? 1000,
           },
         }),
       });
@@ -720,6 +720,35 @@ ${textContent.slice(0, 3000)}`;
 }
 
 /**
+ * Ensures AI Bengali responses always finish with a completed sentence
+ * and never display severed words or trailing fragments.
+ */
+export function finalizeBengaliResponse(rawText: string): string {
+  const trimmed = rawText.trim();
+  if (!trimmed) return trimmed;
+
+  // If response ends with standard closing punctuation or quotation
+  if (/[।!?”"’)\]]$/.test(trimmed)) {
+    return trimmed;
+  }
+
+  // If the model cut off mid-sentence, find the last complete sentence
+  const lastPunctuation = Math.max(
+    trimmed.lastIndexOf('।'),
+    trimmed.lastIndexOf('!'),
+    trimmed.lastIndexOf('?')
+  );
+
+  // If there is at least one complete sentence before the severed fragment, slice cleanly to it
+  if (lastPunctuation >= 0) {
+    return trimmed.slice(0, lastPunctuation + 1).trim();
+  }
+
+  // Otherwise append Bengali dari to cleanly close the statement
+  return `${trimmed}।`;
+}
+
+/**
  * Ask AI Questions about an Article (Interactive News Assistant)
  */
 export async function askArticleAiQuestion(
@@ -739,16 +768,15 @@ export async function askArticleAiQuestion(
   }
 
   const systemInstructions = `তুমি "দৈনিক আমার দেশ"-এর ভার্চুয়াল এআই সংবাদ বিশ্লেষক। পাঠকের প্রশ্নের উত্তর দাও প্রদত্ত সংবাদের পটভূমি ও তথ্যের ওপর ভিত্তি করে।
-তোমার বৈশিষ্ট্য:
-- উত্তর হবে সম্পূর্ণ নিরপেক্ষ, ভারসাম্যপূর্ণ ও তথ্যভিত্তিক।
-- ভাষা হবে অত্যন্ত সাবলীল ও মর্যাদাপূর্ণ বাংলা।
-- অতিরঞ্জিত বা ভিত্তিহীন তথ্য পরিহার করো। যদি তথ্যের অভাব থাকে, তা বিনীতভাবে স্বীকার করো।
-- উত্তর সংক্ষিপ্ত ও প্রাঞ্জল রাখো (২ থেকে ৪ অনুচ্ছেদের মধ্যে)।
+তোমার আবশ্যকীয় নীতি ও নির্দেশনা:
+১. নিরপেক্ষতা ও বস্তুনিষ্ঠতা: উত্তর হবে সম্পূর্ণ নিরপেক্ষ, তথ্যভিত্তিক ও মর্যাদাপূর্ণ খাঁটি বাংলায়।
+২. পরিমিত শব্দসীমা: উত্তরটি অবশ্যই ১০০ থেকে ১৫০ শব্দের মধ্যে (বা সর্বোচ্চ ২টি পরিচ্ছন্ন অনুচ্ছেদ অথবা ৩-৪টি সুস্পষ্ট বুলেট পয়েন্টে) সীমাবদ্ধ রাখো। অনর্থক দীর্ঘ ভূমিকা পরিহার করে সরাসরি মূল বিষয়ে আসো।
+৩. আবশ্যিক সমাপ্তি নিয়ম: উত্তরকে অবশ্যই এই সীমিত শব্দসীমার ভেতরেই সম্পূর্ণ সমাপ্ত করতে হবে। কোনো বাক্য বা বক্তব্য কখনো অসমাপ্ত বা মাঝপথে কাটা রাখা যাবে না; অবশ্যই পূর্ণাঙ্গ সমাপ্তিসূচক বাক্য ('।') দিয়ে বক্তব্য শেষ করো।
 
 সংবাদ শিরোনাম: ${article.title}
 সংবাদ বিভাগ: ${article.category}
 মূল সংবাদ:
-${textContent.slice(0, 3000)}`;
+${textContent.slice(0, 3500)}`;
 
   try {
     if (config.provider === 'gemini') {
@@ -762,11 +790,11 @@ ${textContent.slice(0, 3000)}`;
           },
         ],
         preferred,
-        { temperature: 0.3, maxOutputTokens: 800 }
+        { temperature: 0.3, maxOutputTokens: 1000 }
       );
 
       if (geminiRes && geminiRes.text) {
-        return { answer: geminiRes.text.trim(), isAiGenerated: true };
+        return { answer: finalizeBengaliResponse(geminiRes.text), isAiGenerated: true };
       }
     } else {
       const endpoint =
@@ -794,7 +822,7 @@ ${textContent.slice(0, 3000)}`;
           model,
           messages,
           temperature: 0.3,
-          max_tokens: 800,
+          max_tokens: 1000,
         }),
       });
 
@@ -802,7 +830,7 @@ ${textContent.slice(0, 3000)}`;
         const data = await response.json();
         const reply = data?.choices?.[0]?.message?.content;
         if (reply) {
-          return { answer: reply.trim(), isAiGenerated: true };
+          return { answer: finalizeBengaliResponse(reply), isAiGenerated: true };
         }
       }
     }

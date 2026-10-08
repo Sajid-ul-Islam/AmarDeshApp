@@ -6,27 +6,27 @@ import { clearAllCachedArticles, getOfflineArticleCount } from '../offlineDataba
 describe('One-Stop Settings Hub and Side Navigation Drawer Suite', () => {
   describe('i18n Translations for Settings Hub and Side Nav', () => {
     it('provides Bengali translations for all settings hub and side nav keys', () => {
-      expect(t('settings_hub_title', 'bn')).toBe('সকল সেটিংস ও নিয়ন্ত্রণ হাব');
-      expect(t('settings_hub_sub', 'bn')).toContain('থিম, ভাষা, এআই');
-      expect(t('side_nav_open', 'bn')).toBe('সাইড মেনু খুলুন');
-      expect(t('side_nav_close', 'bn')).toBe('সাইড মেনু বন্ধ করুন');
-      expect(t('appearance_title', 'bn')).toBe('অ্যাপ রূপ ও প্রদর্শন');
-      expect(t('clear_cache', 'bn')).toBe('ক্যাশ খালি করুন');
+      expect(t('settings_hub_title', 'bn')).toBe('সেটিংস');
+      expect(t('settings_hub_sub', 'bn')).toContain('থিম, এআই, নোটিফিকেশন ও ডেটা');
+      expect(t('side_nav_open', 'bn')).toBe('মেনু খুলুন');
+      expect(t('side_nav_close', 'bn')).toBe('মেনু বন্ধ করুন');
+      expect(t('appearance_title', 'bn')).toBe('ডিসপ্লে ও থিম');
+      expect(t('clear_cache', 'bn')).toBe('ক্যাশ মুছুন');
       expect(t('cache_cleared', 'bn')).toBe('ক্যাশ সফলভাবে খালি করা হয়েছে');
-      expect(t('feed_layout_label', 'bn')).toBe('ফিড লেআউট');
-      expect(t('check_updates', 'bn')).toBe('আপডেট পরীক্ষা করুন');
+      expect(t('feed_layout_label', 'bn')).toBe('লেআউট');
+      expect(t('check_updates', 'bn')).toBe('আপডেট পরীক্ষা');
     });
 
     it('provides English translations for all settings hub and side nav keys', () => {
-      expect(t('settings_hub_title', 'en')).toBe('All Settings & Control Hub');
-      expect(t('settings_hub_sub', 'en')).toContain('Theme, Language, AI');
-      expect(t('side_nav_open', 'en')).toBe('Open Side Menu');
-      expect(t('side_nav_close', 'en')).toBe('Close Side Menu');
-      expect(t('appearance_title', 'en')).toBe('Appearance & Display');
-      expect(t('clear_cache', 'en')).toBe('Clear Offline Cache');
+      expect(t('settings_hub_title', 'en')).toBe('Settings');
+      expect(t('settings_hub_sub', 'en')).toContain('Theme, AI, alerts & data');
+      expect(t('side_nav_open', 'en')).toBe('Open Menu');
+      expect(t('side_nav_close', 'en')).toBe('Close Menu');
+      expect(t('appearance_title', 'en')).toBe('Display & Theme');
+      expect(t('clear_cache', 'en')).toBe('Clear Cache');
       expect(t('cache_cleared', 'en')).toBe('Offline cache cleared successfully');
-      expect(t('feed_layout_label', 'en')).toBe('Feed Layout');
-      expect(t('check_updates', 'en')).toBe('Check for Updates');
+      expect(t('feed_layout_label', 'en')).toBe('Layout');
+      expect(t('check_updates', 'en')).toBe('Check Updates');
     });
   });
 

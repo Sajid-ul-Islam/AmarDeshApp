@@ -624,10 +624,9 @@ export default function MenuScreen() {
           ))}
         </View>
 
-        {/* Quick Utilities & One-Stop Settings */}
+        {/* Settings Hero */}
         <Text style={styles.sectionTitle}>{t('settings_title', language)}</Text>
 
-        {/* ONE-STOP SETTINGS HUB HERO */}
         <TouchableOpacity
           style={styles.oneStopSettingsHero}
           onPress={() => router.push('/settings' as any)}
@@ -638,16 +637,9 @@ export default function MenuScreen() {
               <Ionicons name="settings" size={22} color="#FFFFFF" />
             </View>
             <View style={{ flex: 1 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Text style={styles.oneStopTitle}>
-                  {t('settings_hub_title', language)}
-                </Text>
-                <View style={styles.oneStopBadge}>
-                  <Text style={styles.oneStopBadgeText}>
-                    {language === 'bn' ? 'এক স্টপে সব' : 'All-in-One'}
-                  </Text>
-                </View>
-              </View>
+              <Text style={styles.oneStopTitle}>
+                {t('settings_hub_title', language)}
+              </Text>
               <Text style={styles.oneStopSubtitle} numberOfLines={1}>
                 {t('settings_hub_sub', language)}
               </Text>
@@ -666,7 +658,7 @@ export default function MenuScreen() {
               <View>
                 <Text style={styles.utilityTitle}>{t('language_select', language)}</Text>
                 <Text style={styles.utilitySubtitle}>
-                  {language === 'bn' ? 'বাংলা নির্বাচিত' : 'English Selected'}
+                  {language === 'bn' ? 'বাংলা' : 'English'}
                 </Text>
               </View>
             </View>
@@ -714,12 +706,12 @@ export default function MenuScreen() {
               </View>
               <View>
                 <Text style={styles.utilityTitle}>
-                  {language === 'bn' ? 'সংস্করণ ও নামাজের অবস্থান' : 'Edition & Prayer Location'}
+                  {language === 'bn' ? 'সংস্করণ ও অবস্থান' : 'Edition & Location'}
                 </Text>
                 <Text style={styles.utilitySubtitle}>
                   {prayerData.isGps
-                    ? `${prayerData.division} (GPS সক্রিয়)`
-                    : `${prayerData.division || 'ঢাকা'} (ডিফল্ট প্রমিত সময়)`}
+                    ? `${prayerData.division} (GPS)`
+                    : `${prayerData.division || 'ঢাকা'}`}
                 </Text>
               </View>
             </View>
@@ -742,13 +734,13 @@ export default function MenuScreen() {
                 />
               </View>
               <View>
-                <Text style={styles.utilityTitle}>রিডিং থিম (Reading Theme)</Text>
+                <Text style={styles.utilityTitle}>{language === 'bn' ? 'থিম' : 'Theme'}</Text>
                 <Text style={styles.utilitySubtitle}>
                   {themePreference === 'dark'
-                    ? 'ওলেড ডার্ক মোড'
+                    ? (language === 'bn' ? 'ওলেড ডার্ক' : 'Dark')
                     : themePreference === 'sepia'
-                      ? 'সংবাদপত্র সেপিয়া মোড'
-                      : 'স্বাভাবিক লাইট মোড'}
+                      ? (language === 'bn' ? 'সেপিয়া' : 'Sepia')
+                      : (language === 'bn' ? 'লাইট' : 'Light')}
                 </Text>
               </View>
             </View>
@@ -781,7 +773,7 @@ export default function MenuScreen() {
             </View>
           </View>
 
-          {/* All Settings & Preferences Gateway */}
+          {/* Settings Gateway */}
           <TouchableOpacity
             style={styles.utilityRow}
             onPress={() => router.push('/settings' as any)}
@@ -793,10 +785,10 @@ export default function MenuScreen() {
               </View>
               <View>
                 <Text style={styles.utilityTitle}>
-                  {language === 'bn' ? 'সকল বিস্তারিত সেটিংস' : 'All Detailed Settings'}
+                  {t('settings_title', language)}
                 </Text>
                 <Text style={styles.utilitySubtitle}>
-                  {language === 'bn' ? 'এআই সহকারী, নোটিফিকেশন, ডেটা সাশ্রয় ও গোপনীয়তা' : 'AI Assistant, Alerts, Data Saver & Privacy'}
+                  {t('settings_hub_sub', language)}
                 </Text>
               </View>
             </View>

@@ -452,7 +452,7 @@ export function SideNavDrawer({ visible, onClose }: SideNavDrawerProps) {
           >
             {/* Primary News Navigation */}
             <Text style={styles.sectionLabel}>
-              {language === 'bn' ? 'সংবাদ ও বিভাগসমূহ' : 'Sections & Feed'}
+              {language === 'bn' ? 'বিভাগ' : 'Sections'}
             </Text>
 
             <TouchableOpacity
@@ -465,7 +465,7 @@ export function SideNavDrawer({ visible, onClose }: SideNavDrawerProps) {
                   <Ionicons name="home-outline" size={18} color={tokens.brand.primary} />
                 </View>
                 <Text style={styles.navText}>
-                  {language === 'bn' ? 'প্রচ্ছদ (মূল পাতা)' : 'Front Page / Home'}
+                  {language === 'bn' ? 'প্রচ্ছদ' : 'Home'}
                 </Text>
               </View>
               <Ionicons name="chevron-forward" size={16} color={tokens.interactive.inactive} />
@@ -481,7 +481,7 @@ export function SideNavDrawer({ visible, onClose }: SideNavDrawerProps) {
                   <Ionicons name="newspaper-outline" size={18} color={tokens.brand.primary} />
                 </View>
                 <Text style={styles.navText}>
-                  {language === 'bn' ? 'ই-পেপার প্রিন্ট সংস্করণ' : 'ePaper Print Edition'}
+                  {language === 'bn' ? 'ই-পেপার' : 'ePaper'}
                 </Text>
               </View>
               <View style={styles.badgeTag}>
@@ -499,7 +499,7 @@ export function SideNavDrawer({ visible, onClose }: SideNavDrawerProps) {
                   <Ionicons name="play-circle-outline" size={18} color={tokens.brand.primary} />
                 </View>
                 <Text style={styles.navText}>
-                  {language === 'bn' ? 'ভিডিও ও মাল্টিমিডিয়া' : 'Video & Multimedia'}
+                  {language === 'bn' ? 'ভিডিও' : 'Video'}
                 </Text>
               </View>
               <Ionicons name="chevron-forward" size={16} color={tokens.interactive.inactive} />
@@ -515,7 +515,7 @@ export function SideNavDrawer({ visible, onClose }: SideNavDrawerProps) {
                   <Ionicons name="bookmark-outline" size={18} color={tokens.brand.primary} />
                 </View>
                 <Text style={styles.navText}>
-                  {language === 'bn' ? 'সংরক্ষিত সংবাদ' : 'Saved Bookmarks'}
+                  {language === 'bn' ? 'সংরক্ষিত' : 'Saved'}
                 </Text>
               </View>
               <Ionicons name="chevron-forward" size={16} color={tokens.interactive.inactive} />
@@ -531,7 +531,7 @@ export function SideNavDrawer({ visible, onClose }: SideNavDrawerProps) {
                   <Ionicons name="sparkles-outline" size={18} color={tokens.brand.primary} />
                 </View>
                 <Text style={styles.navText}>
-                  {language === 'bn' ? 'আপনার জন্য (স্মার্ট কিউরেশন)' : 'For You (AI Curation)'}
+                  {language === 'bn' ? 'আপনার জন্য' : 'For You'}
                 </Text>
               </View>
               <Ionicons name="chevron-forward" size={16} color={tokens.interactive.inactive} />
@@ -547,7 +547,7 @@ export function SideNavDrawer({ visible, onClose }: SideNavDrawerProps) {
                   <Ionicons name="flame" size={18} color={tokens.brand.secondary} />
                 </View>
                 <Text style={[styles.navText, { color: tokens.brand.secondary }]}>
-                  {language === 'bn' ? 'জুলাই বিপ্লব ২০২৪' : 'July Revolution 2024'}
+                  {language === 'bn' ? 'জুলাই বিপ্লব' : 'July Revolution'}
                 </Text>
               </View>
               <View style={styles.badgeTag}>
@@ -565,9 +565,7 @@ export function SideNavDrawer({ visible, onClose }: SideNavDrawerProps) {
                   <Ionicons name="moon-outline" size={18} color={tokens.brand.primary} />
                 </View>
                 <Text style={styles.navText}>
-                  {language === 'bn'
-                    ? `নামাজের সময়সূচি (${prayerData.division || 'ঢাকা'})`
-                    : `Prayer Times (${prayerData.division || 'Dhaka'})`}
+                  {language === 'bn' ? 'নামাজের সময়' : 'Prayer Times'}
                 </Text>
               </View>
               <Ionicons name="chevron-forward" size={16} color={tokens.interactive.inactive} />
@@ -583,15 +581,15 @@ export function SideNavDrawer({ visible, onClose }: SideNavDrawerProps) {
                   <Ionicons name="notifications-outline" size={18} color={tokens.brand.primary} />
                 </View>
                 <Text style={styles.navText}>
-                  {language === 'bn' ? 'নোটিফিকেশন ইনবক্স' : 'Notification Inbox'}
+                  {language === 'bn' ? 'নোটিফিকেশন' : 'Notifications'}
                 </Text>
               </View>
               <Ionicons name="chevron-forward" size={16} color={tokens.interactive.inactive} />
             </TouchableOpacity>
 
-            {/* ONE-STOP SETTINGS HUB ENTRY */}
+            {/* SETTINGS ENTRY */}
             <Text style={styles.sectionLabel}>
-              {language === 'bn' ? 'নিয়ন্ত্রণ ও সেটিংস' : 'Controls & Settings'}
+              {language === 'bn' ? 'সেটিংস' : 'Settings'}
             </Text>
 
             <TouchableOpacity

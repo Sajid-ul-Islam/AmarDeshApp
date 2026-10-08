@@ -6,6 +6,7 @@ import {
   PROVIDER_METADATA,
   discoverGeminiModels,
   executeGeminiGenerateContent,
+  finalizeBengaliResponse,
 } from '../byokAiService';
 
 describe('ByokAiService', () => {
@@ -116,6 +117,24 @@ describe('ByokAiService', () => {
     expect(result?.text).toBe('পরীক্ষামূলক বাংলা উত্তর');
 
     mockFetch.mockRestore();
+  });
+
+  describe('finalizeBengaliResponse', () => {
+    it('preserves properly completed Bengali sentences', () => {
+      const text = 'এই পদক্ষেপের ফলে অর্থনীতিতে স্থিতিশীলতা আসবে।';
+      expect(finalizeBengaliResponse(text)).toBe(text);
+    });
+
+    it('safely trims trailing severed sentence back to last full stop', () => {
+      const severed = 'প্রথম বাক্য সম্পূর্ণ হয়েছে। এরপর দ্বিতীয় বাক্যের কিছু অংশ এসে কেটে গে';
+      const finalized = finalizeBengaliResponse(severed);
+      expect(finalized).toBe('প্রথম বাক্য সম্পূর্ণ হয়েছে।');
+    });
+
+    it('appends Bengali punctuation if no previous punctuation exists', () => {
+      const shortText = 'সংক্ষিপ্ত মন্তব্য';
+      expect(finalizeBengaliResponse(shortText)).toBe('সংক্ষিপ্ত মন্তব্য।');
+    });
   });
 });
 

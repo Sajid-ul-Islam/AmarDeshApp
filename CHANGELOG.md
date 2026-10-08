@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 🤖 Moderate Token Cap & Guaranteed Complete Answer System (`components/AiAssistantModal.tsx`, `services/byokAiService.ts`)
+- **Moderate Token Cap (1,000 Tokens)**:
+  - Adjusted LLM output token ceiling to a moderate, cost/quota-friendly **1,000 tokens** (`maxOutputTokens: 1000` / `max_tokens: 1000`), reducing latency while providing ample headroom.
+- **Strict Prompt-Level Length & Completeness Control**:
+  - Enforced strict length limits in the Bengali system prompt: 100–150 words (or 2 clean paragraphs / 3–4 bullet points).
+  - Since 100–150 Bengali words consume ~450–650 tokens, the AI deliberately plans and completes its entire answer well before reaching the 1,000-token limit.
+  - Mandated that the response must end with a full concluding sentence (`।`) without leaving any statement unfinished.
+- **Deterministic Response Finalization (`finalizeBengaliResponse`)**:
+  - Implemented safety post-processor that detects if any model outputs an unpunctuated trailing sentence fragment and automatically trims cleanly to the last complete sentence ending with `।` or closes it properly.
+  - Added unit test suite in `services/__tests__/byokAiService.test.ts` verifying all 3 edge cases (100% passing).
+- **Enhanced AI Chat UI & Auto-Scrolling**:
+  - Attached `ScrollView` ref with automatic `scrollToEnd` on response arrival and layout resize (`onContentSizeChange`).
+  - Added automatic keyboard dismissal upon submitting a question to free up full sheet reading viewport.
+  - Expanded message bubble width to `92%` and enabled `selectable={true}` for easy text copying.
+
+### ✂️ Concise Label Streamlining & UI Naming Polish (v1.5.1)
+- **Concise Navigation & Settings Labels** (`services/i18n.ts`, `app/settings/index.tsx`, `components/SideNavDrawer.tsx`, `app/(tabs)/menu.tsx`, `app/(tabs)/profile.tsx`):
+  - Shortened verbose labels to clean, direct terms across both Bengali (বাংলা) and English:
+    - "সকল সেটিংস ও নিয়ন্ত্রণ হাব" / "All Settings & Control Hub" → **"সেটিংস"** / **"Settings"**
+    - "সকল সেটিংস ও নিয়ন্ত্রণ হাব (এক স্টপে সব)" → **"সেটিংস"** / **"Settings"**
+    - "সাইড মেনু খুলুন" / "Open Side Menu" → **"মেনু খুলুন"** / **"Open Menu"**
+    - "অ্যাপ রূপ ও প্রদর্শন" / "Appearance & Display" → **"ডিসপ্লে ও থিম"** / **"Display & Theme"**
+    - "ক্যাশ খালি করুন" / "Clear Offline Cache" → **"ক্যাশ মুছুন"** / **"Clear Cache"**
+    - "ফিড লেআউট" / "Feed Layout" → **"লেআউট"** / **"Layout"**
+    - "অ্যাপ আপডেট পরীক্ষা (OTA)" / "Check for Updates" → **"আপডেট পরীক্ষা"** / **"Check Updates"**
+    - "আমার দেশ সম্পর্কে" / "About Daily Amar Desh" → **"পরিচিতি"** / **"About"**
+    - "সংরক্ষিত সংবাদ ও আপনার জন্য" → **"সংরক্ষিত"** / **"Saved"**
+    - "ই-পেপার সংস্করণ" → **"ই-পেপার"** / **"E-Paper"**
+    - "ভিডিও ও মাল্টিমিডিয়া" → **"ভিডিও"** / **"Videos"**
+    - "নোটিফিকেশন ইনবক্স" → **"নোটিফিকেশন"** / **"Notifications"**
+    - "সংস্করণ ও নামাজের অবস্থান" → **"সংস্করণ ও অবস্থান"** / **"Edition & Location"**
+  - Updated all corresponding unit and integration test assertions (`services/__tests__/settingsAndSideNav.test.ts`), maintaining 100% test pass rate (133/133 tests) and 0 TypeScript errors.
+
 ### 🧭 Side Navigation Drawer & Unified One-Stop Settings Hub (v1.5.0)
 - **Animated Side Navigation Bar (Drawer)** (`components/SideNavDrawer.tsx`, `app/(tabs)/index.tsx`):
   - Created high-performance animated slide-in drawer (`translateX: -DRAWER_WIDTH` to `0`) with touch-to-dismiss semi-transparent backdrop.
@@ -28,6 +61,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Streamlined Menu & Profile Screens** (`app/(tabs)/menu.tsx`, `app/(tabs)/profile.tsx`):
   - Replaced sprawling redundant settings in `menu.tsx` with a prominent "One-Stop Settings Hub" hero card.
   - Positioned "One-Stop Settings Hub" as the primary configuration item in `profile.tsx`.
+- **Header Declutter & AI Settings Centralization** (`app/(tabs)/index.tsx`, `app/settings/index.tsx`):
+  - Removed redundant AI sparkles icon button from the broadsheet masthead header, decluttering the top bar for optimal spacing.
+  - Centralized full AI assistant management into Section 2 of the One-Stop Settings Hub with live provider status, 1-tap provider switching (Gemini, ChatGPT, Groq, DeepSeek), and direct link to API Key & Model settings.
 - **Test Suite & Verification** (`services/__tests__/settingsAndSideNav.test.ts`):
   - Created 7 new integration tests verifying settings translations, font size storage, cache purge, and store preference switches.
   - All 19 test suites and 133 tests passing with 0 errors. Zero TypeScript compiler errors.

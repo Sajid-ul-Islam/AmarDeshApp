@@ -119,34 +119,39 @@ export default function ProfileScreen() {
   const menuItems: ProfileMenuItem[] = [
     {
       icon: 'settings-outline',
-      label: language === 'bn' ? 'সকল সেটিংস ও নিয়ন্ত্রণ হাব (এক স্টপে সব)' : 'All Settings & Control Hub (One-Stop)',
+      label: language === 'bn' ? 'সেটিংস' : 'Settings',
       action: () => router.push('/settings' as any),
     },
     {
       icon: 'location-outline',
-      label: `সংস্করণ ও নামাজের অবস্থান (${prayerData.isGps ? prayerData.division + ' GPS' : (prayerData.division || 'ঢাকা') + ' ডিফল্ট'})`,
+      label: language === 'bn'
+        ? `সংস্করণ ও অবস্থান (${prayerData.isGps ? prayerData.division + ' GPS' : (prayerData.division || 'ঢাকা')})`
+        : `Edition & Location (${prayerData.isGps ? prayerData.division + ' GPS' : (prayerData.division || 'Dhaka')})`,
       action: () => setShowLocationModal(true),
     },
     {
       icon: 'globe-outline',
-      label: `ভাষা পরিবর্তন (${language === 'bn' ? 'বাংলা' : 'English'})`,
+      label: language === 'bn' ? 'ভাষা (বাংলা)' : 'Language (English)',
       action: () => {
         const next = language === 'bn' ? 'en' : 'bn';
         setLanguage(next);
-        Alert.alert('ভাষা পরিবর্তিত হয়েছে', next === 'bn' ? 'বাংলা সক্রিয় করা হয়েছে।' : 'English has been activated.');
+        Alert.alert(
+          next === 'bn' ? 'ভাষা পরিবর্তিত হয়েছে' : 'Language Changed',
+          next === 'bn' ? 'বাংলা সক্রিয় করা হয়েছে।' : 'English has been activated.'
+        );
       },
     },
-    { icon: 'bookmark-outline', label: 'সংরক্ষিত সংবাদ ও আপনার জন্য', action: () => router.push('/bookmarks' as any) },
-    { icon: 'newspaper-outline', label: 'ই-পেপার সংস্করণ', action: () => router.push('/epaper' as any) },
-    { icon: 'videocam-outline', label: 'ভিডিও ও মাল্টিমিডিয়া', action: () => router.push('/video' as any) },
-    { icon: 'notifications-outline', label: 'নোটিফিকেশন ইনবক্স', action: () => router.push('/notifications' as any) },
-    { icon: 'cloud-download-outline', label: 'অ্যাপ আপডেট পরীক্ষা (OTA)', action: handleCheckOtaUpdate },
+    { icon: 'bookmark-outline', label: language === 'bn' ? 'সংরক্ষিত' : 'Saved', action: () => router.push('/bookmarks' as any) },
+    { icon: 'newspaper-outline', label: language === 'bn' ? 'ই-পেপার' : 'E-Paper', action: () => router.push('/epaper' as any) },
+    { icon: 'videocam-outline', label: language === 'bn' ? 'ভিডিও' : 'Videos', action: () => router.push('/video' as any) },
+    { icon: 'notifications-outline', label: language === 'bn' ? 'নোটিফিকেশন' : 'Notifications', action: () => router.push('/notifications' as any) },
+    { icon: 'cloud-download-outline', label: language === 'bn' ? 'আপডেট পরীক্ষা' : 'Check Updates', action: handleCheckOtaUpdate },
     {
       icon: 'information-circle-outline',
-      label: 'আমার দেশ সম্পর্কে',
+      label: language === 'bn' ? 'পরিচিতি' : 'About',
       action: () => {
         Alert.alert(
-          'আমার দেশ সম্পর্কে',
+          'আমার দেশ',
           'দৈনিক আমার দেশ — স্বাধীনতার কথা বলে\n\nসম্পাদক ও প্রকাশক: মাহমুদুর রহমান\nকারওয়ান বাজার, ঢাকা-১২১৫।\nফোন: +৮৮০২-৯১১৮৮৫১'
         );
       },
@@ -255,7 +260,7 @@ export default function ProfileScreen() {
     >
       <View style={styles.header}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Text style={styles.title}>প্রোফাইল ও সেটিংস</Text>
+          <Text style={styles.title}>{language === 'bn' ? 'প্রোফাইল' : 'Profile'}</Text>
           <AmarDeshLogo height={24} variant="png" />
         </View>
       </View>
@@ -316,7 +321,7 @@ export default function ProfileScreen() {
               size={22}
               color={tokens.brand.primary}
             />
-            <Text style={styles.menuLabel}>ডার্ক মোড (Dark Theme)</Text>
+            <Text style={styles.menuLabel}>{language === 'bn' ? 'ডার্ক মোড' : 'Dark Mode'}</Text>
           </View>
           <Switch
             value={darkMode}
@@ -356,19 +361,19 @@ export default function ProfileScreen() {
           style={styles.linkItem}
           onPress={() => Linking.openURL('https://www.dailyamardesh.com')}
         >
-          <Text style={styles.linkText}>🌐 অফিসিয়াল ওয়েবসাইট: dailyamardesh.com</Text>
+          <Text style={styles.linkText}>🌐 dailyamardesh.com</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.linkItem}
           onPress={() => router.push('/epaper' as any)}
         >
-          <Text style={styles.linkText}>📰 ডিজিটাল ই-পেপার সংস্করণ</Text>
+          <Text style={styles.linkText}>{language === 'bn' ? '📰 ডিজিটাল ই-পেপার' : '📰 Digital ePaper'}</Text>
         </TouchableOpacity>
       </View>
 
       {/* Version & OTA Trigger */}
       <View style={styles.versionContainer}>
-        <Text style={styles.versionText}>সংস্করণ ১.৩.০ • সাইবারক্র্যাফট (CybrCraft)</Text>
+        <Text style={styles.versionText}>সংস্করণ ১.৩.০ • CybrCraft</Text>
         <TouchableOpacity
           onPress={handleCheckOtaUpdate}
           style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 }}
@@ -381,7 +386,7 @@ export default function ProfileScreen() {
             <>
               <Ionicons name="refresh-outline" size={14} color={tokens.brand.primary} />
               <Text style={{ fontSize: 12, color: tokens.brand.primary, fontWeight: '600' }}>
-                আপডেট পরীক্ষা করুন (OTA)
+                {language === 'bn' ? 'আপডেট পরীক্ষা' : 'Check Updates'}
               </Text>
             </>
           )}

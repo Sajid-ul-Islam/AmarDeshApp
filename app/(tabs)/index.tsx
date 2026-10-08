@@ -532,15 +532,6 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.headerIcons}>
-          {/* AI Settings / BYOK shortcut */}
-          <TouchableOpacity
-            style={styles.iconBtn}
-            onPress={() => router.push('/settings/ai' as any)}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="sparkles" size={16} color={tokens.brand.heritageGreen} />
-          </TouchableOpacity>
-
           {/* Notification Center */}
           <TouchableOpacity
             style={styles.iconBtn}

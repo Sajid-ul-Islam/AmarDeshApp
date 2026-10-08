@@ -28,6 +28,7 @@ import {
 } from '../../services/storage';
 import {
   getByokAiConfig,
+  saveByokAiConfig,
   AiProvider,
   PROVIDER_METADATA,
 } from '../../services/byokAiService';
@@ -134,6 +135,19 @@ export default function OneStopSettingsScreen() {
     Haptics.selectionAsync();
     setLowDataMode(value);
     await AsyncStorage.setItem(LOW_DATA_STORAGE_KEY, JSON.stringify(value));
+  };
+
+  const handleSelectAiProvider = async (prov: AiProvider) => {
+    Haptics.selectionAsync();
+    setAiProvider(prov);
+    const existing = await getByokAiConfig();
+    const updated = {
+      ...existing,
+      provider: prov,
+      model: PROVIDER_METADATA[prov].defaultModel,
+    };
+    await saveByokAiConfig(updated);
+    setHasAiKey(Boolean(updated.apiKey && updated.apiKey.length > 5));
   };
 
   const handleChangeFontSize = async (size: string) => {
@@ -716,20 +730,21 @@ export default function OneStopSettingsScreen() {
           </View>
         </View>
 
-        {/* 2. SMART AI ENGINE & BYOK (স্মার্ট এআই সহকারী) */}
+        {/* 2. SMART AI ENGINE & BYOK (এআই সহকারী) */}
         <View style={styles.sectionWrapper}>
           <View style={styles.sectionHeaderRow}>
             <View style={styles.sectionIconBox}>
               <Ionicons name="sparkles" size={14} color={tokens.brand.primary} />
             </View>
             <Text style={styles.sectionTitle}>
-              {language === 'bn' ? 'স্মার্ট এআই সহকারী (BYOK)' : 'Smart AI Engine (BYOK)'}
+              {language === 'bn' ? 'এআই সহকারী' : 'AI Assistant'}
             </Text>
           </View>
 
           <View style={styles.card}>
+            {/* Active Provider Status Card */}
             <TouchableOpacity
-              style={[styles.rowItem, styles.rowItemLast]}
+              style={styles.rowItem}
               onPress={() => router.push('/settings/ai' as any)}
               activeOpacity={0.7}
             >
@@ -748,29 +763,83 @@ export default function OneStopSettingsScreen() {
                   </Text>
                   <Text style={styles.rowSubtitle}>
                     {hasAiKey
-                      ? (language === 'bn' ? 'কাস্টম API Key সংযুক্ত ও সচল' : 'Custom API Key Active')
-                      : (language === 'bn' ? 'স্বয়ংক্রিয় ক্লাউড ইঞ্জিন সক্রিয়' : 'Default Cloud Engine Active')}
+                      ? (language === 'bn' ? 'কাস্টম কী সক্রিয়' : 'Custom Key Active')
+                      : (language === 'bn' ? 'স্বয়ংক্রিয় ক্লাউড ইঞ্জিন' : 'Default Cloud Engine')}
                   </Text>
                 </View>
               </View>
               <View style={styles.statusChip}>
                 <Text style={styles.statusChipText}>
-                  {language === 'bn' ? 'কনফিগার' : 'Configure'}
+                  {language === 'bn' ? 'সেটিংস' : 'Settings'}
                 </Text>
                 <Ionicons name="chevron-forward" size={14} color={tokens.brand.primary} />
               </View>
             </TouchableOpacity>
+
+            {/* Quick Provider Switcher */}
+            <View style={[styles.rowItem, styles.rowItemLast]}>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.rowTitle, { fontSize: 13, marginBottom: 8 }]}>
+                  {language === 'bn' ? 'ইঞ্জিন নির্বাচন:' : 'Select Engine:'}
+                </Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ gap: 8 }}
+                >
+                  {(['gemini', 'openai', 'groq', 'deepseek'] as const).map((prov) => {
+                    const isCur = aiProvider === prov;
+                    const meta = PROVIDER_METADATA[prov];
+                    const label = prov === 'openai' ? 'ChatGPT' : meta.name;
+                    return (
+                      <TouchableOpacity
+                        key={prov}
+                        style={[
+                          styles.fontPill,
+                          {
+                            width: 'auto',
+                            paddingHorizontal: 12,
+                            paddingVertical: 6,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 5,
+                          },
+                          isCur && styles.fontPillSelected,
+                        ]}
+                        onPress={() => handleSelectAiProvider(prov)}
+                        activeOpacity={0.7}
+                      >
+                        <Ionicons
+                          name="sparkles"
+                          size={11}
+                          color={isCur ? '#FFFFFF' : tokens.brand.primary}
+                        />
+                        <Text
+                          style={[
+                            styles.fontPillText,
+                            { fontSize: 11.5 },
+                            isCur && styles.fontPillTextSelected,
+                          ]}
+                        >
+                          {label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+            </View>
           </View>
         </View>
 
-        {/* 3. NOTIFICATIONS & ALERTS (বিজ্ঞপ্তি ও অ্যালার্ট) */}
+        {/* 3. NOTIFICATIONS (নোটিফিকেশন) */}
         <View style={styles.sectionWrapper}>
           <View style={styles.sectionHeaderRow}>
             <View style={styles.sectionIconBox}>
               <Ionicons name="notifications" size={14} color={tokens.brand.primary} />
             </View>
             <Text style={styles.sectionTitle}>
-              {language === 'bn' ? 'বিজ্ঞপ্তি ও অ্যালার্ট' : 'Notifications & Alerts'}
+              {language === 'bn' ? 'নোটিফিকেশন' : 'Notifications'}
             </Text>
           </View>
 
@@ -783,10 +852,10 @@ export default function OneStopSettingsScreen() {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.rowTitle}>
-                    {language === 'bn' ? 'ব্রেকিং নিউজ সতর্কতা' : 'Breaking News Alerts'}
+                    {language === 'bn' ? 'ব্রেকিং নিউজ' : 'Breaking News'}
                   </Text>
                   <Text style={styles.rowSubtitle}>
-                    {language === 'bn' ? 'তাত্ক্ষণিক পুশ নোটিফিকেশন' : 'Immediate high priority push'}
+                    {language === 'bn' ? 'তাত্ক্ষণিক অ্যালার্ট' : 'Instant push alerts'}
                   </Text>
                 </View>
               </View>
@@ -806,10 +875,10 @@ export default function OneStopSettingsScreen() {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.rowTitle}>
-                    {language === 'bn' ? 'সকালের দৈনিক বুলেটিন' : 'Daily Morning Briefing'}
+                    {language === 'bn' ? 'দৈনিক বুলেটিন' : 'Daily Briefing'}
                   </Text>
                   <Text style={styles.rowSubtitle}>
-                    {language === 'bn' ? 'প্রতিদিন সকাল ৮টায় শীর্ষ সংবাদ' : 'Top news delivered at 8:00 AM'}
+                    {language === 'bn' ? 'সকাল ৮টার বুলেটিন' : 'Morning 8:00 AM summary'}
                   </Text>
                 </View>
               </View>
@@ -833,10 +902,10 @@ export default function OneStopSettingsScreen() {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.rowTitle}>
-                    {t('notification_control', language)}
+                    {language === 'bn' ? 'নোটিফিকেশন ফিল্টার' : 'Notification Filters'}
                   </Text>
                   <Text style={styles.rowSubtitle}>
-                    {t('notification_control_sub', language)}
+                    {language === 'bn' ? 'শান্ত সময় ও ক্যাটাগরি' : 'Quiet hours & categories'}
                   </Text>
                 </View>
               </View>
@@ -867,14 +936,14 @@ export default function OneStopSettingsScreen() {
           </View>
         </View>
 
-        {/* 4. INTERESTS & LOCATION (পছন্দ ও অবস্থান) */}
+        {/* 4. INTERESTS & LOCATION (পছন্দ ও সংস্করণ) */}
         <View style={styles.sectionWrapper}>
           <View style={styles.sectionHeaderRow}>
             <View style={styles.sectionIconBox}>
               <Ionicons name="heart" size={14} color={tokens.brand.primary} />
             </View>
             <Text style={styles.sectionTitle}>
-              {language === 'bn' ? 'পছন্দ, আগ্রহ ও সংস্করণ' : 'Interests & Edition'}
+              {language === 'bn' ? 'পছন্দ ও সংস্করণ' : 'Interests & Edition'}
             </Text>
           </View>
 
@@ -891,10 +960,10 @@ export default function OneStopSettingsScreen() {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.rowTitle}>
-                    {language === 'bn' ? 'পছন্দের সংবাদ বিষয়সমূহ' : 'Content & Topic Interests'}
+                    {language === 'bn' ? 'পছন্দের বিষয়' : 'Topic Interests'}
                   </Text>
                   <Text style={styles.rowSubtitle}>
-                    {language === 'bn' ? 'হোম ফিড ও স্মার্ট সুপারিশ পরিবর্তন' : 'Tune personalized suggestions'}
+                    {language === 'bn' ? 'ফিড ও সুপারিশ পরিবর্তন' : 'Tune feed suggestions'}
                   </Text>
                 </View>
               </View>
@@ -913,12 +982,12 @@ export default function OneStopSettingsScreen() {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.rowTitle}>
-                    {language === 'bn' ? 'সংস্করণ ও নামাজের বিভাগ' : 'Edition & Prayer Division'}
+                    {language === 'bn' ? 'সংস্করণ ও অবস্থান' : 'Edition & Location'}
                   </Text>
                   <Text style={styles.rowSubtitle}>
                     {prayerData.isGps
-                      ? `${prayerData.division} (GPS সক্রিয়)`
-                      : `${prayerData.division || 'ঢাকা'} (ডিফল্ট প্রমিত সময়)`}
+                      ? `${prayerData.division} (GPS)`
+                      : `${prayerData.division || 'ঢাকা'}`}
                   </Text>
                 </View>
               </View>
@@ -932,7 +1001,7 @@ export default function OneStopSettingsScreen() {
           </View>
         </View>
 
-        {/* 5. DATA, OFFLINE & STORAGE (ডেটা সাশ্রয় ও অফলাইন ক্যাশ) */}
+        {/* 5. DATA, OFFLINE & STORAGE (ডেটা ও স্টোরেজ) */}
         <View style={styles.sectionWrapper}>
           <View style={styles.sectionHeaderRow}>
             <View style={styles.sectionIconBox}>
@@ -969,12 +1038,12 @@ export default function OneStopSettingsScreen() {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.rowTitle}>
-                    {language === 'bn' ? 'অফলাইন ক্যাশ ডাটাবেস' : 'Offline Cache Storage'}
+                    {language === 'bn' ? 'অফলাইন ক্যাশ' : 'Offline Cache'}
                   </Text>
                   <Text style={styles.rowSubtitle}>
                     {language === 'bn'
-                      ? `${formatLocalizedNumeral(cachedCount, 'bn')}টি সংবাদ ডিভাইসে সংরক্ষিত`
-                      : `${cachedCount} cached articles offline`}
+                      ? `${formatLocalizedNumeral(cachedCount, 'bn')}টি সংবাদ সংরক্ষিত`
+                      : `${cachedCount} cached articles`}
                   </Text>
                 </View>
               </View>
@@ -1008,10 +1077,10 @@ export default function OneStopSettingsScreen() {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.rowTitle}>
-                    {language === 'bn' ? 'পড়ার ডেটা এক্সপোর্ট ও ব্যাকআপ' : 'Export Reading Data'}
+                    {language === 'bn' ? 'ডেটা এক্সপোর্ট' : 'Data Export'}
                   </Text>
                   <Text style={styles.rowSubtitle}>
-                    {language === 'bn' ? 'বুকমার্ক ও পড়ার ইতিহাস JSON/CSV তে সংরক্ষণ' : 'Export bookmarks & history'}
+                    {language === 'bn' ? 'বুকমার্ক ও ইতিহাস ব্যাকআপ' : 'Export bookmarks & history'}
                   </Text>
                 </View>
               </View>
@@ -1020,7 +1089,7 @@ export default function OneStopSettingsScreen() {
           </View>
         </View>
 
-        {/* 6. PRIVACY, CLOUD SYNC & SECURITY (গোপনীয়তা ও ক্লাউড সিঙ্ক) */}
+        {/* 6. PRIVACY & SYNC (গোপনীয়তা) */}
         <View style={styles.sectionWrapper}>
           <View style={styles.sectionHeaderRow}>
             <View style={styles.sectionIconBox}>
@@ -1040,10 +1109,10 @@ export default function OneStopSettingsScreen() {
                   <Text style={styles.rowTitle}>{t('cloud_sync', language)}</Text>
                   <Text style={styles.rowSubtitle}>
                     {syncState.isSyncing
-                      ? (language === 'bn' ? 'সিঙ্ক করা হচ্ছে...' : 'Syncing...')
+                      ? (language === 'bn' ? 'সিঙ্ক হচ্ছে...' : 'Syncing...')
                       : syncState.lastSyncedAt
-                        ? (language === 'bn' ? 'সর্বশেষ সিঙ্ক সম্পন্ন' : 'Last synced')
-                        : (language === 'bn' ? 'লোকাল ডিভাইস মোড' : 'Local device mode')}
+                        ? (language === 'bn' ? 'সিঙ্ক সম্পন্ন' : 'Synced')
+                        : (language === 'bn' ? 'লোকাল মোড' : 'Local mode')}
                   </Text>
                 </View>
               </View>
@@ -1065,7 +1134,7 @@ export default function OneStopSettingsScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Privacy Policy & Data Control */}
+            {/* Privacy Policy */}
             <TouchableOpacity
               style={[styles.rowItem, styles.rowItemLast]}
               onPress={() => router.push('/settings/privacy' as any)}
@@ -1077,10 +1146,10 @@ export default function OneStopSettingsScreen() {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.rowTitle}>
-                    {language === 'bn' ? 'গোপনীয়তা নীতি ও নিরাপত্তা' : 'Privacy Policy & Data Rights'}
+                    {language === 'bn' ? 'গোপনীয়তা নীতি' : 'Privacy Policy'}
                   </Text>
                   <Text style={styles.rowSubtitle}>
-                    {language === 'bn' ? 'ডিভাইস আইডি ও বেনামী প্রোফাইল নিয়ন্ত্রণ' : 'Anonymous ID & Privacy Control'}
+                    {language === 'bn' ? 'ডিভাইস আইডি ও ডেটা সুরক্ষা' : 'Device ID & Data Rights'}
                   </Text>
                 </View>
               </View>
@@ -1089,14 +1158,14 @@ export default function OneStopSettingsScreen() {
           </View>
         </View>
 
-        {/* 7. APP UPDATES & SYSTEM (সফটওয়্যার আপডেট) */}
+        {/* 7. APP UPDATES (আপডেট) */}
         <View style={styles.sectionWrapper}>
           <View style={styles.sectionHeaderRow}>
             <View style={styles.sectionIconBox}>
               <Ionicons name="sync-circle" size={14} color={tokens.brand.primary} />
             </View>
             <Text style={styles.sectionTitle}>
-              {language === 'bn' ? 'সফটওয়্যার ও সংস্করণ' : 'App Updates & System'}
+              {language === 'bn' ? 'আপডেট' : 'Updates'}
             </Text>
           </View>
 
@@ -1108,10 +1177,10 @@ export default function OneStopSettingsScreen() {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.rowTitle}>
-                    {language === 'bn' ? 'অ্যাপ আপডেট পরীক্ষা (OTA)' : 'Check for Updates'}
+                    {language === 'bn' ? 'আপডেট পরীক্ষা' : 'Check Updates'}
                   </Text>
                   <Text style={styles.rowSubtitle}>
-                    {language === 'bn' ? 'বর্তমান সংস্করণ: ১.৪.২ (লেটেস্ট)' : 'Installed Version: 1.4.2'}
+                    {language === 'bn' ? 'সংস্করণ: ১.৪.২ (লেটেস্ট)' : 'Version 1.4.2'}
                   </Text>
                 </View>
               </View>
@@ -1135,7 +1204,7 @@ export default function OneStopSettingsScreen() {
           </View>
         </View>
 
-        {/* 8. ABOUT AMAR DESH (আমাদের পরিচিতি) */}
+        {/* 8. ABOUT AMAR DESH (পরিচিতি) */}
         <View style={styles.sectionWrapper}>
           <View style={styles.aboutCard}>
             <AmarDeshLogo height={32} variant="png" showMotto language={language} />
@@ -1152,7 +1221,7 @@ export default function OneStopSettingsScreen() {
             </Text>
             <Text style={styles.aboutVersion}>
               {language === 'bn'
-                ? 'কারওয়ান বাজার, ঢাকা-১২১৫ • সংস্করণ ১.৪.২ (বিল্ড ২০২৬)'
+                ? 'কারওয়ান বাজার, ঢাকা-১২১৫ • সংস্করণ ১.৪.২'
                 : 'Karwan Bazar, Dhaka-1215 • Version 1.4.2'}
             </Text>
           </View>

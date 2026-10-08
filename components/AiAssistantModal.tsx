@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Linking,
+  Keyboard,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemedStyles, useThemeTokens } from '../theme';
@@ -61,6 +62,7 @@ export const AiAssistantModal: React.FC<AiAssistantModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [hasApiKey, setHasApiKey] = useState(true);
   const [activeProvider, setActiveProvider] = useState<string>('gemini');
+  const scrollViewRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     if (visible) {
@@ -71,9 +73,18 @@ export const AiAssistantModal: React.FC<AiAssistantModalProps> = ({
     }
   }, [visible]);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [messages, loading]);
+
   const handleSend = async (questionText?: string) => {
     const textToSend = (questionText || inputText).trim();
     if (!textToSend || loading) return;
+
+    Keyboard.dismiss();
 
     const userMsg: ChatMessage = {
       id: `user-${Date.now()}`,
@@ -127,7 +138,8 @@ export const AiAssistantModal: React.FC<AiAssistantModalProps> = ({
         backgroundColor: tokens.surface.base,
         borderTopLeftRadius: tokens.radii['2xl'],
         borderTopRightRadius: tokens.radii['2xl'],
-        maxHeight: '85%',
+        height: '85%',
+        maxHeight: '92%',
         minHeight: '65%',
         paddingBottom: Platform.OS === 'ios' ? 24 : 12,
         borderWidth: 0.5,
@@ -199,7 +211,7 @@ export const AiAssistantModal: React.FC<AiAssistantModalProps> = ({
         fontWeight: '500',
       },
       msgBubble: {
-        maxWidth: '85%',
+        maxWidth: '92%',
         paddingHorizontal: 14,
         paddingVertical: 10,
         borderRadius: tokens.radii.lg,
@@ -225,8 +237,8 @@ export const AiAssistantModal: React.FC<AiAssistantModalProps> = ({
       },
       aiMsgText: {
         color: tokens.text.primary,
-        fontSize: 14,
-        lineHeight: 21,
+        fontSize: 14.5,
+        lineHeight: 22,
       },
       inputBar: {
         flexDirection: 'row',
@@ -358,9 +370,12 @@ export const AiAssistantModal: React.FC<AiAssistantModalProps> = ({
 
           {/* Chat Messages */}
           <ScrollView
+            ref={scrollViewRef}
             style={styles.messageScroll}
-            contentContainerStyle={{ paddingBottom: 16 }}
+            contentContainerStyle={{ paddingBottom: 24, flexGrow: 1 }}
             keyboardShouldPersistTaps="handled"
+            onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+            showsVerticalScrollIndicator={true}
           >
             {/* Banner to directly collect API key or open settings if not configured */}
             {!hasApiKey && (
@@ -432,6 +447,7 @@ export const AiAssistantModal: React.FC<AiAssistantModalProps> = ({
                   style={
                     m.role === 'user' ? styles.userMsgText : styles.aiMsgText
                   }
+                  selectable={true}
                 >
                   {m.text}
                 </Text>
