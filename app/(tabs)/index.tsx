@@ -50,6 +50,7 @@ import {
 } from '../../services/i18n';
 import { getSafeHeaderPaddingTop } from '../../utils/layout';
 import { AmarDeshLogo } from '../../components/AmarDeshLogo';
+import { SideNavDrawer } from '../../components/SideNavDrawer';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -58,6 +59,7 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('সর্বশেষ');
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
+  const [isSideNavOpen, setIsSideNavOpen] = useState(false);
   const language = useAppStore((state) => state.language);
   const feedLayout = useAppStore((state) => state.feedLayout);
   const setFeedLayout = useAppStore((state) => state.setFeedLayout);
@@ -132,6 +134,18 @@ export default function HomeScreen() {
         backgroundColor: tokens.surface.base,
         borderBottomWidth: 1,
         borderBottomColor: tokens.border.default,
+      },
+      hamburgerBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: tokens.radii.pill,
+        backgroundColor: tokens.surface.elevated,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 10,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.sm,
       },
       mastheadCol: {
         flex: 1,
@@ -498,8 +512,21 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Broadsheet Masthead with Official Logo */}
+      {/* Broadsheet Masthead with Official Logo & Side Nav Drawer Trigger */}
       <View style={styles.mainHeader}>
+        <TouchableOpacity
+          style={styles.hamburgerBtn}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            setIsSideNavOpen(true);
+          }}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={t('side_nav_open', language)}
+        >
+          <Ionicons name="menu" size={22} color={tokens.brand.primary} />
+        </TouchableOpacity>
+
         <View style={styles.mastheadCol}>
           <AmarDeshLogo height={34} variant="png" showMotto language={language} />
         </View>
@@ -608,6 +635,12 @@ export default function HomeScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         showsVerticalScrollIndicator={false}
+      />
+
+      {/* Global Animated Side Navigation Drawer */}
+      <SideNavDrawer
+        visible={isSideNavOpen}
+        onClose={() => setIsSideNavOpen(false)}
       />
     </View>
   );

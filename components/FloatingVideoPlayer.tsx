@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemedStyles } from '../theme';
@@ -31,11 +32,12 @@ export const FloatingVideoPlayer: React.FC<FloatingVideoPlayerProps> = ({
   onExpand,
   onClose,
 }) => {
+  const insets = useSafeAreaInsets();
   const styles = useThemedStyles((tokens) =>
     StyleSheet.create({
       floatingCard: {
         position: 'absolute',
-        bottom: 24,
+        bottom: 68 + insets.bottom,
         right: 16,
         width: 230,
         backgroundColor: tokens.surface.elevated,

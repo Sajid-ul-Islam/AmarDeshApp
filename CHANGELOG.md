@@ -7,6 +7,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 🧭 Side Navigation Drawer & Unified One-Stop Settings Hub (v1.5.0)
+- **Animated Side Navigation Bar (Drawer)** (`components/SideNavDrawer.tsx`, `app/(tabs)/index.tsx`):
+  - Created high-performance animated slide-in drawer (`translateX: -DRAWER_WIDTH` to `0`) with touch-to-dismiss semi-transparent backdrop.
+  - Masthead branding featuring Amar Desh logo, motto ("সত্যের পক্ষে আপসহীন"), edition details, user account & cloud sync status pill.
+  - Navigation rails to all core sections: প্রচ্ছদ (Home), ই-পেপার (e-Paper), ভিডিও (Video), সংরক্ষিত সংবাদ (Saved), আপনার জন্য (For You AI), জুলাই বিপ্লব ২০২৪ (July Revolution Archive), নামাজের সময়সূচি (Prayer Times), এবং নোটিফিকেশন ইনবক্স (Notification Inbox).
+  - Prominent spotlight card linking directly to the One-Stop Settings Hub (`/settings`).
+  - Quick bottom utilities: 3-way theme switcher (☀️ লাইট / 📜 সেপিয়া / 🌙 ডার্ক) and language toggle (বাংলা / English).
+  - Added hamburger menu trigger button (`menu-outline`) in `app/(tabs)/index.tsx` broadsheet masthead header.
+- **Unified One-Stop Settings Solution** (`app/settings/index.tsx`, `app/_layout.tsx`):
+  - Consolidated all fragmented app configuration into a single, comprehensive one-stop destination:
+    1. **রূপ ও ভিজ্যুয়াল ডিসপ্লে (Appearance & Display)**: 3-way theme visual swatches (Light, Sepia, Dark), language toggle, magazine broadsheet vs compact list feed layout, and reading font size selector (S, M, L, XL).
+    2. **স্মার্ট এআই সহকারী (Smart AI Engine - BYOK)**: Active AI provider indicator (Gemini, OpenAI, Groq, DeepSeek) with 1-tap route to `/settings/ai`.
+    3. **বিজ্ঞপ্তি ও পুশ অ্যালার্ট (Notifications & Alerts)**: Instant toggles for breaking news alerts, daily morning briefing, and links to detailed quiet-hour settings (`/settings/notifications`) and notification inbox (`/notifications`).
+    4. **পছন্দ, আগ্রহ ও সংস্করণ (Interests & Edition)**: 1-tap link to topic personalization (`/settings/interests`) and division/district picker modal with GPS toggle.
+    5. **ডেটা সাশ্রয় ও অফলাইন ক্যাশ (Data & Offline Storage)**: Low-data mode toggle, cached article count indicator, 1-tap offline database cache purge (`clearAllCachedArticles`), and reading data backup export (`/settings/export`).
+    6. **গোপনীয়তা, ক্লাউড সিঙ্ক ও সুরক্ষা (Privacy & Cloud Sync)**: Anonymous Device ID, cloud sync state indicator with instant "সিঙ্ক" trigger (`syncAccountData`), and privacy controls (`/settings/privacy`).
+    7. **সফটওয়্যার আপডেট ও সিস্টেম (App Updates & System)**: Version 1.4.2 display, OTA update check button (`checkForOtaUpdate`).
+    8. **আমাদের পরিচিতি (About Daily Amar Desh)**: Editor & Publisher Mahmudur Rahman, Karwan Bazar headquarters, and editorial charter.
+- **Streamlined Menu & Profile Screens** (`app/(tabs)/menu.tsx`, `app/(tabs)/profile.tsx`):
+  - Replaced sprawling redundant settings in `menu.tsx` with a prominent "One-Stop Settings Hub" hero card.
+  - Positioned "One-Stop Settings Hub" as the primary configuration item in `profile.tsx`.
+- **Test Suite & Verification** (`services/__tests__/settingsAndSideNav.test.ts`):
+  - Created 7 new integration tests verifying settings translations, font size storage, cache purge, and store preference switches.
+  - All 19 test suites and 133 tests passing with 0 errors. Zero TypeScript compiler errors.
+
+### 🎨 UI/UX Component Overlap Resolution & Icon-First Upgrades (v1.4.2)
+- **Eliminated Article Header Crowd & Logo Collision** (`app/article/[id].tsx`, `components/ReaderSettingsModal.tsx`):
+  - Streamlined congested 7-button header cluster down to 4 core icon buttons (`Audio`, `Reader Settings`, `Bookmark`, `Share`), freeing up >120px horizontal width to guarantee zero collision with `AmarDeshLogo` on small screens (<380px).
+  - Integrated `Focus Mode`, `Quote Card Generator`, and `AI Assistant` directly into `ReaderSettingsModal.tsx` with dedicated icon-first trigger chips.
+- **Fixed Floating Mini-Player Bottom Tab Bar Overlap** (`components/FloatingVideoPlayer.tsx`):
+  - Elevated floating PiP video player by utilizing dynamic `useSafeAreaInsets` (`bottom: 68 + insets.bottom`), ensuring it never covers the 60px bottom tab bar.
+- **Resolved Audio News Bar Home Indicator Overlap** (`components/AudioNewsBar.tsx`):
+  - Integrated `useSafeAreaInsets` to adjust `bottom: Math.max(insets.bottom + 12, 20)`, eliminating collision with home indicator gestures.
+- **Protected Auxiliary Full-Screen Views from Tab Bar Clash** (`app/(tabs)/_layout.tsx`, `app/(tabs)/epaper.tsx`):
+  - Set `tabBarStyle: { display: 'none' }` on auxiliary routes (`epaper`, `search`), providing edge-to-edge viewports.
+  - Positioned e-Paper floating navigation pill with safe area insets (`bottom: Math.max(insets.bottom + 14, 20)`).
+- **Fixed Visual Web Stories Notch & Home Bar Clipping** (`components/VisualStoryModal.tsx`):
+  - Switched from static `SafeAreaView` (44px) to dynamic `insets.top + 8`, preventing progress bar clipping under iOS Dynamic Island (59px) and Android punch-hole cameras.
+  - Positioned story takeaway bottom deck at `bottom: Math.max(insets.bottom + 16, 32)` with icon-first `arrow-up-circle-outline` CTA.
+- **Icon-First Market & Sports Ticker Trends** (`components/LiveRatesTicker.tsx`):
+  - Replaced plain text plus/minus indicators with directional caret vector icons (`caret-up` / `caret-down`).
+- **Icon-First Tone Pills & Non-Overlapping Header in AI Summary** (`components/AiSummaryCard.tsx`):
+  - Added distinctive vector icons to each tone pill (`list-outline` for Key Points, `sparkles-outline` for Simplified, `analytics-outline` for Context).
+  - Concise `স্মার্ট সারাংশ` title with `numberOfLines={1}` prevents header collision on compact devices.
+- **Celestial Waqt Icons & Collision Prevention in Prayer Times** (`components/PrayerTimesWidget.tsx`):
+  - Added celestial icons to prayer waqts (`sunny-outline`, `sunny`, `partly-sunny-outline`, `cloudy-night-outline`, `moon-outline`).
+  - Added `flex: 1` and `numberOfLines={1}` to prevent location badge collision with header title.
+- **Category & Bookmarks Header Collision Protections** (`app/category/[slug].tsx`, `app/(tabs)/bookmarks.tsx`):
+  - Replaced verbose `{X} টি সংবাদ` text with icon-first newspaper badge (`newspaper-outline` + numeral).
+  - Added `flex: 1` and `numberOfLines={1}` across title containers.
+- **Quote Card Title & Footer Elasticity** (`components/QuoteCardModal.tsx`):
+  - Added `numberOfLines={1}` and `flex: 1` to modal title, and replaced fixed `maxWidth: 200` with flexible `flexShrink: 1` on author/source meta.
+
 ### 🐛 Codebase-Wide Bug Fixes & Resiliency Hardening (v1.4.1)
 - **Resolved Deprecated Clipboard API & Unmount Timer Leak** (`components/QuoteCardModal.tsx`):
   - Migrated from deprecated `Clipboard` in `react-native` to `* as Clipboard from 'expo-clipboard'` (`setStringAsync`).

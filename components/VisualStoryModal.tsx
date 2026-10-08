@@ -6,9 +6,9 @@ import {
   Modal,
   TouchableOpacity,
   Dimensions,
-  SafeAreaView,
   StatusBar,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -32,6 +32,7 @@ export const VisualStoryModal: React.FC<VisualStoryModalProps> = ({
   initialIndex = 0,
   onClose,
 }) => {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [progress, setProgress] = useState(0);
@@ -114,7 +115,7 @@ export const VisualStoryModal: React.FC<VisualStoryModalProps> = ({
         <View style={styles.scrim} />
 
         {/* Top Story Controls & Progress Bars */}
-        <SafeAreaView style={styles.topSafeArea}>
+        <View style={[styles.topSafeArea, { paddingTop: Math.max(insets.top + 8, 44) }]}>
           <View style={styles.progressRow}>
             {stories.map((story, i) => (
               <View key={story.id || i} style={styles.progressTrack}>
@@ -140,11 +141,11 @@ export const VisualStoryModal: React.FC<VisualStoryModalProps> = ({
               <Text style={styles.badgeText}>{currentStory.category}</Text>
             </View>
             <Text style={styles.timeText}>{currentStory.publishedAt}</Text>
-            <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
+            <TouchableOpacity style={styles.closeBtn} onPress={onClose} accessibilityLabel="বন্ধ করুন">
               <Ionicons name="close" size={24} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
-        </SafeAreaView>
+        </View>
 
         {/* Tap areas for Prev / Next */}
         <View style={styles.tapAreaContainer}>
@@ -161,15 +162,16 @@ export const VisualStoryModal: React.FC<VisualStoryModalProps> = ({
         </View>
 
         {/* Story Content Bottom Deck */}
-        <View style={styles.bottomContent}>
+        <View style={[styles.bottomContent, { bottom: Math.max(insets.bottom + 16, 32) }]}>
           <Text style={styles.storyTitle}>{currentStory.title}</Text>
           <Text style={styles.storyTakeaway}>{currentStory.takeaway}</Text>
 
           <TouchableOpacity
             style={styles.readMoreBtn}
             onPress={handleReadFullArticle}
+            accessibilityLabel="পুরো খবর পড়ুন"
           >
-            <Ionicons name="chevron-up" size={18} color="#FFFFFF" />
+            <Ionicons name="arrow-up-circle-outline" size={19} color="#FFFFFF" />
             <Text style={styles.readMoreText}>পুরো খবর পড়ুন</Text>
           </TouchableOpacity>
         </View>

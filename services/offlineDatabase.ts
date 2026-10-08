@@ -179,3 +179,12 @@ export async function getOfflineArticleCount(): Promise<number> {
   );
   return result?.count || 0;
 }
+
+/**
+ * Clear all cached articles from offline database
+ */
+export async function clearAllCachedArticles(): Promise<number> {
+  const db = await getOfflineDb();
+  const result = await db.runAsync(`DELETE FROM cached_articles`);
+  return result.changes;
+}

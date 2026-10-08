@@ -35,6 +35,8 @@ export const PrayerTimesWidget: React.FC<PrayerTimesWidgetProps> = ({
         flexDirection: 'row',
         alignItems: 'center',
         gap: 6,
+        flex: 1,
+        marginRight: 8,
       },
       titleText: {
         fontSize: 13.5,
@@ -56,6 +58,7 @@ export const PrayerTimesWidget: React.FC<PrayerTimesWidgetProps> = ({
         borderRadius: tokens.radii.pill,
         borderWidth: 0.5,
         borderColor: tokens.border.subtle,
+        flexShrink: 0,
         ...tokens.shadows.sm,
       },
       activeGpsBtn: {
@@ -85,16 +88,17 @@ export const PrayerTimesWidget: React.FC<PrayerTimesWidgetProps> = ({
       waqtName: {
         fontSize: 12,
         color: tokens.text.secondary,
-        marginBottom: 3,
+        marginBottom: 2,
       },
       activeWaqtName: {
         color: tokens.brand.primary,
         fontWeight: 'bold',
       },
       waqtTime: {
-        fontSize: 13,
+        fontSize: 12.5,
         fontWeight: 'bold',
         color: tokens.text.primary,
+        marginTop: 2,
       },
       activeWaqtTime: {
         color: tokens.brand.primary,
@@ -118,11 +122,11 @@ export const PrayerTimesWidget: React.FC<PrayerTimesWidgetProps> = ({
   );
 
   const prayers = [
-    { name: 'ফজর', time: prayerData.fajr },
-    { name: 'যোহর', time: prayerData.dhuhr },
-    { name: 'আসর', time: prayerData.asr },
-    { name: 'মাগরিব', time: prayerData.maghrib },
-    { name: 'এশা', time: prayerData.isha },
+    { name: 'ফজর', time: prayerData.fajr, icon: 'sunny-outline' as const },
+    { name: 'যোহর', time: prayerData.dhuhr, icon: 'sunny' as const },
+    { name: 'আসর', time: prayerData.asr, icon: 'partly-sunny-outline' as const },
+    { name: 'মাগরিব', time: prayerData.maghrib, icon: 'cloudy-night-outline' as const },
+    { name: 'এশা', time: prayerData.isha, icon: 'moon-outline' as const },
   ];
 
   const isGpsActive = Boolean(prayerData.isGps);
@@ -134,9 +138,9 @@ export const PrayerTimesWidget: React.FC<PrayerTimesWidgetProps> = ({
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <View style={styles.titleLeft}>
-          <Ionicons name="moon" size={16} color={styles.titleText.color} />
-          <Text style={styles.titleText}>নামাজের সময়সূচি</Text>
-          <Text style={styles.hijriBadge}>({prayerData.hijriDate})</Text>
+          <Ionicons name="moon" size={15} color={styles.titleText.color} />
+          <Text style={styles.titleText} numberOfLines={1}>নামাজের সময়সূচি</Text>
+          <Text style={styles.hijriBadge} numberOfLines={1}>({prayerData.hijriDate})</Text>
         </View>
 
         <TouchableOpacity
@@ -150,7 +154,7 @@ export const PrayerTimesWidget: React.FC<PrayerTimesWidgetProps> = ({
             size={12}
             color={styles.locationText.color}
           />
-          <Text style={styles.locationText}>{locationLabel}</Text>
+          <Text style={styles.locationText} numberOfLines={1}>{locationLabel}</Text>
           <Ionicons name="chevron-down" size={12} color={styles.locationText.color} />
         </TouchableOpacity>
       </View>
@@ -164,6 +168,12 @@ export const PrayerTimesWidget: React.FC<PrayerTimesWidgetProps> = ({
               key={p.name}
               style={[styles.timeCol, isHighlight && styles.activeTimeCol]}
             >
+              <Ionicons
+                name={p.icon}
+                size={12}
+                color={isHighlight ? styles.titleText.color : '#9CA3AF'}
+                style={{ marginBottom: 2 }}
+              />
               <Text style={[styles.waqtName, isHighlight && styles.activeWaqtName]}>
                 {p.name}
               </Text>

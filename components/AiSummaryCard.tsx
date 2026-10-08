@@ -172,6 +172,9 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({
         paddingTop: 4,
       },
       tonePill: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
         paddingVertical: 5,
         paddingHorizontal: 10,
         borderRadius: tokens.radii.pill,
@@ -265,14 +268,12 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({
           activeOpacity={0.8}
         >
           <View style={styles.iconBox}>
-            <Ionicons name="sparkles" size={16} color="#FFFFFF" />
+            <Ionicons name="sparkles" size={15} color="#FFFFFF" />
           </View>
-          <View>
-            <Text style={styles.headerTitle}>স্মার্ট সারাংশ ও মূল পয়েন্ট</Text>
-          </View>
+          <Text style={styles.headerTitle} numberOfLines={1}>স্মার্ট সারাংশ</Text>
           <View style={styles.badge}>
             <Text style={styles.badgeText}>
-              {isAiGenerated ? `${providerUsed || 'AI'} বিশ্লেষিত` : 'দ্রুত সারসংক্ষেপ'}
+              {isAiGenerated ? `${providerUsed || 'AI'}` : 'সারসংক্ষেপ'}
             </Text>
           </View>
         </TouchableOpacity>
@@ -306,12 +307,12 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({
 
       {!isCollapsed && (
         <View style={styles.body}>
-          {/* Tone Selector Pill Row */}
+          {/* Tone Selector Pill Row with Icons */}
           <View style={styles.toneBarRow}>
             {[
-              { id: 'executive' as const, label: '📋 মূল পয়েন্ট' },
-              { id: 'simplified' as const, label: '💡 সহজ ভাষায়' },
-              { id: 'analysis' as const, label: '🔍 প্রেক্ষাপট' },
+              { id: 'executive' as const, label: 'মূল পয়েন্ট', icon: 'list-outline' as const },
+              { id: 'simplified' as const, label: 'সহজ ভাষায়', icon: 'sparkles-outline' as const },
+              { id: 'analysis' as const, label: 'প্রেক্ষাপট', icon: 'analytics-outline' as const },
             ].map((t) => {
               const isActive = tone === t.id;
               return (
@@ -319,7 +320,13 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({
                   key={t.id}
                   style={[styles.tonePill, isActive && styles.activeTonePill]}
                   onPress={() => handleToneChange(t.id)}
+                  accessibilityLabel={t.label}
                 >
+                  <Ionicons
+                    name={t.icon}
+                    size={12}
+                    color={isActive ? '#FFFFFF' : tokens.text.secondary}
+                  />
                   <Text
                     style={[
                       styles.tonePillText,

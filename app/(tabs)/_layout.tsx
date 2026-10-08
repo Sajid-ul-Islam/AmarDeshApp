@@ -110,6 +110,7 @@ export default function TabLayout() {
           href: null,
           title: 'Search',
           headerShown: false,
+          tabBarStyle: { display: 'none' },
         }}
       />
 
@@ -137,6 +138,7 @@ export default function TabLayout() {
           href: null,
           title: t('tab_epaper', language),
           headerShown: false,
+          tabBarStyle: { display: 'none' },
         }}
       />
     </Tabs>

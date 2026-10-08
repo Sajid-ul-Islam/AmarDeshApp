@@ -133,11 +133,14 @@ export default function BookmarksScreen() {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 8,
+        flex: 1,
+        marginRight: 8,
       },
       title: {
         fontSize: 18,
         fontWeight: 'bold',
         color: tokens.text.primary,
+        flexShrink: 1,
         fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' }),
       },
       headerRightAction: {
@@ -163,6 +166,9 @@ export default function BookmarksScreen() {
         color: tokens.text.secondary,
       },
       countBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
         backgroundColor: tokens.brand.surface,
         paddingHorizontal: 8,
         paddingVertical: 2,
@@ -405,7 +411,7 @@ export default function BookmarksScreen() {
       <View style={styles.header}>
         <View style={styles.titleRow}>
           <AmarDeshLogo height={20} variant="png" />
-          <Text style={styles.title}>
+          <Text style={styles.title} numberOfLines={1}>
             {activeTab === 'saved' ? t('saved_articles', language) : t('for_you', language)}
           </Text>
         </View>
@@ -413,10 +419,9 @@ export default function BookmarksScreen() {
         <View style={styles.headerRightAction}>
           {activeTab === 'saved' && bookmarkedArticles.length > 0 && (
             <View style={styles.countBadge}>
+              <Ionicons name="bookmark" size={11} color={tokens.brand.primary} />
               <Text style={styles.countText}>
-                {language === 'bn'
-                  ? `${formatLocalizedNumeral(bookmarkedArticles.length, language)} টি`
-                  : `${bookmarkedArticles.length} ${bookmarkedArticles.length === 1 ? 'item' : 'items'}`}
+                {formatLocalizedNumeral(bookmarkedArticles.length, language)}
               </Text>
             </View>
           )}

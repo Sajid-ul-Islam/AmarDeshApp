@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Animated,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useThemedStyles } from '../theme';
@@ -22,6 +23,7 @@ export const AudioNewsBar: React.FC<AudioNewsBarProps> = ({
   textToSpeak,
   onClose,
 }) => {
+  const insets = useSafeAreaInsets();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState<'1.0x' | '1.25x' | '1.5x'>('1.0x');
@@ -76,7 +78,7 @@ export const AudioNewsBar: React.FC<AudioNewsBarProps> = ({
     StyleSheet.create({
       container: {
         position: 'absolute',
-        bottom: 24,
+        bottom: Math.max(insets.bottom + 12, 20),
         left: isMinimized ? undefined : 16,
         right: 16,
         backgroundColor: '#111827',

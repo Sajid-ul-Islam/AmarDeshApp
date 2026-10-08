@@ -1,7 +1,7 @@
 # TODO - Daily Amar Desh Mobile App (দৈনিক আমার দেশ)
 
-## 📌 Overall Project Status: 100% Core Features Complete (v1.4.1)
-All 6 development phases, the icon-first curvy design system, multi-tier offline persistence, BYOK AI multi-model engine, interactive e-paper, full Bengali localization, Editorial UI/UX Upgrades (Sepia theme, Visual Stories, Quote Cards, Live Ticker), and full codebase-wide bug fixes & resiliency hardening have been implemented and validated with 18 test suites (126/126 tests passing) and zero TypeScript errors.
+## 📌 Overall Project Status: 100% Core Features Complete (v1.4.2)
+All 6 development phases, the icon-first curvy design system, multi-tier offline persistence, BYOK AI multi-model engine, interactive e-paper, full Bengali localization, Editorial UI/UX Upgrades (Sepia theme, Visual Stories, Quote Cards, Live Ticker), codebase-wide bug fixes, and UI/UX component overlap resolution & icon-first upgrades have been implemented and validated with 18 test suites (126/126 tests passing) and zero TypeScript errors.
 
 ---
 

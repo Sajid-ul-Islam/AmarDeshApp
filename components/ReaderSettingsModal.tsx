@@ -9,6 +9,9 @@ interface ReaderSettingsModalProps {
   fontSizeMultiplier: number;
   onFontSizeChange: (multiplier: number) => void;
   onClose: () => void;
+  onOpenFocusMode?: () => void;
+  onOpenQuoteModal?: () => void;
+  onOpenAiAssistant?: () => void;
 }
 
 export const ReaderSettingsModal: React.FC<ReaderSettingsModalProps> = ({
@@ -16,6 +19,9 @@ export const ReaderSettingsModal: React.FC<ReaderSettingsModalProps> = ({
   fontSizeMultiplier,
   onFontSizeChange,
   onClose,
+  onOpenFocusMode,
+  onOpenQuoteModal,
+  onOpenAiAssistant,
 }) => {
   const tokens = useThemeTokens();
   const { themePreference, setThemePreference } = useAppStore();
@@ -91,6 +97,28 @@ export const ReaderSettingsModal: React.FC<ReaderSettingsModalProps> = ({
       activeSizeBtnText: {
         color: '#FFFFFF',
         fontWeight: 'bold',
+      },
+      toolsRow: {
+        flexDirection: 'row',
+        gap: 10,
+      },
+      toolBtn: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 6,
+        paddingVertical: 10,
+        borderRadius: tokens.radii.pill,
+        backgroundColor: tokens.surface.elevated,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.sm,
+      },
+      toolBtnText: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: tokens.text.primary,
       },
       previewCard: {
         backgroundColor: tokens.surface.elevated,
@@ -182,6 +210,54 @@ export const ReaderSettingsModal: React.FC<ReaderSettingsModalProps> = ({
               );
             })}
           </View>
+
+          {/* Quick Editorial Tools */}
+          {(onOpenFocusMode || onOpenQuoteModal || onOpenAiAssistant) && (
+            <>
+              <Text style={styles.sectionTitle}>বিশেষ রিডিং সুবিধা</Text>
+              <View style={styles.toolsRow}>
+                {onOpenFocusMode && (
+                  <TouchableOpacity
+                    style={styles.toolBtn}
+                    onPress={() => {
+                      onClose();
+                      onOpenFocusMode();
+                    }}
+                    accessibilityLabel="ফোকাস রিডিং মোড"
+                  >
+                    <Ionicons name="scan-outline" size={16} color={tokens.brand.primary} />
+                    <Text style={styles.toolBtnText}>ফোকাস মোড</Text>
+                  </TouchableOpacity>
+                )}
+                {onOpenQuoteModal && (
+                  <TouchableOpacity
+                    style={styles.toolBtn}
+                    onPress={() => {
+                      onClose();
+                      onOpenQuoteModal();
+                    }}
+                    accessibilityLabel="উদ্ধৃতি কার্ড তৈরি করুন"
+                  >
+                    <Ionicons name="chatbubble-ellipses-outline" size={16} color={tokens.brand.primary} />
+                    <Text style={styles.toolBtnText}>উদ্ধৃতি কার্ড</Text>
+                  </TouchableOpacity>
+                )}
+                {onOpenAiAssistant && (
+                  <TouchableOpacity
+                    style={styles.toolBtn}
+                    onPress={() => {
+                      onClose();
+                      onOpenAiAssistant();
+                    }}
+                    accessibilityLabel="স্মার্ট AI সহকারী"
+                  >
+                    <Ionicons name="sparkles" size={16} color={tokens.brand.heritageGreen} />
+                    <Text style={styles.toolBtnText}>AI সহকারী</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </>
+          )}
 
           {/* Live Preview */}
           <View style={styles.previewCard}>

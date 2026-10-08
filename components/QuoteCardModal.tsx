@@ -107,6 +107,8 @@ export const QuoteCardModal: React.FC<QuoteCardModalProps> = ({
         fontSize: 16,
         fontWeight: 'bold',
         color: tokens.text.primary,
+        flex: 1,
+        marginRight: 8,
       },
       closeButton: {
         width: 32,
@@ -204,7 +206,7 @@ export const QuoteCardModal: React.FC<QuoteCardModalProps> = ({
         fontSize: 11,
         color: cardTokens.text.secondary,
         marginTop: 2,
-        maxWidth: 200,
+        flexShrink: 1,
       },
       brandUrlBadge: {
         backgroundColor: cardTokens.brand.primary,
@@ -254,7 +256,7 @@ export const QuoteCardModal: React.FC<QuoteCardModalProps> = ({
       <View style={styles.overlay}>
         <View style={styles.content}>
           <View style={styles.headerRow}>
-            <Text style={styles.title}>সোশ্যাল উদ্ধৃতি কার্ড (Quote Card)</Text>
+            <Text style={styles.title} numberOfLines={1}>সোশ্যাল উদ্ধৃতি কার্ড</Text>
             <TouchableOpacity
               style={styles.closeButton}
               onPress={onClose}

@@ -340,7 +340,7 @@ export default function EPaperScreen() {
       },
       floatingBar: {
         position: 'absolute',
-        bottom: 20,
+        bottom: Math.max(insets.bottom + 14, 20),
         alignSelf: 'center',
         flexDirection: 'row',
         alignItems: 'center',

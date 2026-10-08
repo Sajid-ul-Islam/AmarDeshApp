@@ -643,44 +643,12 @@ export default function ArticleDetailScreen() {
           <AmarDeshLogo height={24} variant="png" />
 
           <View style={styles.headerActions}>
-            {/* Focus Mode Toggle */}
-            <TouchableOpacity
-              style={styles.iconButton}
-              onPress={() => setIsFocusMode(true)}
-              activeOpacity={0.7}
-              accessibilityLabel="ফোকাস রিডিং মোড"
-            >
-              <Ionicons name="scan-outline" size={18} color={styles.authorName.color} />
-            </TouchableOpacity>
-
-            {/* Quote Card Generator */}
-            <TouchableOpacity
-              style={styles.iconButton}
-              onPress={() => setShowQuoteModal(true)}
-              activeOpacity={0.7}
-              accessibilityLabel="উদ্ধৃতি কার্ড তৈরি করুন"
-            >
-              <Ionicons
-                name="chatbubble-ellipses-outline"
-                size={18}
-                color={styles.authorName.color}
-              />
-            </TouchableOpacity>
-
-            {/* AI Assistant */}
-            <TouchableOpacity
-              style={styles.iconButton}
-              onPress={() => setShowAiAssistant(true)}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="sparkles" size={18} color="#006B3F" />
-            </TouchableOpacity>
-
             {/* TTS Audio Bar Toggle */}
             <TouchableOpacity
               style={[styles.iconButton, showAudioBar && styles.activeIconButton]}
               onPress={() => setShowAudioBar((prev) => !prev)}
               activeOpacity={0.7}
+              accessibilityLabel="অডিও শুনুন"
             >
               <Ionicons
                 name={showAudioBar ? 'volume-high' : 'volume-medium-outline'}
@@ -689,11 +657,12 @@ export default function ArticleDetailScreen() {
               />
             </TouchableOpacity>
 
-            {/* Reader font size adjuster */}
+            {/* Reader display & tools */}
             <TouchableOpacity
               style={styles.iconButton}
               onPress={() => setShowSettingsModal(true)}
               activeOpacity={0.7}
+              accessibilityLabel="পড়ার সুবিধা ও সেটিংস"
             >
               <Ionicons name="text-outline" size={19} color={styles.authorName.color} />
             </TouchableOpacity>
@@ -703,6 +672,7 @@ export default function ArticleDetailScreen() {
               style={[styles.iconButton, isBookmarked && styles.activeIconButton]}
               onPress={toggleBookmark}
               activeOpacity={0.7}
+              accessibilityLabel={isBookmarked ? 'বুকমার্ক সরানো হয়েছে' : 'বুকমার্ক করুন'}
             >
               <Ionicons
                 name={isBookmarked ? 'bookmark' : 'bookmark-outline'}
@@ -716,6 +686,7 @@ export default function ArticleDetailScreen() {
               style={styles.iconButton}
               onPress={() => setShowShareSheet(true)}
               activeOpacity={0.7}
+              accessibilityLabel="শেয়ার করুন"
             >
               <Ionicons name="share-social-outline" size={19} color={styles.authorName.color} />
             </TouchableOpacity>
@@ -931,6 +902,9 @@ export default function ArticleDetailScreen() {
         fontSizeMultiplier={fontSizeMultiplier}
         onFontSizeChange={setFontSizeMultiplier}
         onClose={() => setShowSettingsModal(false)}
+        onOpenFocusMode={() => setIsFocusMode(true)}
+        onOpenQuoteModal={() => setShowQuoteModal(true)}
+        onOpenAiAssistant={() => setShowAiAssistant(true)}
       />
 
       {/* Share Sheet */}

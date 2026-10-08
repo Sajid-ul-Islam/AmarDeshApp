@@ -7,6 +7,7 @@ import {
   Animated,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useThemedStyles, useThemeTokens } from '../theme';
 import { toBengaliNumeral } from '../utils/bengali';
@@ -134,6 +135,13 @@ export const ArticleReactions: React.FC<ArticleReactionsProps> = ({ articleId })
         justifyContent: 'space-between',
         marginBottom: 12,
       },
+      titleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        flex: 1,
+        marginRight: 8,
+      },
       title: {
         fontSize: 14,
         fontWeight: 'bold',
@@ -142,6 +150,7 @@ export const ArticleReactions: React.FC<ArticleReactionsProps> = ({ articleId })
       totalText: {
         fontSize: 12,
         color: tokens.text.secondary,
+        flexShrink: 0,
       },
       pillsRow: {
         flexDirection: 'row',
@@ -204,9 +213,12 @@ export const ArticleReactions: React.FC<ArticleReactionsProps> = ({ articleId })
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
-        <Text style={styles.title}>আপনার প্রতিক্রিয়া জানান</Text>
-        <Text style={styles.totalText}>
-          {toBengaliNumeral(totalReactions)} জন মতামত দিয়েছেন
+        <View style={styles.titleRow}>
+          <Ionicons name="heart-circle-outline" size={17} color={tokens.brand.primary} />
+          <Text style={styles.title} numberOfLines={1}>পাঠক প্রতিক্রিয়া</Text>
+        </View>
+        <Text style={styles.totalText} numberOfLines={1}>
+          {toBengaliNumeral(totalReactions)} জনের মতামত
         </Text>
       </View>
 

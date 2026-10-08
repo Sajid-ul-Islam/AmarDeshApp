@@ -67,19 +67,28 @@ export const LiveRatesTicker: React.FC = () => {
         color: tokens.text.primary,
       },
       changeBadge: {
-        fontSize: 10,
-        fontWeight: 'bold',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 2,
         paddingHorizontal: 4,
         paddingVertical: 1,
         borderRadius: 4,
       },
       positiveBadge: {
-        color: tokens.status.success,
         backgroundColor: 'rgba(22, 163, 74, 0.1)',
       },
       negativeBadge: {
-        color: tokens.status.error,
         backgroundColor: 'rgba(239, 68, 68, 0.1)',
+      },
+      changeBadgeText: {
+        fontSize: 10,
+        fontWeight: 'bold',
+      },
+      positiveBadgeText: {
+        color: tokens.status.success,
+      },
+      negativeBadgeText: {
+        color: tokens.status.error,
       },
     })
   );
@@ -110,14 +119,26 @@ export const LiveRatesTicker: React.FC = () => {
               <Text style={styles.titleText}>{item.title}:</Text>
               <Text style={styles.valueText}>{item.value}</Text>
               {item.change && (
-                <Text
+                <View
                   style={[
                     styles.changeBadge,
                     item.isPositive === false ? styles.negativeBadge : styles.positiveBadge,
                   ]}
                 >
-                  {item.change}
-                </Text>
+                  <Ionicons
+                    name={item.isPositive ? 'caret-up' : 'caret-down'}
+                    size={9}
+                    color={item.isPositive ? tokens.status.success : tokens.status.error}
+                  />
+                  <Text
+                    style={[
+                      styles.changeBadgeText,
+                      item.isPositive === false ? styles.negativeBadgeText : styles.positiveBadgeText,
+                    ]}
+                  >
+                    {item.change.replace(/^[+-]/, '')}
+                  </Text>
+                </View>
               )}
             </TouchableOpacity>
           );

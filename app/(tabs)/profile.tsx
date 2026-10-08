@@ -118,6 +118,11 @@ export default function ProfileScreen() {
 
   const menuItems: ProfileMenuItem[] = [
     {
+      icon: 'settings-outline',
+      label: language === 'bn' ? 'সকল সেটিংস ও নিয়ন্ত্রণ হাব (এক স্টপে সব)' : 'All Settings & Control Hub (One-Stop)',
+      action: () => router.push('/settings' as any),
+    },
+    {
       icon: 'location-outline',
       label: `সংস্করণ ও নামাজের অবস্থান (${prayerData.isGps ? prayerData.division + ' GPS' : (prayerData.division || 'ঢাকা') + ' ডিফল্ট'})`,
       action: () => setShowLocationModal(true),
@@ -131,16 +136,11 @@ export default function ProfileScreen() {
         Alert.alert('ভাষা পরিবর্তিত হয়েছে', next === 'bn' ? 'বাংলা সক্রিয় করা হয়েছে।' : 'English has been activated.');
       },
     },
-    { icon: 'sparkles-outline', label: 'স্মার্ট AI সহকারী সেটিংস', action: () => router.push('/settings/ai' as any) },
-    { icon: 'cloud-download-outline', label: 'অ্যাপ আপডেট পরীক্ষা (OTA)', action: handleCheckOtaUpdate },
-    { icon: 'notifications-outline', label: 'নোটিফিকেশন ইনবক্স', action: () => router.push('/notifications' as any) },
+    { icon: 'bookmark-outline', label: 'সংরক্ষিত সংবাদ ও আপনার জন্য', action: () => router.push('/bookmarks' as any) },
     { icon: 'newspaper-outline', label: 'ই-পেপার সংস্করণ', action: () => router.push('/epaper' as any) },
     { icon: 'videocam-outline', label: 'ভিডিও ও মাল্টিমিডিয়া', action: () => router.push('/video' as any) },
-    { icon: 'bookmark-outline', label: 'সংরক্ষিত সংবাদ ও আপনার জন্য', action: () => router.push('/bookmarks' as any) },
-    { icon: 'options-outline', label: 'নোটিফিকেশন নিয়ন্ত্রণ সেটিংস', action: () => router.push('/settings/notifications' as any) },
-    { icon: 'heart-outline', label: 'পছন্দের বিষয়সমূহ (আগ্রহ)', action: () => router.push('/settings/interests' as any) },
-    { icon: 'shield-checkmark-outline', label: 'গোপনীয়তা ও নিরাপত্তা', action: () => router.push('/settings/privacy' as any) },
-    { icon: 'download-outline', label: 'পড়ার ডেটা এক্সপোর্ট', action: () => router.push('/settings/export' as any) },
+    { icon: 'notifications-outline', label: 'নোটিফিকেশন ইনবক্স', action: () => router.push('/notifications' as any) },
+    { icon: 'cloud-download-outline', label: 'অ্যাপ আপডেট পরীক্ষা (OTA)', action: handleCheckOtaUpdate },
     {
       icon: 'information-circle-outline',
       label: 'আমার দেশ সম্পর্কে',

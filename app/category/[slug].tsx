@@ -64,7 +64,9 @@ export default function CategoryScreen() {
       headerLeft: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 12,
+        gap: 10,
+        flex: 1,
+        marginRight: 8,
       },
       backButton: {
         padding: 4,
@@ -73,8 +75,12 @@ export default function CategoryScreen() {
         fontSize: 18,
         fontWeight: 'bold',
         color: tokens.text.primary,
+        flexShrink: 1,
       },
       countBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
         backgroundColor: tokens.surface.elevated,
         paddingHorizontal: 8,
         paddingVertical: 3,
@@ -83,6 +89,7 @@ export default function CategoryScreen() {
       countText: {
         fontSize: 12,
         color: tokens.text.secondary,
+        fontWeight: '600',
       },
       listContent: {
         padding: 16,
@@ -166,19 +173,21 @@ export default function CategoryScreen() {
           <TouchableOpacity
             style={styles.backButton}
             onPress={() => router.back()}
+            accessibilityLabel="ফিরে যান"
           >
             <Ionicons name="arrow-back" size={24} color={tokens.text.primary} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>{categoryMeta.name}</Text>
+          <Text style={styles.headerTitle} numberOfLines={1}>{categoryMeta.name}</Text>
         </View>
 
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <View style={styles.countBadge}>
+            <Ionicons name="newspaper-outline" size={13} color={tokens.text.secondary} />
             <Text style={styles.countText}>
-              {toBengaliNumeral(articles.length)} টি সংবাদ
+              {toBengaliNumeral(articles.length)}
             </Text>
           </View>
-          <AmarDeshLogo height={20} variant="png" />
+          <AmarDeshLogo height={18} variant="png" />
         </View>
       </View>
 

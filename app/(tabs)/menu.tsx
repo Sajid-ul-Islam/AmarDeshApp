@@ -380,6 +380,55 @@ export default function MenuScreen() {
         borderWidth: 0.5,
         borderColor: tokens.brand.primary,
       },
+      oneStopSettingsHero: {
+        backgroundColor: tokens.surface.base,
+        marginHorizontal: 16,
+        marginBottom: 12,
+        padding: 14,
+        borderRadius: tokens.radii.lg,
+        borderWidth: 1.5,
+        borderColor: tokens.brand.primary,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        ...tokens.shadows.card,
+      },
+      oneStopSettingsLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        flex: 1,
+        marginRight: 8,
+      },
+      oneStopIconBox: {
+        width: 44,
+        height: 44,
+        borderRadius: tokens.radii.pill,
+        backgroundColor: tokens.brand.primary,
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      oneStopTitle: {
+        fontSize: 15,
+        fontWeight: 'bold',
+        color: tokens.text.primary,
+      },
+      oneStopBadge: {
+        backgroundColor: tokens.brand.crimsonSurface,
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: tokens.radii.pill,
+      },
+      oneStopBadgeText: {
+        fontSize: 10,
+        fontWeight: '700',
+        color: tokens.brand.secondary,
+      },
+      oneStopSubtitle: {
+        fontSize: 11.5,
+        color: tokens.text.secondary,
+        marginTop: 3,
+      },
       locationPillText: {
         fontSize: 12,
         fontWeight: '700',
@@ -575,8 +624,38 @@ export default function MenuScreen() {
           ))}
         </View>
 
-        {/* Quick Utilities & Settings */}
+        {/* Quick Utilities & One-Stop Settings */}
         <Text style={styles.sectionTitle}>{t('settings_title', language)}</Text>
+
+        {/* ONE-STOP SETTINGS HUB HERO */}
+        <TouchableOpacity
+          style={styles.oneStopSettingsHero}
+          onPress={() => router.push('/settings' as any)}
+          activeOpacity={0.8}
+        >
+          <View style={styles.oneStopSettingsLeft}>
+            <View style={styles.oneStopIconBox}>
+              <Ionicons name="settings" size={22} color="#FFFFFF" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Text style={styles.oneStopTitle}>
+                  {t('settings_hub_title', language)}
+                </Text>
+                <View style={styles.oneStopBadge}>
+                  <Text style={styles.oneStopBadgeText}>
+                    {language === 'bn' ? 'এক স্টপে সব' : 'All-in-One'}
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.oneStopSubtitle} numberOfLines={1}>
+                {t('settings_hub_sub', language)}
+              </Text>
+            </View>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={tokens.brand.primary} />
+        </TouchableOpacity>
+
         <View style={styles.gridCard}>
           {/* Language Selection Segmented Control */}
           <View style={styles.utilityRow}>
@@ -623,7 +702,7 @@ export default function MenuScreen() {
             </View>
           </View>
 
-          {/* Edition & Prayer Location Setting (Moved from Top) */}
+          {/* Edition & Prayer Location Setting */}
           <TouchableOpacity
             style={styles.utilityRow}
             onPress={() => setShowLocationModal(true)}
@@ -702,39 +781,23 @@ export default function MenuScreen() {
             </View>
           </View>
 
-          {/* Low Data Mode Toggle */}
-          <View style={styles.utilityRow}>
-            <View style={styles.utilityLeft}>
-              <View style={styles.catIconBox}>
-                <Ionicons name="cellular-outline" size={20} color={tokens.brand.primary} />
-              </View>
-              <View>
-                <Text style={styles.utilityTitle}>{t('data_saver', language)}</Text>
-                <Text style={styles.utilitySubtitle}>
-                  {t('data_saver_sub', language)}
-                </Text>
-              </View>
-            </View>
-            <Switch
-              value={lowDataMode}
-              onValueChange={setLowDataMode}
-              trackColor={{ false: tokens.border.strong, true: tokens.brand.primary }}
-              thumbColor="#FFFFFF"
-            />
-          </View>
-
-          {/* AI Settings (BYOK) */}
+          {/* All Settings & Preferences Gateway */}
           <TouchableOpacity
             style={styles.utilityRow}
-            onPress={() => router.push('/settings/ai' as any)}
+            onPress={() => router.push('/settings' as any)}
+            activeOpacity={0.7}
           >
             <View style={styles.utilityLeft}>
               <View style={[styles.catIconBox, { backgroundColor: tokens.brand.surface }]}>
-                <Ionicons name="sparkles" size={20} color={tokens.brand.primary} />
+                <Ionicons name="options-outline" size={20} color={tokens.brand.primary} />
               </View>
               <View>
-                <Text style={styles.utilityTitle}>{t('ai_settings_title', language)}</Text>
-                <Text style={styles.utilitySubtitle}>{t('ai_settings_sub', language)}</Text>
+                <Text style={styles.utilityTitle}>
+                  {language === 'bn' ? 'সকল বিস্তারিত সেটিংস' : 'All Detailed Settings'}
+                </Text>
+                <Text style={styles.utilitySubtitle}>
+                  {language === 'bn' ? 'এআই সহকারী, নোটিফিকেশন, ডেটা সাশ্রয় ও গোপনীয়তা' : 'AI Assistant, Alerts, Data Saver & Privacy'}
+                </Text>
               </View>
             </View>
             <Ionicons name="chevron-forward" size={18} color={tokens.interactive.inactive} />
@@ -744,6 +807,7 @@ export default function MenuScreen() {
           <TouchableOpacity
             style={styles.utilityRow}
             onPress={() => router.push('/notifications' as any)}
+            activeOpacity={0.7}
           >
             <View style={styles.utilityLeft}>
               <View style={styles.catIconBox}>
@@ -752,23 +816,6 @@ export default function MenuScreen() {
               <View>
                 <Text style={styles.utilityTitle}>{t('notification_inbox', language)}</Text>
                 <Text style={styles.utilitySubtitle}>{t('notification_inbox_sub', language)}</Text>
-              </View>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={tokens.interactive.inactive} />
-          </TouchableOpacity>
-
-          {/* Notification Settings */}
-          <TouchableOpacity
-            style={styles.utilityRow}
-            onPress={() => router.push('/settings/notifications' as any)}
-          >
-            <View style={styles.utilityLeft}>
-              <View style={styles.catIconBox}>
-                <Ionicons name="options-outline" size={20} color={tokens.brand.primary} />
-              </View>
-              <View>
-                <Text style={styles.utilityTitle}>{t('notification_control', language)}</Text>
-                <Text style={styles.utilitySubtitle}>{t('notification_control_sub', language)}</Text>
               </View>
             </View>
             <Ionicons name="chevron-forward" size={18} color={tokens.interactive.inactive} />
