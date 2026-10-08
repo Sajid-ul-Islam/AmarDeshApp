@@ -58,7 +58,8 @@
         "POST_NOTIFICATIONS",
         "RECEIVE_BOOT_COMPLETED",
         "VIBRATE"
-      ]
+      ],
+      "versionCode": 2
     },
     "web": {
       "bundler": "metro"
