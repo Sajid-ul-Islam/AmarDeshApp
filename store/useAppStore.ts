@@ -13,6 +13,7 @@ interface FeatureFlags {
   enableBreakingNews: boolean;
   enableDailyBriefing: boolean;
   enableCategoryUpdates: boolean;
+  enableSponsoredCommerce: boolean;
 }
 
 interface AppState {
@@ -27,13 +28,13 @@ interface AppState {
    */
   language: SupportedLanguage;
   /**
-   * Home feed presentation layout: 'magazine' (large cards) or 'compact' (dense list).
+   * Home feed presentation layout: 'magazine' (large cards), 'compact' (dense list), or 'card' (swipeable deck).
    */
-  feedLayout: 'magazine' | 'compact';
+  feedLayout: 'magazine' | 'compact' | 'card';
   setFeatureFlag: (key: keyof FeatureFlags, value: boolean) => void;
   setThemePreference: (pref: 'system' | 'light' | 'dark' | 'sepia') => void;
   setLanguage: (lang: SupportedLanguage) => void;
-  setFeedLayout: (layout: 'magazine' | 'compact') => void;
+  setFeedLayout: (layout: 'magazine' | 'compact' | 'card') => void;
   loadFeatureFlags: () => Promise<void>;
   saveFeatureFlags: () => Promise<void>;
 }
@@ -48,6 +49,7 @@ const defaultFeatures: FeatureFlags = {
   enableBreakingNews: true,
   enableDailyBriefing: true,
   enableCategoryUpdates: false,
+  enableSponsoredCommerce: true,
 };
 
 const THEME_KEY = '@amar_desh_theme_preference';

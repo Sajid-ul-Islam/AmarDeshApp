@@ -43,6 +43,7 @@ import { ArticleReactions } from '../../components/ArticleReactions';
 import { AdBanner } from '../../components/AdBanner';
 import { QuoteCardModal } from '../../components/QuoteCardModal';
 import { ArticleTimeline } from '../../components/ArticleTimeline';
+import { RelatedCardSlider } from '../../components/RelatedCardSlider';
 import { getArticlesByCategory } from '../../services/contentService';
 import { useThemedStyles, useThemeTokens } from '../../theme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -294,7 +295,9 @@ export default function ArticleDetailScreen() {
       authorRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 12,
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: 10,
         paddingVertical: 12,
         marginBottom: 20,
         borderTopWidth: 0.5,
@@ -302,11 +305,32 @@ export default function ArticleDetailScreen() {
         borderBottomWidth: 0.5,
         borderBottomColor: tokens.border.subtle,
       },
+      authorMeta: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+        flexShrink: 1,
+      },
+      authorTextCol: {
+        justifyContent: 'center',
+        maxWidth: 165,
+      },
+      bylineActions: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+      },
       avatar: {
-        width: 38,
-        height: 38,
-        borderRadius: tokens.radii.pill,
+        width: 36,
+        height: 36,
         backgroundColor: tokens.surface.elevated,
+      },
+      squareIconAvatar: {
+        borderRadius: 0,
+        backgroundColor: 'transparent',
+      },
+      circularPersonAvatar: {
+        borderRadius: tokens.radii.pill,
       },
       authorName: {
         fontSize: 14,
@@ -592,7 +616,7 @@ export default function ArticleDetailScreen() {
 
   const relatedStories = getArticlesByCategory(article.category)
     .filter((a) => a.id !== article.id)
-    .slice(0, 3);
+    .slice(0, 6);
 
   const fullTextToSpeak = `${article.title}. ${
     scrapedData ? scrapedData.paragraphs.join(' ') : article.content
@@ -640,57 +664,10 @@ export default function ArticleDetailScreen() {
             <Ionicons name="arrow-back" size={22} color={styles.title.color} />
           </TouchableOpacity>
 
-          <AmarDeshLogo height={24} variant="png" />
+          <AmarDeshLogo height={30} variant="png" />
 
-          <View style={styles.headerActions}>
-            {/* TTS Audio Bar Toggle */}
-            <TouchableOpacity
-              style={[styles.iconButton, showAudioBar && styles.activeIconButton]}
-              onPress={() => setShowAudioBar((prev) => !prev)}
-              activeOpacity={0.7}
-              accessibilityLabel="অডিও শুনুন"
-            >
-              <Ionicons
-                name={showAudioBar ? 'volume-high' : 'volume-medium-outline'}
-                size={19}
-                color={showAudioBar ? '#006B3F' : styles.authorName.color}
-              />
-            </TouchableOpacity>
-
-            {/* Reader display & tools */}
-            <TouchableOpacity
-              style={styles.iconButton}
-              onPress={() => setShowSettingsModal(true)}
-              activeOpacity={0.7}
-              accessibilityLabel="পড়ার সুবিধা ও সেটিংস"
-            >
-              <Ionicons name="text-outline" size={19} color={styles.authorName.color} />
-            </TouchableOpacity>
-
-            {/* Bookmark */}
-            <TouchableOpacity
-              style={[styles.iconButton, isBookmarked && styles.activeIconButton]}
-              onPress={toggleBookmark}
-              activeOpacity={0.7}
-              accessibilityLabel={isBookmarked ? 'বুকমার্ক সরানো হয়েছে' : 'বুকমার্ক করুন'}
-            >
-              <Ionicons
-                name={isBookmarked ? 'bookmark' : 'bookmark-outline'}
-                size={19}
-                color={isBookmarked ? '#006B3F' : styles.authorName.color}
-              />
-            </TouchableOpacity>
-
-            {/* Share */}
-            <TouchableOpacity
-              style={styles.iconButton}
-              onPress={() => setShowShareSheet(true)}
-              activeOpacity={0.7}
-              accessibilityLabel="শেয়ার করুন"
-            >
-              <Ionicons name="share-social-outline" size={19} color={styles.authorName.color} />
-            </TouchableOpacity>
-          </View>
+          {/* Spacer to maintain centered logo balance */}
+          <View style={{ width: 34 }} />
         </View>
       )}
 
@@ -730,25 +707,83 @@ export default function ArticleDetailScreen() {
           {/* Title */}
           <Text style={styles.title}>{cleanText(scrapedData?.title || article.title)}</Text>
 
-          {/* Author Byline */}
+          {/* Author Byline with Action Toolbar Beside Published Date */}
           <View style={styles.authorRow}>
-            <Image
-              source={{
-                uri:
-                  scrapedData?.authorAvatar ||
-                  'https://images.dailyamardesh.com/ad/amardesh-shadhinotar-kotha-bole.jpg',
-              }}
-              style={styles.avatar}
-              contentFit="cover"
-            />
-            <View>
-              <Text style={styles.authorName}>
-                {scrapedData?.author || article.author}
-              </Text>
-              <Text style={styles.pubTime}>
-                {t('published_prefix', language)}
-                {formatLocalizedRelativeTime(article.publishedAt, language)}
-              </Text>
+            <View style={styles.authorMeta}>
+              <Image
+                source={
+                  scrapedData?.authorAvatar
+                    ? { uri: scrapedData.authorAvatar }
+                    : require('../../assets/icon.png')
+                }
+                style={[
+                  styles.avatar,
+                  scrapedData?.authorAvatar
+                    ? styles.circularPersonAvatar
+                    : styles.squareIconAvatar,
+                ]}
+                contentFit="contain"
+              />
+              <View style={styles.authorTextCol}>
+                <Text style={styles.authorName} numberOfLines={1}>
+                  {scrapedData?.author || article.author}
+                </Text>
+                <Text style={styles.pubTime} numberOfLines={1}>
+                  {t('published_prefix', language)}
+                  {formatLocalizedRelativeTime(article.publishedAt, language)}
+                </Text>
+              </View>
+            </View>
+
+            {/* Quick Action Toolbar (Sound, Font, Save, Share) Beside Published Date */}
+            <View style={styles.bylineActions}>
+              {/* TTS Audio Bar Toggle */}
+              <TouchableOpacity
+                style={[styles.iconButton, showAudioBar && styles.activeIconButton]}
+                onPress={() => setShowAudioBar((prev) => !prev)}
+                activeOpacity={0.7}
+                accessibilityLabel="অডিও শুনুন"
+              >
+                <Ionicons
+                  name={showAudioBar ? 'volume-high' : 'volume-medium-outline'}
+                  size={17}
+                  color={showAudioBar ? '#006B3F' : styles.authorName.color}
+                />
+              </TouchableOpacity>
+
+              {/* Reader Display & Font Settings */}
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={() => setShowSettingsModal(true)}
+                activeOpacity={0.7}
+                accessibilityLabel="পড়ার সুবিধা ও সেটিংস"
+              >
+                <Ionicons name="text-outline" size={17} color={styles.authorName.color} />
+              </TouchableOpacity>
+
+              {/* Bookmark / Save */}
+              <TouchableOpacity
+                style={[styles.iconButton, isBookmarked && styles.activeIconButton]}
+                onPress={toggleBookmark}
+                activeOpacity={0.7}
+                accessibilityLabel={isBookmarked ? 'বুকমার্ক সরানো হয়েছে' : 'বুকমার্ক করুন'}
+              >
+                <Ionicons
+                  name={isBookmarked ? 'bookmark' : 'bookmark-outline'}
+                  size={17}
+                  color={isBookmarked ? '#006B3F' : styles.authorName.color}
+                />
+              </TouchableOpacity>
+
+              {/* Share */}
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={() => setShowShareSheet(true)}
+                activeOpacity={0.7}
+                accessibilityLabel="শেয়ার করুন"
+              >
+                <Ionicons name="share-social-outline" size={17} color={styles.authorName.color} />
+              </TouchableOpacity>
             </View>
           </View>
 
@@ -860,29 +895,13 @@ export default function ArticleDetailScreen() {
             </Text>
           </View>
 
-          {/* Related Stories */}
+          {/* Related Stories Card Slider */}
           {relatedStories.length > 0 && (
-            <View>
-              <Text style={styles.relatedHeader}>{t('related_news', language)}</Text>
-              {relatedStories.map((rel) => (
-                <TouchableOpacity
-                  key={rel.id}
-                  style={styles.relatedCard}
-                  onPress={() => router.push(`/article/${rel.id}` as any)}
-                  activeOpacity={0.75}
-                >
-                  <View style={styles.relatedContent}>
-                    <Text style={styles.relatedTitle} numberOfLines={2}>
-                      {rel.title}
-                    </Text>
-                    <Text style={styles.relatedTime}>
-                      {formatRelativeTime(rel.publishedAt)}
-                    </Text>
-                  </View>
-                  <ArticleThumbnail uri={rel.imageUrl} style={styles.relatedThumb} />
-                </TouchableOpacity>
-              ))}
-            </View>
+            <RelatedCardSlider
+              articles={relatedStories}
+              language={language}
+              onPressArticle={(rel) => router.push(`/article/${rel.id}` as any)}
+            />
           )}
         </View>
       </ScrollView>

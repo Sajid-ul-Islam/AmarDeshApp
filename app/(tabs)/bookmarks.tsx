@@ -410,7 +410,7 @@ export default function BookmarksScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.titleRow}>
-          <AmarDeshLogo height={20} variant="png" />
+          <AmarDeshLogo height={24} variant="png" />
           <Text style={styles.title} numberOfLines={1}>
             {activeTab === 'saved' ? t('saved_articles', language) : t('for_you', language)}
           </Text>

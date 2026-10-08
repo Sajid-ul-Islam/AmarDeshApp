@@ -44,6 +44,8 @@ export function SideNavDrawer({ visible, onClose }: SideNavDrawerProps) {
   const setLanguage = useAppStore((state) => state.setLanguage);
   const themePreference = useAppStore((state) => state.themePreference);
   const setThemePreference = useAppStore((state) => state.setThemePreference);
+  const feedLayout = useAppStore((state) => state.feedLayout);
+  const setFeedLayout = useAppStore((state) => state.setFeedLayout);
   const userId = useUserStore((state) => state.userId);
 
   const [modalVisible, setModalVisible] = useState(visible);
@@ -273,6 +275,37 @@ export function SideNavDrawer({ visible, onClose }: SideNavDrawerProps) {
         fontSize: 10,
         fontWeight: '700',
         color: tokens.brand.secondary,
+      },
+      layoutPillsRow: {
+        flexDirection: 'row',
+        gap: 8,
+        marginTop: 6,
+        marginBottom: 14,
+      },
+      layoutPill: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 4,
+        paddingVertical: 9,
+        borderRadius: tokens.radii.pill,
+        backgroundColor: tokens.surface.elevated,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+      },
+      layoutPillActive: {
+        backgroundColor: tokens.brand.primary,
+        borderColor: tokens.brand.primary,
+      },
+      layoutPillText: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: tokens.text.secondary,
+      },
+      layoutPillTextActive: {
+        color: '#FFFFFF',
+        fontWeight: '700',
       },
       settingsHeroCard: {
         marginTop: 12,
@@ -586,6 +619,76 @@ export function SideNavDrawer({ visible, onClose }: SideNavDrawerProps) {
               </View>
               <Ionicons name="chevron-forward" size={16} color={tokens.interactive.inactive} />
             </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.navItem}
+              onPress={() => navigateTo('/sponsored')}
+              activeOpacity={0.7}
+            >
+              <View style={styles.navItemLeft}>
+                <View style={[styles.navIconBox, { backgroundColor: tokens.brand.crimsonSurface }]}>
+                  <Ionicons name="cart-outline" size={18} color={tokens.brand.primary} />
+                </View>
+                <Text style={styles.navText}>
+                  {language === 'bn' ? 'স্পন্সরড শপ ও ডিলস' : 'Sponsored Deals'}
+                </Text>
+              </View>
+              <View style={styles.badgeTag}>
+                <Text style={styles.badgeTagText}>{language === 'bn' ? 'ডিলস' : 'Deals'}</Text>
+              </View>
+            </TouchableOpacity>
+
+            {/* FEED LAYOUT SELECTOR */}
+            <Text style={styles.sectionLabel}>
+              {language === 'bn' ? 'ফিড লেআউট' : 'Feed Layout'}
+            </Text>
+
+            <View style={styles.layoutPillsRow}>
+              {[
+                {
+                  key: 'magazine' as const,
+                  label: language === 'bn' ? 'ম্যাগাজিন' : 'Magazine',
+                  icon: 'list-outline',
+                },
+                {
+                  key: 'compact' as const,
+                  label: language === 'bn' ? 'লিস্ট' : 'List',
+                  icon: 'grid-outline',
+                },
+                {
+                  key: 'card' as const,
+                  label: language === 'bn' ? 'কার্ড' : 'Card',
+                  icon: 'albums-outline',
+                },
+              ].map((item) => {
+                const isCur = feedLayout === item.key;
+                return (
+                  <TouchableOpacity
+                    key={item.key}
+                    style={[styles.layoutPill, isCur && styles.layoutPillActive]}
+                    onPress={() => {
+                      Haptics.selectionAsync();
+                      setFeedLayout(item.key);
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons
+                      name={item.icon as any}
+                      size={14}
+                      color={isCur ? '#FFFFFF' : tokens.text.secondary}
+                    />
+                    <Text
+                      style={[
+                        styles.layoutPillText,
+                        isCur && styles.layoutPillTextActive,
+                      ]}
+                    >
+                      {item.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
 
             {/* SETTINGS ENTRY */}
             <Text style={styles.sectionLabel}>

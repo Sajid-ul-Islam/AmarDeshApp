@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 🃏 Card Slide UI Experience & 3-Way Layout Switcher
+- **Featured Stories Horizontal Card Carousel** ([components/FeaturedCardSlider.tsx](file:///d:/Repo/AmarDeshApp/components/FeaturedCardSlider.tsx), [app/(tabs)/index.tsx](file:///d:/Repo/AmarDeshApp/app/(tabs)/index.tsx)):
+  - Snapping horizontal carousel at the top of the magazine feed displaying top 5 lead breaking stories.
+  - Features high-resolution cover imagery, dark gradient vignette overlay, category badge, live breaking tag (`ব্রেকিং` / `BREAKING`), author & relative timestamp, and interactive pagination indicator dots (`১ / ৫`).
+- **Interactive Card Slide Deck Feed Mode** ([components/SwipeCardDeck.tsx](file:///d:/Repo/AmarDeshApp/components/SwipeCardDeck.tsx)):
+  - Full-screen card slide deck enabling readers to flip through news articles card-by-card.
+  - Includes progress pill indicator (`১ / ২০`), large image with category badge, bold headline, snippet excerpt, "Read Full Story" button, and Previous/Next buttons.
+- **Horizontal Related Stories Shelf** ([components/RelatedCardSlider.tsx](file:///d:/Repo/AmarDeshApp/components/RelatedCardSlider.tsx), [app/article/[id].tsx](file:///d:/Repo/AmarDeshApp/app/article/[id].tsx)):
+  - Replaced the vertical related stories list at the bottom of the article view with a horizontal snapping card shelf displaying up to 6 contextually related stories.
+- **3-Way Feed Layout Switcher Relocated from Header to Nav Bar** ([store/useAppStore.ts](file:///d:/Repo/AmarDeshApp/store/useAppStore.ts), [app/(tabs)/index.tsx](file:///d:/Repo/AmarDeshApp/app/(tabs)/index.tsx), [components/SideNavDrawer.tsx](file:///d:/Repo/AmarDeshApp/components/SideNavDrawer.tsx), [app/settings/index.tsx](file:///d:/Repo/AmarDeshApp/app/settings/index.tsx)):
+  - Removed grid/list view mode toggle from the top masthead header bar to keep the header uncluttered and focused purely on the full logo, notifications, and search.
+  - Added quick view mode button (`list-outline` / `grid-outline` / `albums-outline`) directly on the horizontal Category Navigation Bar in the home feed.
+  - Added dedicated Feed Layout pills selector row (ম্যাগাজিন • লিস্ট • কার্ড) within the Side Navigation Drawer.
+  - Seamlessly cycles between **Magazine** (`'magazine'`), **List/Compact** (`'compact'`), and **Card Slide** (`'card'`).
+
+### 📌 Article Byline Action Toolbar (Sound, Font, Save, Share)
+- **Header Cleanliness & Byline Action Toolbar** ([app/article/[id].tsx](file:///d:/Repo/AmarDeshApp/app/article/[id].tsx)):
+  - Moved all 4 action buttons (TTS Audio/Sound `volume-high`, Reader Settings & Font `text-outline`, Bookmark/Save `bookmark`, and Share `share-social-outline`) out of the cramped top navigation bar down beside the **Published: Date** (`প্রকাশ: সময়`) in the author byline row.
+  - Modernized the top article header bar into a clean, spacious layout featuring the back button and centered square emblem with balanced margins.
+  - Ensures responsive layout with auto-wrapping (`justifyContent: 'space-between'`, `flexWrap: 'wrap'`) so text and action pills remain comfortable and unclipped across all device screens.
+
+### 🏷️ Full Amar Desh Logo Standard Across All Headers
+- **Full Calligraphy Logo (`variant="png"`) in All App Headers**:
+  - Enforced the official full Amar Desh calligraphy banner logo (`variant="png"`) across all top navigation header bars without exception.
+  - Upgraded article reader header ([app/article/[id].tsx](file:///d:/Repo/AmarDeshApp/app/article/[id].tsx)), bookmarks header ([app/(tabs)/bookmarks.tsx](file:///d:/Repo/AmarDeshApp/app/(tabs)/bookmarks.tsx)), category header ([app/category/[slug].tsx](file:///d:/Repo/AmarDeshApp/app/category/[slug].tsx)), July Revolution header ([app/july-revolution/index.tsx](file:///d:/Repo/AmarDeshApp/app/july-revolution/index.tsx)), notifications header ([app/notifications/index.tsx](file:///d:/Repo/AmarDeshApp/app/notifications/index.tsx)), privacy settings ([app/settings/privacy.tsx](file:///d:/Repo/AmarDeshApp/app/settings/privacy.tsx)), export settings ([app/settings/export.tsx](file:///d:/Repo/AmarDeshApp/app/settings/export.tsx)), and notification settings ([app/settings/notifications.tsx](file:///d:/Repo/AmarDeshApp/app/settings/notifications.tsx)) to render the full official banner.
+  - Preserved the square frame (`borderRadius: 0`) for `assets/icon.png` in avatar and fallback contexts (such as editorial author avatars and app icon representations).
+
 ### 🤖 Moderate Token Cap & Guaranteed Complete Answer System (`components/AiAssistantModal.tsx`, `services/byokAiService.ts`)
 - **Moderate Token Cap (1,000 Tokens)**:
   - Adjusted LLM output token ceiling to a moderate, cost/quota-friendly **1,000 tokens** (`maxOutputTokens: 1000` / `max_tokens: 1000`), reducing latency while providing ample headroom.

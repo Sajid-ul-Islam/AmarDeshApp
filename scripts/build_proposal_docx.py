@@ -3,7 +3,7 @@ import docx
 from docx import Document
 from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.enum.table import WD_TABLE_ALIGNMENT, WD_ALIGN_VERTICAL
+from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.oxml import parse_xml, OxmlElement
 from docx.oxml.ns import nsdecls, qn
 
@@ -13,7 +13,7 @@ def set_cell_background(cell, hex_color):
     shd = parse_xml(f'<w:shd {nsdecls("w")} w:fill="{hex_color}"/>')
     tcPr.append(shd)
 
-def set_cell_margins(cell, top=100, bottom=100, left=150, right=150):
+def set_cell_margins(cell, top=70, bottom=70, left=100, right=100):
     """Sets internal padding for a table cell."""
     tcPr = cell._tc.get_or_add_tcPr()
     tcMar = OxmlElement('w:tcMar')
@@ -25,7 +25,7 @@ def set_cell_margins(cell, top=100, bottom=100, left=150, right=150):
     tcPr.append(tcMar)
 
 def set_table_borders(table, color="CBD5E1"):
-    """Sets subtle borders for the entire table."""
+    """Sets subtle borders for the table."""
     tblPr = table._tbl.tblPr
     borders = parse_xml(
         f'<w:tblBorders {nsdecls("w")}>'
@@ -42,684 +42,457 @@ def set_table_borders(table, color="CBD5E1"):
 def build_proposal_document():
     doc = Document()
 
-    # 1. Page Setup: Standard Letter, 1-inch margins
-    sections = doc.sections
-    for section in sections:
-        section.top_margin = Inches(1.0)
-        section.bottom_margin = Inches(1.0)
-        section.left_margin = Inches(1.0)
-        section.right_margin = Inches(1.0)
+    # Page Setup: Standard Letter, 0.75-inch margins to fit clean 3-page layout
+    for section in doc.sections:
+        section.top_margin = Inches(0.7)
+        section.bottom_margin = Inches(0.7)
+        section.left_margin = Inches(0.75)
+        section.right_margin = Inches(0.75)
 
     # Styles Setup
     normal_style = doc.styles['Normal']
     normal_style.font.name = 'Calibri'
-    normal_style.font.size = Pt(10.5)
-    normal_style.font.color.rgb = RGBColor(51, 65, 85) # #334155
+    normal_style.font.size = Pt(10)
+    normal_style.font.color.rgb = RGBColor(30, 41, 59) # #1e293b
 
-    # -------------------------------------------------------------
-    # COVER PAGE
-    # -------------------------------------------------------------
-    # Dual Logo Header Table
-    header_table = doc.add_table(rows=1, cols=2)
-    header_table.alignment = WD_TABLE_ALIGNMENT.CENTER
-    header_table.autofit = False
+    # =========================================================================
+    # PAGE 1: THE REALITY & WHY AMAR DESH NEEDS A MOBILE APP
+    # =========================================================================
 
-    header_table.columns[0].width = Inches(3.25)
-    header_table.columns[1].width = Inches(3.25)
+    # Header Logos (CybrCraft & Amar Desh)
+    hdr_table = doc.add_table(rows=1, cols=2)
+    hdr_table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    hdr_table.autofit = False
+    hdr_table.columns[0].width = Inches(3.5)
+    hdr_table.columns[1].width = Inches(3.5)
 
-    cell_left = header_table.cell(0, 0)
-    cell_right = header_table.cell(0, 1)
+    c_left = hdr_table.cell(0, 0)
+    c_right = hdr_table.cell(0, 1)
 
-    p_left = cell_left.paragraphs[0]
-    p_left.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    p_l = c_left.paragraphs[0]
+    p_l.alignment = WD_ALIGN_PARAGRAPH.LEFT
     if os.path.exists('assets/proposal/cybrcraft_logo.png'):
-        r_left = p_left.add_run()
-        r_left.add_picture('assets/proposal/cybrcraft_logo.png', width=Inches(2.2))
+        p_l.add_run().add_picture('assets/proposal/cybrcraft_logo.png', width=Inches(1.8))
 
-    p_right = cell_right.paragraphs[0]
-    p_right.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    p_r = c_right.paragraphs[0]
+    p_r.alignment = WD_ALIGN_PARAGRAPH.RIGHT
     if os.path.exists('assets/proposal/amardesh_logo.jpg'):
-        r_right = p_right.add_run()
-        r_right.add_picture('assets/proposal/amardesh_logo.jpg', width=Inches(2.4))
+        p_r.add_run().add_picture('assets/proposal/amardesh_logo.jpg', width=Inches(2.0))
 
-    # Add spacing
-    p_space = doc.add_paragraph()
-    p_space.paragraph_format.space_before = Pt(36)
+    # Accent Red Bar
+    bar_tbl = doc.add_table(rows=1, cols=1)
+    bar_tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
+    b_cell = bar_tbl.cell(0, 0)
+    b_cell.width = Inches(7.0)
+    set_cell_background(b_cell, 'BA131A')
+    set_cell_margins(b_cell, top=10, bottom=10, left=0, right=0)
+    p_b = b_cell.paragraphs[0]
+    p_b.paragraph_format.space_before = Pt(0)
+    p_b.paragraph_format.space_after = Pt(0)
 
-    # Accent decorative bar
-    bar_table = doc.add_table(rows=1, cols=1)
-    bar_table.alignment = WD_TABLE_ALIGNMENT.CENTER
-    bar_cell = bar_table.cell(0, 0)
-    bar_cell.width = Inches(6.5)
-    set_cell_background(bar_cell, 'DC2626') # Amar Desh Crimson
-    set_cell_margins(bar_cell, top=20, bottom=20, left=0, right=0)
-    p_bar = bar_cell.paragraphs[0]
-    p_bar.paragraph_format.space_before = Pt(0)
-    p_bar.paragraph_format.space_after = Pt(0)
-
-    # Document Title
+    # Main Title
     p_title = doc.add_paragraph()
-    p_title.paragraph_format.space_before = Pt(30)
-    p_title.paragraph_format.space_after = Pt(8)
-    run_title = p_title.add_run("PROJECT PROPOSAL:\nOFFICIAL MOBILE APP ECOSYSTEM")
-    run_title.font.name = 'Calibri'
-    run_title.font.size = Pt(26)
-    run_title.font.bold = True
-    run_title.font.color.rgb = RGBColor(15, 23, 42)
+    p_title.paragraph_format.space_before = Pt(12)
+    p_title.paragraph_format.space_after = Pt(2)
+    r_t = p_title.add_run("OFFICIAL MOBILE APP PROPOSAL")
+    r_t.font.name = 'Calibri'
+    r_t.font.size = Pt(20)
+    r_t.font.bold = True
+    r_t.font.color.rgb = RGBColor(15, 23, 42)
 
     # Subtitle
     p_sub = doc.add_paragraph()
     p_sub.paragraph_format.space_before = Pt(0)
-    p_sub.paragraph_format.space_after = Pt(28)
-    run_sub = p_sub.add_run("Live Interactive Demo, One-Stop Automated Backend Integration & Official Store Launch for Daily Amar Desh (দৈনিক আমার দেশ)")
-    run_sub.font.name = 'Calibri'
-    run_sub.font.size = Pt(13)
-    run_sub.font.color.rgb = RGBColor(100, 116, 139)
+    p_sub.paragraph_format.space_after = Pt(10)
+    r_s = p_sub.add_run("Daily Amar Desh (দৈনিক আমার দেশ) | Straightforward Executive Pitch")
+    r_s.font.size = Pt(11)
+    r_s.font.color.rgb = RGBColor(100, 116, 139)
 
-    # Two-Phase Strategy Badge Box
-    badge_table = doc.add_table(rows=1, cols=1)
-    badge_table.alignment = WD_TABLE_ALIGNMENT.CENTER
-    badge_cell = badge_table.cell(0, 0)
-    badge_cell.width = Inches(6.5)
-    set_cell_background(badge_cell, 'FEF2F2')
-    set_cell_margins(badge_cell, top=140, bottom=140, left=200, right=200)
-    p_badge = badge_cell.paragraphs[0]
-    p_badge.paragraph_format.space_before = Pt(0)
-    p_badge.paragraph_format.space_after = Pt(0)
-    r_badge_icon = p_badge.add_run("★ TWO-PHASE DELIVERY MODEL: ")
-    r_badge_icon.font.bold = True
-    r_badge_icon.font.size = Pt(10)
-    r_badge_icon.font.color.rgb = RGBColor(185, 28, 28)
-    r_badge_text = p_badge.add_run(
-        "1) Phase 1 (Live Demo PoC): Fully functional Android APK available today for board review. "
-        "2) Phase 2 (Production): Direct secure official backend/CMS integration with zero extra manual newsroom effort & stack modernization support."
-    )
-    r_badge_text.font.size = Pt(9.5)
-    r_badge_text.font.color.rgb = RGBColor(127, 29, 29)
+    # Metadata Strip (Clean 2-Column Table)
+    meta_tbl = doc.add_table(rows=2, cols=2)
+    meta_tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
+    meta_tbl.autofit = False
+    meta_tbl.columns[0].width = Inches(3.5)
+    meta_tbl.columns[1].width = Inches(3.5)
 
-    # Metadata Block
-    p_meta_space = doc.add_paragraph()
-    p_meta_space.paragraph_format.space_before = Pt(35)
-
-    meta_table = doc.add_table(rows=4, cols=2)
-    meta_table.alignment = WD_TABLE_ALIGNMENT.CENTER
-    meta_table.autofit = False
-    meta_table.columns[0].width = Inches(2.2)
-    meta_table.columns[1].width = Inches(4.3)
-
-    meta_rows = [
-        ("PREPARED FOR:", "Mr. Mahmudur Rahman (Editor & Publisher / সম্পাদক ও প্রকাশক)\nAmar Desh Publication Limited (আমার দেশ পাবলিকেশন লিমিটেড)\nDhaka Trade Centre (8th Floor), Karwan Bazar, Dhaka-1215"),
-        ("PREPARED BY:", "CybrCraft (https://cybrcraft.com/)\nBashundhara Riverview, Dhaka, Bangladesh\nEmail: info@cybrcraft.com | WhatsApp: +880 1967-600402"),
-        ("PROPOSAL REF:", "CC-PRP-2026-AMARDESH-01"),
-        ("SUBMISSION DATE:", "October 2026 | Version 1.1.0 (Pitch Ready)")
+    meta_items = [
+        ("PREPARED FOR:", "Mr. Mahmudur Rahman (Editor & Publisher)\nAmar Desh Publication Ltd | Karwan Bazar, Dhaka"),
+        ("PREPARED BY:", "CybrCraft (https://cybrcraft.com/)\nEmail: info@cybrcraft.com | WhatsApp: +880 1967-600402"),
+        ("PROPOSAL REF:", "CC-AMARDESH-2026-V2"),
+        ("DELIVERY SPEED:", "3-Week Direct Store Launch (Demo APK Ready Today)")
     ]
 
-    for idx, (label, val) in enumerate(meta_rows):
-        c_lbl = meta_table.cell(idx, 0)
-        c_val = meta_table.cell(idx, 1)
-        set_cell_margins(c_lbl, top=70, bottom=70, left=50, right=50)
-        set_cell_margins(c_val, top=70, bottom=70, left=50, right=50)
-
-        p_lbl = c_lbl.paragraphs[0]
-        p_lbl.paragraph_format.space_before = Pt(0)
-        p_lbl.paragraph_format.space_after = Pt(0)
-        r_l = p_lbl.add_run(label)
-        r_l.font.bold = True
-        r_l.font.size = Pt(9.5)
-        r_l.font.color.rgb = RGBColor(71, 85, 105)
-
-        p_val = c_val.paragraphs[0]
-        p_val.paragraph_format.space_before = Pt(0)
-        p_val.paragraph_format.space_after = Pt(0)
-        r_v = p_val.add_run(val)
-        r_v.font.size = Pt(9.5)
+    for idx, (label, val) in enumerate(meta_items):
+        r_idx = idx // 2
+        c_idx = idx % 2
+        cell = meta_tbl.cell(r_idx, c_idx)
+        set_cell_background(cell, "F8FAFC")
+        set_cell_margins(cell, top=40, bottom=40, left=60, right=60)
+        p = cell.paragraphs[0]
+        p.paragraph_format.space_before = Pt(0)
+        p.paragraph_format.space_after = Pt(0)
+        r_lbl = p.add_run(label + " ")
+        r_lbl.font.bold = True
+        r_lbl.font.size = Pt(8.5)
+        r_lbl.font.color.rgb = RGBColor(71, 85, 105)
+        r_v = p.add_run(val)
+        r_v.font.size = Pt(8.5)
         r_v.font.color.rgb = RGBColor(15, 23, 42)
 
-    doc.add_page_break()
+    # Spacing
+    p_sp1 = doc.add_paragraph()
+    p_sp1.paragraph_format.space_before = Pt(8)
+    p_sp1.paragraph_format.space_after = Pt(0)
 
-    # -------------------------------------------------------------
-    # SECTION 1: EXECUTIVE SUMMARY
-    # -------------------------------------------------------------
-    h1 = doc.add_heading(level=1)
-    r_h1 = h1.add_run("1. Executive Summary & Delivery Strategy")
-    r_h1.font.name = 'Calibri'
-    r_h1.font.size = Pt(18)
+    # SECTION 1: The Core Reality
+    h1 = doc.add_paragraph()
+    h1.paragraph_format.space_before = Pt(6)
+    h1.paragraph_format.space_after = Pt(4)
+    r_h1 = h1.add_run("1. The Core Reality: Why Amar Desh Needs a Mobile App Today")
+    r_h1.font.size = Pt(13)
     r_h1.font.bold = True
-    r_h1.font.color.rgb = RGBColor(15, 23, 42)
+    r_h1.font.color.rgb = RGBColor(186, 19, 26)
 
-    p = doc.add_paragraph(
-        "Daily Amar Desh (দৈনিক আমার দেশ), founded under the motto 'স্বাধীনতার কথা বলে' (Speaks of Independence) "
-        "and guided by the uncompromising leadership of Editor and Publisher Mahmudur Rahman, is one of Bangladesh’s "
-        "most courageous and widely followed national dailies. Following the historic July 2024 uprising and the paper’s "
-        "triumphant return, reader loyalty has reached an all-time peak across Bangladesh and the international diaspora."
+    p_intro = doc.add_paragraph(
+        "Amar Desh represents the voice of truth and resistance ('স্বাধীনতার কথা বলে'). After the historic July 2024 uprising, "
+        "public trust in Mahmudur Rahman and Amar Desh is at an all-time peak. However, the newspaper currently has NO official app "
+        "on Google Play Store or Apple App Store. Here is why that needs to change immediately:"
     )
-    p.paragraph_format.space_after = Pt(8)
+    p_intro.paragraph_format.space_after = Pt(6)
 
-    p2 = doc.add_paragraph(
-        "While Amar Desh has established an active web portal (dailyamardesh.com) and an e-paper portal (eamardesh.com), "
-        "the publication currently has NO official native mobile application on the Google Play Store or Apple App Store. "
-        "In a media market where over 92% of readers consume news exclusively on smartphones, this creates critical gaps "
-        "in breaking news delivery, reader retention, and brand protection."
-    )
-    p2.paragraph_format.space_after = Pt(12)
-
-    # KPI Grid
-    kpi_table = doc.add_table(rows=2, cols=3)
-    kpi_table.alignment = WD_TABLE_ALIGNMENT.CENTER
-    kpi_table.autofit = False
-    set_table_borders(kpi_table, color="E2E8F0")
-
-    kpi_data = [
-        [("92%+", "Mobile Readership", "Primary consumption mode in BD"),
-         ("< 1.2s", "Cold Launch Speed", "Instant news delivery without lag"),
-         ("7 Days", "Offline SQLite Cache", "Full-text reading with zero internet")],
-        [("0 Manual", "Newsroom Work", "100% automated CMS sync"),
-         ("2-3 Wks", "Rapid Turnaround", "Working prototype ready today"),
-         ("100%", "Source Ownership", "Full IP handover to Amar Desh")]
+    reasons = [
+        ("92% of Readers are on Phones:", "People no longer buy roadside papers like before, nor do they type web URLs into mobile browsers. News is read on smartphone notifications and apps."),
+        ("Bypass Social Media Censorship:", "When you depend on Facebook or Google, their algorithms decide who sees your news. They throttle political news and keep the ad money. A mobile app gives you a direct, uncensorable channel straight to your readers' lock-screens."),
+        ("Reaching the Youth (Gen-Z):", "The student generation that led the revolution respects Amar Desh, but they consume news in seconds on mobile—breaking alerts, audio briefs, and quick reads. Without an app, you lose this generation to unverified social media rumors."),
+        ("Serving the Global Diaspora:", "Millions of proud Bangladeshis in the UK, USA, and Middle East want to read Amar Desh every morning. Physical paper cannot reach them abroad; a mobile app delivers the morning ePaper instantly."),
+        ("Eliminating Fake Apps:", "Because Amar Desh doesn't have an official app, unauthorized clone apps on Google Play are misusing your masthead and earning money off your reputation. An official app reclaims your brand.")
     ]
 
-    for r_idx, row in enumerate(kpi_data):
-        for c_idx, (big_num, title, desc) in enumerate(row):
-            cell = kpi_table.cell(r_idx, c_idx)
-            cell.width = Inches(2.15)
-            set_cell_background(cell, "F8FAFC")
-            set_cell_margins(cell, top=120, bottom=120, left=100, right=100)
-            p_kpi = cell.paragraphs[0]
-            p_kpi.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            p_kpi.paragraph_format.space_before = Pt(0)
-            p_kpi.paragraph_format.space_after = Pt(2)
+    for title, desc in reasons:
+        p_r = doc.add_paragraph()
+        p_r.paragraph_format.space_before = Pt(2)
+        p_r.paragraph_format.space_after = Pt(3)
+        r1 = p_r.add_run(f"• {title} ")
+        r1.font.bold = True
+        r1.font.size = Pt(9.5)
+        r1.font.color.rgb = RGBColor(15, 23, 42)
+        r2 = p_r.add_run(desc)
+        r2.font.size = Pt(9.5)
 
-            r_num = p_kpi.add_run(big_num + "\n")
-            r_num.font.bold = True
-            r_num.font.size = Pt(18)
-            r_num.font.color.rgb = RGBColor(220, 38, 38)
+    # Bottom Stat Strip
+    stat_tbl = doc.add_table(rows=1, cols=4)
+    stat_tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
+    stat_tbl.autofit = False
+    set_table_borders(stat_tbl, color="CBD5E1")
 
-            r_title = p_kpi.add_run(title + "\n")
-            r_title.font.bold = True
-            r_title.font.size = Pt(9.5)
-            r_title.font.color.rgb = RGBColor(15, 23, 42)
+    stat_data = [
+        ("92%+", "Mobile News Readers"),
+        ("1,000,000+", "Direct Lock-Screen Push"),
+        ("0 Extra Work", "For Newsroom Staff"),
+        ("100% Owned", "Full Source Code & IP")
+    ]
 
-            r_desc = p_kpi.add_run(desc)
-            r_desc.font.size = Pt(8)
-            r_desc.font.color.rgb = RGBColor(100, 116, 139)
+    for idx, (num, desc) in enumerate(stat_data):
+        cell = stat_tbl.cell(0, idx)
+        cell.width = Inches(1.75)
+        set_cell_background(cell, "FEF2F2")
+        set_cell_margins(cell, top=60, bottom=60, left=40, right=40)
+        p = cell.paragraphs[0]
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p.paragraph_format.space_before = Pt(0)
+        p.paragraph_format.space_after = Pt(0)
+        r_n = p.add_run(num + "\n")
+        r_n.font.bold = True
+        r_n.font.size = Pt(12)
+        r_n.font.color.rgb = RGBColor(186, 19, 26)
+        r_d = p.add_run(desc)
+        r_d.font.size = Pt(8)
+        r_d.font.color.rgb = RGBColor(71, 85, 105)
 
-    doc.add_paragraph().paragraph_format.space_after = Pt(10)
+    # END OF PAGE 1
+    doc.add_page_break()
 
-    # Callout Box: Two-Phase & One-Stop Automated Solution
-    callout = doc.add_table(rows=1, cols=1)
-    callout.alignment = WD_TABLE_ALIGNMENT.CENTER
-    c_cell = callout.cell(0, 0)
-    c_cell.width = Inches(6.5)
-    set_cell_background(c_cell, "EEF2FF")
-    set_cell_margins(c_cell, top=140, bottom=140, left=180, right=180)
-    p_call = c_cell.paragraphs[0]
-    p_call.paragraph_format.space_before = Pt(0)
-    p_call.paragraph_format.space_after = Pt(0)
-    r_cp1 = p_call.add_run("ONE-STOP SOLUTION (ZERO MANUAL NEWSROOM OVERHEAD): ")
-    r_cp1.font.bold = True
-    r_cp1.font.color.rgb = RGBColor(67, 56, 202)
-    r_cp2 = p_call.add_run(
-        "Our current app is a live interactive Demo/PoC enabling immediate testing. Upon project confirmation, "
-        "the production app will not rely on scraping; it will connect directly to Daily Amar Desh's official backend/CMS via secure APIs. "
-        "Amar Desh journalists and editors will not perform any extra manual work—publishing in the web CMS will automatically, "
-        "securely, and instantaneously sync to the mobile app. CybrCraft will handle any server-side API or stack modernization required."
-    )
-    r_cp2.font.color.rgb = RGBColor(30, 27, 75)
+    # =========================================================================
+    # PAGE 2: WHAT WE DELIVER — STRAIGHTFORWARD, AUTOMATED & LIVE TODAY
+    # =========================================================================
 
-    doc.add_paragraph().paragraph_format.space_after = Pt(14)
-
-    # -------------------------------------------------------------
-    # SECTION 2: DIGITAL BENCHMARK & BUSINESS OPPORTUNITY
-    # -------------------------------------------------------------
-    h2 = doc.add_heading(level=1)
-    r_h2 = h2.add_run("2. The Business Opportunity & Market Benchmark")
-    r_h2.font.name = 'Calibri'
-    r_h2.font.size = Pt(18)
+    h2 = doc.add_paragraph()
+    h2.paragraph_format.space_before = Pt(0)
+    h2.paragraph_format.space_after = Pt(4)
+    r_h2 = h2.add_run("2. What We Deliver: Simple, Automated & Live Today")
+    r_h2.font.size = Pt(13)
     r_h2.font.bold = True
-    r_h2.font.color.rgb = RGBColor(15, 23, 42)
+    r_h2.font.color.rgb = RGBColor(186, 19, 26)
 
-    p_gap = doc.add_paragraph(
-        "Relying solely on a mobile web browser creates multiple points of friction that degrade reader engagement. "
-        "The chart below illustrates the quantified performance advantages of deploying an official native mobile app:"
+    # Confidence Box (Working Demo Ready)
+    demo_tbl = doc.add_table(rows=1, cols=1)
+    demo_tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
+    d_cell = demo_tbl.cell(0, 0)
+    d_cell.width = Inches(7.0)
+    set_cell_background(d_cell, "F0FDF4")
+    set_cell_margins(d_cell, top=80, bottom=80, left=100, right=100)
+    p_dm = d_cell.paragraphs[0]
+    p_dm.paragraph_format.space_before = Pt(0)
+    p_dm.paragraph_format.space_after = Pt(0)
+    r_dm_t = p_dm.add_run("★ WE ALREADY BUILT THE DEMO — TEST IT ON YOUR PHONE TODAY:\n")
+    r_dm_t.font.bold = True
+    r_dm_t.font.size = Pt(9.5)
+    r_dm_t.font.color.rgb = RGBColor(22, 101, 52)
+    r_dm_b = p_dm.add_run(
+        "We don't pitch abstract slideshows. CybrCraft has already engineered a fully working Android app with real Amar Desh news. "
+        "Mr. Mahmudur Rahman and your board can install the APK and test it on your personal phones today."
     )
-    p_gap.paragraph_format.space_after = Pt(10)
+    r_dm_b.font.size = Pt(9)
+    r_dm_b.font.color.rgb = RGBColor(20, 83, 45)
 
-    # Embed Chart 1: Comparison
+    # Zero Newsroom Work Callout
+    zero_tbl = doc.add_table(rows=1, cols=1)
+    zero_tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
+    z_cell = zero_tbl.cell(0, 0)
+    z_cell.width = Inches(7.0)
+    set_cell_background(z_cell, "EEF2FF")
+    set_cell_margins(z_cell, top=80, bottom=80, left=100, right=100)
+    p_zr = z_cell.paragraphs[0]
+    p_zr.paragraph_format.space_before = Pt(4)
+    p_zr.paragraph_format.space_after = Pt(0)
+    r_zr_t = p_zr.add_run("ZERO EXTRA WORK FOR YOUR EDITORS:\n")
+    r_zr_t.font.bold = True
+    r_zr_t.font.size = Pt(9.5)
+    r_zr_t.font.color.rgb = RGBColor(67, 56, 202)
+    r_zr_b = p_zr.add_run(
+        "Your journalists do NOT need to learn anything new. They post news to your website (dailyamardesh.com) as usual. "
+        "Our system automatically and instantly updates the app and sends breaking push alerts in seconds."
+    )
+    r_zr_b.font.size = Pt(9)
+    r_zr_b.font.color.rgb = RGBColor(30, 27, 75)
+
+    # 4 Simple Things the App Does
+    p_caps = doc.add_paragraph()
+    p_caps.paragraph_format.space_before = Pt(8)
+    p_caps.paragraph_format.space_after = Pt(4)
+    r_cp_h = p_caps.add_run("The 4 Core Things Readers Get in the App:")
+    r_cp_h.font.bold = True
+    r_cp_h.font.size = Pt(10.5)
+
+    feats = [
+        ("1. Instant Breaking News Alerts:", "Send urgent news flashes directly to 1M+ reader lock-screens the moment big news breaks."),
+        ("2. Digital ePaper Reader (১ম-৮ম পাতা):", "Crisp digital replica of the full print paper for diaspora and traditional print readers."),
+        ("3. Commuter Audio News (অডিও সংবাদ):", "Readers can listen to news hands-free through earphones while stuck in Dhaka traffic."),
+        ("4. 7-Day Offline Reading:", "Articles save automatically so people can read during power cuts, travel, or rural network drops.")
+    ]
+
+    for f_title, f_desc in feats:
+        p_f = doc.add_paragraph()
+        p_f.paragraph_format.space_before = Pt(2)
+        p_f.paragraph_format.space_after = Pt(2)
+        rf1 = p_f.add_run(f"• {f_title} ")
+        rf1.font.bold = True
+        rf1.font.size = Pt(9.5)
+        rf1.font.color.rgb = RGBColor(15, 23, 42)
+        rf2 = p_f.add_run(f_desc)
+        rf2.font.size = Pt(9.5)
+
+    # Straightforward Comparison Table
+    p_cmp = doc.add_paragraph()
+    p_cmp.paragraph_format.space_before = Pt(6)
+    p_cmp.paragraph_format.space_after = Pt(4)
+    r_cmp_h = p_cmp.add_run("Why a Native App Beats Mobile Web:")
+    r_cmp_h.font.bold = True
+    r_cmp_h.font.size = Pt(10)
+
+    cmp_tbl = doc.add_table(rows=5, cols=3)
+    cmp_tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
+    cmp_tbl.autofit = False
+    set_table_borders(cmp_tbl, color="CBD5E1")
+    cmp_tbl.columns[0].width = Inches(1.8)
+    cmp_tbl.columns[1].width = Inches(2.6)
+    cmp_tbl.columns[2].width = Inches(2.6)
+
+    cmp_headers = ["Key Capability", "Current Web Portal", "CybrCraft Mobile App"]
+    for i, h in enumerate(cmp_headers):
+        c = cmp_tbl.cell(0, i)
+        set_cell_background(c, "1E293B")
+        set_cell_margins(c, top=60, bottom=60, left=60, right=60)
+        p = c.paragraphs[0]
+        r = p.add_run(h)
+        r.font.bold = True
+        r.font.size = Pt(9)
+        r.font.color.rgb = RGBColor(255, 255, 255)
+
+    rows_data = [
+        ("Breaking Alerts", "None. Readers must manually visit site.", "Instant push alerts to lock-screen in seconds."),
+        ("Offline Reading", "Zero. Shows 'No Internet' error.", "Automatically readable offline without internet."),
+        ("ePaper Experience", "Slow PDF zooming in mobile browser.", "Smooth page-flip viewer (১ম-৮ম পাতা) with zoom."),
+        ("Audio News", "None. Requires reading small screens.", "Natural Bengali speech reader for Dhaka commutes.")
+    ]
+
+    for idx, (cap, wb, ap) in enumerate(rows_data):
+        row_idx = idx + 1
+        bg = "F8FAFC" if row_idx % 2 == 1 else "FFFFFF"
+        for col_idx, text in enumerate([cap, wb, ap]):
+            c = cmp_tbl.cell(row_idx, col_idx)
+            set_cell_background(c, bg)
+            set_cell_margins(c, top=50, bottom=50, left=60, right=60)
+            p = c.paragraphs[0]
+            r = p.add_run(text)
+            r.font.size = Pt(8.5)
+            if col_idx == 0:
+                r.font.bold = True
+            elif col_idx == 2:
+                r.font.bold = True
+                r.font.color.rgb = RGBColor(186, 19, 26)
+
+    # Optional clean visual if space fits
     if os.path.exists('assets/proposal/engagement_comparison.png'):
-        p_img1 = doc.add_paragraph()
-        p_img1.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        r_img1 = p_img1.add_run()
-        r_img1.add_picture('assets/proposal/engagement_comparison.png', width=Inches(6.2))
-        p_cap1 = doc.add_paragraph()
-        p_cap1.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p_cap1.paragraph_format.space_before = Pt(2)
-        p_cap1.paragraph_format.space_after = Pt(14)
-        r_cap1 = p_cap1.add_run("Figure 1: Digital Performance Benchmark — Mobile Web Browser vs. Official Mobile App")
-        r_cap1.font.size = Pt(8.5)
-        r_cap1.font.italic = True
-        r_cap1.font.color.rgb = RGBColor(100, 116, 139)
+        p_ch = doc.add_paragraph()
+        p_ch.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_ch.paragraph_format.space_before = Pt(6)
+        p_ch.paragraph_format.space_after = Pt(0)
+        r_img = p_ch.add_run()
+        r_img.add_picture('assets/proposal/engagement_comparison.png', width=Inches(5.6))
 
-    # Comparison Table
-    comp_table = doc.add_table(rows=6, cols=3)
-    comp_table.alignment = WD_TABLE_ALIGNMENT.CENTER
-    comp_table.autofit = False
-    set_table_borders(comp_table, color="CBD5E1")
+    # END OF PAGE 2
+    doc.add_page_break()
 
-    headers = ["Strategic Metric", "Current Mobile Web Portal", "CybrCraft Native Mobile App"]
-    for i, h in enumerate(headers):
-        c = comp_table.cell(0, i)
-        set_cell_background(c, "1E293B")
-        set_cell_margins(c, top=100, bottom=100, left=100, right=100)
-        p = c.paragraphs[0]
-        p.paragraph_format.space_before = Pt(0)
-        p.paragraph_format.space_after = Pt(0)
-        r = p.add_run(h)
-        r.font.bold = True
-        r.font.size = Pt(9.5)
-        r.font.color.rgb = RGBColor(255, 255, 255)
+    # =========================================================================
+    # PAGE 3: PRICING, 3-WEEK PLAN, BENGALI SUMMARY & NEXT STEPS
+    # =========================================================================
 
-    comp_rows = [
-        ("Push Notifications", "None. Readers discover breaking news via social media algorithms.", "Real-time FCM push alerts reach 1,000,000+ devices in seconds."),
-        ("Offline Accessibility", "Zero. Without 4G/WiFi, web browser displays 'No Internet'.", "SQLite relational database stores up to 500 articles for 7-day offline reading."),
-        ("ePaper Experience", "Clunky PDF browser zooming with high memory overhead.", "Native page-flip viewer (১ম-৮ম পাতা) with smooth hardware-accelerated pinch-zoom."),
-        ("Commuter Audio News", "Manual reading required on small mobile screens.", "Natural Bengali Text-to-Speech (TTS) with play, pause, and speed multiplier."),
-        ("Brand Protection", "Unofficial aggregators on Google Play exploit the trademark.", "Official verified publisher profile certified under Amar Desh Publication Ltd.")
-    ]
-
-    for idx, (m, w, a) in enumerate(comp_rows):
-        row_idx = idx + 1
-        bg = "F8FAFC" if row_idx % 2 == 1 else "FFFFFF"
-        for col_idx, text in enumerate([m, w, a]):
-            c = comp_table.cell(row_idx, col_idx)
-            set_cell_background(c, bg)
-            set_cell_margins(c, top=80, bottom=80, left=100, right=100)
-            p = c.paragraphs[0]
-            p.paragraph_format.space_before = Pt(0)
-            p.paragraph_format.space_after = Pt(0)
-            r = p.add_run(text)
-            r.font.size = Pt(9)
-            if col_idx == 0:
-                r.font.bold = True
-                r.font.color.rgb = RGBColor(15, 23, 42)
-            elif col_idx == 2:
-                r.font.color.rgb = RGBColor(22, 101, 52)
-
-    doc.add_paragraph().paragraph_format.space_after = Pt(14)
-
-    # -------------------------------------------------------------
-    # SECTION 3: SYSTEM ARCHITECTURE & SECURE BACKEND INTEGRATION
-    # -------------------------------------------------------------
-    h3 = doc.add_heading(level=1)
-    r_h3 = h3.add_run("3. System Architecture & Secure Official Backend Integration")
-    r_h3.font.name = 'Calibri'
-    r_h3.font.size = Pt(18)
+    h3 = doc.add_paragraph()
+    h3.paragraph_format.space_before = Pt(0)
+    h3.paragraph_format.space_after = Pt(4)
+    r_h3 = h3.add_run("3. Clear Commercial Pricing & 3-Week Delivery")
+    r_h3.font.size = Pt(13)
     r_h3.font.bold = True
-    r_h3.font.color.rgb = RGBColor(15, 23, 42)
+    r_h3.font.color.rgb = RGBColor(186, 19, 26)
 
-    p_arch = doc.add_paragraph(
-        "Upon project confirmation, the production mobile app will interface directly with Daily Amar Desh's official "
-        "backend and CMS via token-authenticated REST/GraphQL APIs and webhooks. Journalists and editors will experience "
-        "zero disruption: they will publish articles as usual, and the mobile app will automatically ingest content and "
-        "trigger notifications in real-time. If backend stack modernization is needed, CybrCraft handles it end-to-end."
-    )
-    p_arch.paragraph_format.space_after = Pt(10)
+    # 3 Clear Options Table
+    comm_tbl = doc.add_table(rows=4, cols=3)
+    comm_tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
+    comm_tbl.autofit = False
+    set_table_borders(comm_tbl, color="CBD5E1")
+    comm_tbl.columns[0].width = Inches(2.2)
+    comm_tbl.columns[1].width = Inches(3.1)
+    comm_tbl.columns[2].width = Inches(1.7)
 
-    # Embed Chart 2: Architecture
-    if os.path.exists('assets/proposal/architecture_diagram.png'):
-        p_img2 = doc.add_paragraph()
-        p_img2.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        r_img2 = p_img2.add_run()
-        r_img2.add_picture('assets/proposal/architecture_diagram.png', width=Inches(6.2))
-        p_cap2 = doc.add_paragraph()
-        p_cap2.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p_cap2.paragraph_format.space_before = Pt(2)
-        p_cap2.paragraph_format.space_after = Pt(14)
-        r_cap2 = p_cap2.add_run("Figure 2: Secure Official Backend Architecture & Two-Phase Ingestion Flow")
-        r_cap2.font.size = Pt(8.5)
-        r_cap2.font.italic = True
-        r_cap2.font.color.rgb = RGBColor(100, 116, 139)
-
-    # Feature Matrix Table
-    p_feat = doc.add_paragraph()
-    p_feat.paragraph_format.space_before = Pt(4)
-    p_feat.paragraph_format.space_after = Pt(6)
-    r_fth = p_feat.add_run("Core Application Modules & Navigation Hubs:")
-    r_fth.font.bold = True
-    r_fth.font.size = Pt(11)
-
-    hub_table = doc.add_table(rows=6, cols=3)
-    hub_table.alignment = WD_TABLE_ALIGNMENT.CENTER
-    hub_table.autofit = False
-    set_table_borders(hub_table, color="CBD5E1")
-
-    hub_headers = ["Navigation Hub", "Key Features & Capabilities", "Editorial Value to Amar Desh"]
-    for i, h in enumerate(hub_headers):
-        c = hub_table.cell(0, i)
-        set_cell_background(c, "DC2626")
-        set_cell_margins(c, top=90, bottom=90, left=90, right=90)
-        p = c.paragraphs[0]
-        p.paragraph_format.space_before = Pt(0)
-        p.paragraph_format.space_after = Pt(0)
-        r = p.add_run(h)
-        r.font.bold = True
-        r.font.size = Pt(9.5)
-        r.font.color.rgb = RGBColor(255, 255, 255)
-
-    hub_data = [
-        ("1. হোম (Home Feed)",
-         "• Live Bengali & Hijri date header\n• Breaking News animated ticker\n• 8-Division prayer times widget\n• Hyperlocal division switcher\n• 14 category carousel chips",
-         "Delivers instantaneous, comprehensive news overview matching dailyamardesh.com homepage."),
-        ("2. ই-পেপার (ePaper Gallery)",
-         "• Multi-page navigation (১ম-৮ম পাতা)\n• Crisp pinch-to-zoom & pan\n• Single-tap offline edition download\n• Direct sync with eamardesh.com",
-         "Replicates the print newspaper experience digitally; high reader retention for print loyalists."),
-        ("3. ভিডিও (Multimedia Hub)",
-         "• In-app streaming of Amar Desh YouTube news\n• Category filters (National, Talkshow, Analysis)\n• Zero ads interruption",
-         "Empowers younger, mobile-first audiences who prefer video and audio journalism."),
-        ("4. সেভ (Saved & Offline)",
-         "• Persistent bookmark library\n• SQLite 7-day automatic LRU cache\n• Full-text search across cached stories",
-         "Ensures reading continuity during power cuts, transit, or rural connectivity drops."),
-        ("5. মেনু (Catalog & Settings)",
-         "• 14-vertical category directory\n• Dark Mode / Light Mode toggle\n• Bengali typography scaling (A- / A+)\n• HQ contact & social links",
-         "Complete reader comfort, accessibility, and direct connectivity to Amar Desh publication office.")
-    ]
-
-    for idx, (hub, feat, val) in enumerate(hub_data):
-        row_idx = idx + 1
-        bg = "F8FAFC" if row_idx % 2 == 1 else "FFFFFF"
-        for col_idx, text in enumerate([hub, feat, val]):
-            c = hub_table.cell(row_idx, col_idx)
-            set_cell_background(c, bg)
-            set_cell_margins(c, top=80, bottom=80, left=90, right=90)
-            p = c.paragraphs[0]
-            p.paragraph_format.space_before = Pt(0)
-            p.paragraph_format.space_after = Pt(0)
-            r = p.add_run(text)
-            r.font.size = Pt(9)
-            if col_idx == 0:
-                r.font.bold = True
-                r.font.color.rgb = RGBColor(15, 23, 42)
-
-    doc.add_paragraph().paragraph_format.space_after = Pt(14)
-
-    # -------------------------------------------------------------
-    # SECTION 4: HIGH-FIDELITY MOBILE UI/UX DESIGN SHOWCASE
-    # -------------------------------------------------------------
-    h_ui = doc.add_heading(level=1)
-    r_hui = h_ui.add_run("4. UI/UX Design System Showcase & Broadsheet Aesthetics")
-    r_hui.font.name = 'Calibri'
-    r_hui.font.size = Pt(18)
-    r_hui.font.bold = True
-    r_hui.font.color.rgb = RGBColor(15, 23, 42)
-
-    p_ui = doc.add_paragraph(
-        "To honor Daily Amar Desh's legacy and broadsheet stature, CybrCraft engineered the 'Modern Editorial' "
-        "design system via the Stitch UI framework. The visual interface replaces generic startup rounded shapes "
-        "with authentic newspaper parchment (#FBF9F5), deep printer's ink (#121212), Editorial Crimson (#BA131A), "
-        "and 1px hairline rules (#E5E0D8). The figures below present the actual high-fidelity mobile application screens "
-        "generated for Daily Amar Desh:"
-    )
-    p_ui.paragraph_format.space_after = Pt(10)
-
-    # 2x2 Grid Table of Screenshots
-    ui_table = doc.add_table(rows=2, cols=2)
-    ui_table.alignment = WD_TABLE_ALIGNMENT.CENTER
-    ui_table.autofit = False
-    ui_table.columns[0].width = Inches(3.2)
-    ui_table.columns[1].width = Inches(3.2)
-    set_table_borders(ui_table, color="CBD5E1")
-
-    screens_data = [
-        ("assets/proposal/stitch_home_feed.jpg", "Figure 3: Broadsheet Home Feed", "Live masthead, breaking news ticker, lead hero splash, and 14-vertical category carousel chips."),
-        ("assets/proposal/stitch_article_reader.jpg", "Figure 4: Narrative Article Reader", "Book-grade typography (Newsreader / Noto Serif), 3-point AI smart summary, and bracketed author bylines."),
-        ("assets/proposal/stitch_epaper_saved.jpg", "Figure 5: Digital ePaper & Saved Edition", "High-resolution print replica canvas with 1px column hotspot crop reading and offline download."),
-        ("assets/proposal/stitch_explore_categories.jpg", "Figure 6: Sections Directory & Topics Hub", "Complete 14-vertical newsroom directory, district picker, AI assistant settings, and multi-language controls.")
-    ]
-
-    for idx, (img_path, caption, desc) in enumerate(screens_data):
-        row_idx = idx // 2
-        col_idx = idx % 2
-        cell = ui_table.cell(row_idx, col_idx)
-        cell.width = Inches(3.2)
-        set_cell_background(cell, "F8FAFC")
-        set_cell_margins(cell, top=100, bottom=100, left=100, right=100)
-        p_c = cell.paragraphs[0]
-        p_c.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        if os.path.exists(img_path):
-            r_img = p_c.add_run()
-            r_img.add_picture(img_path, width=Inches(2.8))
-
-        p_cap = cell.add_paragraph()
-        p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p_cap.paragraph_format.space_before = Pt(4)
-        p_cap.paragraph_format.space_after = Pt(2)
-        r_cp = p_cap.add_run(caption + "\n")
-        r_cp.font.bold = True
-        r_cp.font.size = Pt(8.5)
-        r_cp.font.color.rgb = RGBColor(15, 23, 42)
-
-        r_cd = p_cap.add_run(desc)
-        r_cd.font.size = Pt(7.5)
-        r_cd.font.color.rgb = RGBColor(100, 116, 139)
-
-    doc.add_page_break()
-
-    # -------------------------------------------------------------
-    # SECTION 5: 3-WEEK IMPLEMENTATION ROADMAP
-    # -------------------------------------------------------------
-    h5 = doc.add_heading(level=1)
-    r_h5 = h5.add_run("5. Project Timeline & Rapid Delivery Roadmap")
-    r_h5.font.name = 'Calibri'
-    r_h5.font.size = Pt(18)
-    r_h5.font.bold = True
-    r_h5.font.color.rgb = RGBColor(15, 23, 42)
-
-    p_road = doc.add_paragraph(
-        "Because CybrCraft has already engineered and verified the frontend and mobile architecture in the Demo PoC, "
-        "the standard development timeline of 3 to 4 months is compressed down to an express 3-week delivery window:"
-    )
-    p_road.paragraph_format.space_after = Pt(10)
-
-    # Embed Chart 3: Roadmap
-    if os.path.exists('assets/proposal/timeline_roadmap.png'):
-        p_img3 = doc.add_paragraph()
-        p_img3.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        r_img3 = p_img3.add_run()
-        r_img3.add_picture('assets/proposal/timeline_roadmap.png', width=Inches(6.2))
-        p_cap3 = doc.add_paragraph()
-        p_cap3.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p_cap3.paragraph_format.space_before = Pt(2)
-        p_cap3.paragraph_format.space_after = Pt(14)
-        r_cap3 = p_cap3.add_run("Figure 7: 3-Week Express Delivery Schedule & Milestones")
-        r_cap3.font.size = Pt(8.5)
-        r_cap3.font.italic = True
-        r_cap3.font.color.rgb = RGBColor(100, 116, 139)
-
-    doc.add_page_break()
-
-    # -------------------------------------------------------------
-    # SECTION 6: COMMERCIAL INVESTMENT OPTIONS
-    # -------------------------------------------------------------
-    h6 = doc.add_heading(level=1)
-    r_h6 = h6.add_run("6. Commercial Engagement Options")
-    r_h6.font.name = 'Calibri'
-    r_h6.font.size = Pt(18)
-    r_h6.font.bold = True
-    r_h6.font.color.rgb = RGBColor(15, 23, 42)
-
-    p_comm = doc.add_paragraph(
-        "CybrCraft offers three flexible engagement models tailored to the administrative, "
-        "operational, and strategic preferences of Amar Desh Publication Limited:"
-    )
-    p_comm.paragraph_format.space_after = Pt(10)
-
-    comm_table = doc.add_table(rows=4, cols=3)
-    comm_table.alignment = WD_TABLE_ALIGNMENT.CENTER
-    comm_table.autofit = False
-    set_table_borders(comm_table, color="CBD5E1")
-
-    comm_headers = ["Engagement Model", "Scope & Deliverables", "Commercial Terms"]
-    for i, h in enumerate(comm_headers):
-        c = comm_table.cell(0, i)
+    c_headers = ["Option", "What's Included", "Investment"]
+    for i, h in enumerate(c_headers):
+        c = comm_tbl.cell(0, i)
         set_cell_background(c, "1E293B")
-        set_cell_margins(c, top=90, bottom=90, left=90, right=90)
+        set_cell_margins(c, top=60, bottom=60, left=60, right=60)
         p = c.paragraphs[0]
-        p.paragraph_format.space_before = Pt(0)
-        p.paragraph_format.space_after = Pt(0)
         r = p.add_run(h)
         r.font.bold = True
-        r.font.size = Pt(9.5)
+        r.font.size = Pt(9)
         r.font.color.rgb = RGBColor(255, 255, 255)
 
-    comm_data = [
-        ("Option A: Turnkey Ownership & Handover (Recommended)",
-         "• Full Android & iOS production builds\n• Official CMS/backend API integration\n• Automated push notification poller setup\n• 100% full source code & GitHub handover\n• 3 months complimentary warranty & bug fixes",
-         "One-time investment:\nBDT 3,50,000\n(Three Lakh Fifty Thousand Taka)\n*Negotiable based on scope"),
-        ("Option B: Turnkey + Annual Managed Partnership",
-         "• Everything in Option A\n• Monthly OS updates (Android 15/16, iOS 18/19)\n• 24/7 backend API & push notification monitoring\n• Guaranteed 4-hour SLA for critical issues\n• Quarterly feature upgrades",
-         "Initial Deployment: BDT 2,50,000\n+\nMonthly Retainer: BDT 25,000 / month"),
-        ("Option C: Strategic Media & Revenue Share",
-         "• Zero upfront development fee\n• CybrCraft integrates, develops and maintains app\n• Monetization via Amar Desh direct ad campaigns\n• Shared revenue distribution agreement",
-         "BDT 0 Upfront\n(Revenue share agreement with Amar Desh Ad Desk: 01332-837514)")
+    c_rows = [
+        ("Option A: Turnkey Handover\n(Recommended)",
+         "• Full Android & iOS Apps\n• Automated sync with web portal\n• Breaking push notification setup\n• 100% source code & GitHub handover\n• Complete IP ownership under Amar Desh\n• 3 months free support & bug fixes",
+         "BDT 3,50,000\n(One-Time)\n\n*Negotiable"),
+        ("Option B: Turnkey + Management",
+         "• Everything in Option A\n• Ongoing store updates & 24/7 monitoring\n• Guaranteed 4-hour fix SLA",
+         "BDT 2,50,000\n+\nBDT 25,000 / month"),
+        ("Option C: Ad Revenue Share",
+         "• Zero upfront development fees\n• CybrCraft builds and maintains\n• Monetized via Amar Desh Ad Desk campaigns",
+         "BDT 0 Upfront\n(Revenue Share)")
     ]
 
-    for idx, (m, s, t) in enumerate(comm_data):
+    for idx, (opt, inc, inv) in enumerate(c_rows):
         row_idx = idx + 1
         bg = "F8FAFC" if row_idx % 2 == 1 else "FFFFFF"
-        for col_idx, text in enumerate([m, s, t]):
-            c = comm_table.cell(row_idx, col_idx)
+        for col_idx, text in enumerate([opt, inc, inv]):
+            c = comm_tbl.cell(row_idx, col_idx)
             set_cell_background(c, bg)
-            set_cell_margins(c, top=90, bottom=90, left=90, right=90)
+            set_cell_margins(c, top=50, bottom=50, left=60, right=60)
             p = c.paragraphs[0]
-            p.paragraph_format.space_before = Pt(0)
-            p.paragraph_format.space_after = Pt(0)
             r = p.add_run(text)
-            r.font.size = Pt(9)
+            r.font.size = Pt(8.5)
             if col_idx == 0:
                 r.font.bold = True
-                r.font.color.rgb = RGBColor(15, 23, 42)
             elif col_idx == 2:
                 r.font.bold = True
-                r.font.color.rgb = RGBColor(185, 28, 28)
+                r.font.color.rgb = RGBColor(186, 19, 26)
 
-    doc.add_paragraph().paragraph_format.space_after = Pt(14)
+    # 3-Week Timeline Summary (Clean text strip)
+    p_tl = doc.add_paragraph()
+    p_tl.paragraph_format.space_before = Pt(6)
+    p_tl.paragraph_format.space_after = Pt(4)
+    r_tl_h = p_tl.add_run("Express 3-Week Launch: ")
+    r_tl_h.font.bold = True
+    r_tl_h.font.size = Pt(9.5)
+    r_tl_h.font.color.rgb = RGBColor(15, 23, 42)
+    r_tl_b = p_tl.add_run("Week 1: Automated sync setup  |  Week 2: Testing on your phones  |  Week 3: Official Google Play & App Store launch.")
+    r_tl_b.font.size = Pt(9)
+    r_tl_b.font.color.rgb = RGBColor(71, 85, 105)
 
-    # -------------------------------------------------------------
-    # SECTION 7: BENGALI EXECUTIVE PITCH SUMMARY
-    # -------------------------------------------------------------
-    h7 = doc.add_heading(level=1)
-    r_h7 = h7.add_run("7. সম্পাদকীয় বোর্ড ও জনাব মাহমুদুর রহমান-এর সমীপে নিবেদন")
-    r_h7.font.name = 'Calibri'
-    r_h7.font.size = Pt(16)
-    r_h7.font.bold = True
-    r_h7.font.color.rgb = RGBColor(220, 38, 38)
+    # Bengali Executive Summary
+    h_bn = doc.add_paragraph()
+    h_bn.paragraph_format.space_before = Pt(6)
+    h_bn.paragraph_format.space_after = Pt(2)
+    r_hbn = h_bn.add_run("৪. সম্পাদকীয় বোর্ড ও জনাব মাহমুদুর রহমান-এর সমীপে বিনীত নিবেদন")
+    r_hbn.font.size = Pt(11)
+    r_hbn.font.bold = True
+    r_hbn.font.color.rgb = RGBColor(186, 19, 26)
 
-    p_bn1 = doc.add_paragraph(
-        "শ্রদ্ধেয় সম্পাদক ও প্রকাশক মহোদয়,\n"
-        "‘স্বাধীনতার কথা বলে’— আপসহীন সাংবাদিকতার প্রতীক ‘দৈনিক আমার দেশ’ দীর্ঘ সংগ্রাম ও জুলাই ২০২৪-এর ঐতিহাসিক "
-        "গণঅভ্যুত্থানের পর কোটি পাঠকের হৃদয়ে পুনরুজ্জীবিত হয়েছে। স্বাধীন বাংলাদেশের মুক্ত চিন্তার অগ্রযাত্রায় আপনার বলিষ্ঠ নেতৃত্ব অনস্বীকার্য।"
+    p_bn = doc.add_paragraph(
+        "শ্রদ্ধেয় সম্পাদক মহোদয়,\n"
+        "দেশের শতকরা ৯২ ভাগেরও বেশি পাঠক এখন মোবাইলে খবর পড়েন। গুগল প্লে-স্টোর কিংবা অ্যাপল অ্যাপ স্টোরে দৈনিক আমার দেশ-এর নিজস্ব "
+        "অফিসিয়াল অ্যাপ না থাকায় কোটি পাঠকের কাছে তাৎক্ষণিক ব্রেকিং নিউজ পৌঁছানো যাচ্ছে না এবং সোশ্যাল মিডিয়ার অ্যালগরিদম সংবাদ আটকে দিচ্ছে। "
+        "একটি নিজস্ব মোবাইল অ্যাপ দৈনিক আমার দেশ-কে সরাসরি পাঠকের হাতের মুঠোয় পৌঁছে দেবে।\n"
+        "সবচেয়ে বড় বিষয়—আপনার বার্তা বিভাগের কোনো বাড়তি কাজ করতে হবে না; ওয়েবসাইটে খবর প্রকাশের সাথে সাথে তা স্বয়ংক্রিয়ভাবে অ্যাপে চলে আসবে। "
+        "আমরা কোনো তাত্ত্বিক স্লাইড নয়, বরং সরাসরি ফোনে ব্যবহারযোগ্য একটি পূর্ণাঙ্গ লাইভ ডেমো অ্যাপ তৈরি সম্পন্ন করেছি। আপনার কার্যালয়ে সশরীরে উপস্থিত হয়ে "
+        "মাত্র ১৫ মিনিটে আপনার ফোনে ডেমো প্রদর্শনের সুযোগ প্রার্থনা করছি।"
     )
-    p_bn1.paragraph_format.space_after = Pt(8)
+    p_bn.paragraph_format.space_after = Pt(6)
+    p_bn.runs[0].font.size = Pt(9)
 
-    p_bn2 = doc.add_paragraph(
-        "বর্তমানে গুগল প্লে-স্টোর কিংবা অ্যাপল অ্যাপ স্টোরে দৈনিক আমার দেশ-এর কোনো অফিসিয়াল মোবাইল অ্যাপ্লিকেশন না থাকায় "
-        "পাঠকদের জন্য ব্রেকিং নিউজ পুশ অ্যালার্ট এবং অফলাইন রিডিং নিশ্চিত করা সম্ভব হচ্ছে না। সাইবারক্রাফট (CybrCraft) শুধুমাত্র "
-        "কোনো তাত্ত্বিক পরিকল্পনা নয়, বরং সরাসরি ফোনে ব্যবহারযোগ্য একটি পূর্ণাঙ্গ পরীক্ষামূলক অ্যান্ড্রয়েড ডেমো এপিকে (Demo APK) তৈরি সম্পন্ন করেছে।"
-    )
-    p_bn2.paragraph_format.space_after = Pt(8)
+    # Next Steps & Contact Box
+    nxt_tbl = doc.add_table(rows=1, cols=2)
+    nxt_tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
+    nxt_tbl.autofit = False
+    nxt_tbl.columns[0].width = Inches(3.5)
+    nxt_tbl.columns[1].width = Inches(3.5)
 
-    p_bn3 = doc.add_paragraph(
-        "প্রকল্প চূড়ান্তকরণের পর অ্যাপটি কোনো স্ক্র্যাপিং করবে না; বরং ‘দৈনিক আমার দেশ’-এর অফিসিয়াল ব্যাকএন্ড/সিএমএস-এর সাথে সরাসরি ও "
-        "সুরক্ষিত এপিআই-এর মাধ্যমে যুক্ত হবে। আপনার বার্তা দলের কোনো বাড়তি কাজ করতে হবে না—ওয়েবে সংবাদ প্রকাশিত হওয়ার সাথে সাথে তা "
-        "স্বয়ংক্রিয়ভাবে অ্যাপে চলে আসবে। ব্যাকএন্ডে কোনো টেক স্ট্যাক আপগ্রেডেশন প্রয়োজন হলে তা-ও সাইবারক্রাফট বাস্তবায়ন করবে। "
-        "আমরা কারওয়ান বাজারের ঢাকা ট্রেড সেন্টারে আপনার কার্যালয়ে সশরীরে উপস্থিত হয়ে মাত্র ১৫ মিনিটের একটি সংক্ষিপ্ত লাইভ ডেমো "
-        "প্রদর্শনের সুযোগ প্রার্থনা করছি।"
-    )
-    p_bn3.paragraph_format.space_after = Pt(14)
+    n_c1 = nxt_tbl.cell(0, 0)
+    n_c2 = nxt_tbl.cell(0, 1)
+    set_cell_background(n_c1, "F8FAFC")
+    set_cell_background(n_c2, "FEF2F2")
+    set_cell_margins(n_c1, top=50, bottom=50, left=60, right=60)
+    set_cell_margins(n_c2, top=50, bottom=50, left=60, right=60)
 
-    # -------------------------------------------------------------
-    # SECTION 8: ABOUT CYBRCRAFT & CONTACT DETAILS
-    # -------------------------------------------------------------
-    h8 = doc.add_heading(level=1)
-    r_h8 = h8.add_run("8. About CybrCraft & Next Steps")
-    r_h8.font.name = 'Calibri'
-    r_h8.font.size = Pt(18)
-    r_h8.font.bold = True
-    r_h8.font.color.rgb = RGBColor(15, 23, 42)
+    p_nc1 = n_c1.paragraphs[0]
+    p_nc1.paragraph_format.space_before = Pt(0)
+    p_nc1.paragraph_format.space_after = Pt(0)
+    r_nc1_t = p_nc1.add_run("NEXT STEP:\n")
+    r_nc1_t.font.bold = True
+    r_nc1_t.font.size = Pt(9)
+    p_nc1.add_run("Schedule a 15-minute live demo at your Karwan Bazar office (Dhaka Trade Centre, 8th Floor) to test the working APK.").font.size = Pt(8.5)
 
-    p_about = doc.add_paragraph(
-        "CybrCraft (https://cybrcraft.com/) is a leading digital engineering and application development agency headquartered "
-        "in Dhaka, Bangladesh. With over 50+ completed software projects and a proven track record across scalable web and mobile "
-        "ecosystems, CybrCraft combines deep technical rigor with dedicated 24/7 post-launch support."
-    )
-    p_about.paragraph_format.space_after = Pt(10)
+    p_nc2 = n_c2.paragraphs[0]
+    p_nc2.paragraph_format.space_before = Pt(0)
+    p_nc2.paragraph_format.space_after = Pt(0)
+    r_nc2_t = p_nc2.add_run("CONTACT CYBRCRAFT:\n")
+    r_nc2_t.font.bold = True
+    r_nc2_t.font.size = Pt(9)
+    r_nc2_t.font.color.rgb = RGBColor(186, 19, 26)
+    p_nc2.add_run("WhatsApp / Call: +880 1967-600402\nEmail: info@cybrcraft.com | Web: https://cybrcraft.com/").font.size = Pt(8.5)
 
-    # Contact Box
-    contact_table = doc.add_table(rows=1, cols=2)
-    contact_table.alignment = WD_TABLE_ALIGNMENT.CENTER
-    contact_table.autofit = False
-    contact_table.columns[0].width = Inches(3.25)
-    contact_table.columns[1].width = Inches(3.25)
+    # Clean Sign-off
+    p_so = doc.add_paragraph()
+    p_so.paragraph_format.space_before = Pt(6)
+    p_so.paragraph_format.space_after = Pt(0)
+    r_so1 = p_so.add_run("Team CybrCraft ")
+    r_so1.font.bold = True
+    r_so1.font.size = Pt(9.5)
+    r_so2 = p_so.add_run("| Enterprise Mobile Solutions | Bashundhara Riverview, Dhaka")
+    r_so2.font.size = Pt(8.5)
+    r_so2.font.color.rgb = RGBColor(100, 116, 139)
 
-    c_box1 = contact_table.cell(0, 0)
-    c_box2 = contact_table.cell(0, 1)
-
-    set_cell_background(c_box1, "F8FAFC")
-    set_cell_background(c_box2, "FEF2F2")
-    set_cell_margins(c_box1, top=120, bottom=120, left=120, right=120)
-    set_cell_margins(c_box2, top=120, bottom=120, left=120, right=120)
-
-    p_cb1 = c_box1.paragraphs[0]
-    p_cb1.paragraph_format.space_before = Pt(0)
-    p_cb1.paragraph_format.space_after = Pt(0)
-    r_b1 = p_cb1.add_run("CYBRCRAFT LEADERSHIP:\n")
-    r_b1.font.bold = True
-    r_b1.font.size = Pt(10)
-    r_b1.font.color.rgb = RGBColor(15, 23, 42)
-    p_cb1.add_run(
-        "Agency: CybrCraft\n"
-        "Website: https://cybrcraft.com/\n"
-        "Email: info@cybrcraft.com\n"
-        "Mobile / WhatsApp: +880 1967-600402\n"
-        "Office: Bashundhara Riverview, Dhaka"
-    ).font.size = Pt(9)
-
-    p_cb2 = c_box2.paragraphs[0]
-    p_cb2.paragraph_format.space_before = Pt(0)
-    p_cb2.paragraph_format.space_after = Pt(0)
-    r_b2 = p_cb2.add_run("TARGET CLIENT OFFICE:\n")
-    r_b2.font.bold = True
-    r_b2.font.size = Pt(10)
-    r_b2.font.color.rgb = RGBColor(185, 28, 28)
-    p_cb2.add_run(
-        "Client: Amar Desh Publication Limited\n"
-        "Editor & Publisher: Mahmudur Rahman\n"
-        "Office: Dhaka Trade Centre (8th Floor), Karwan Bazar\n"
-        "IT Dept: +880-1332-837513\n"
-        "Email: info@dailyamardesh.com"
-    ).font.size = Pt(9)
-
-    doc.add_paragraph().paragraph_format.space_after = Pt(20)
-
-    # Sign-off
-    p_sign = doc.add_paragraph()
-    r_s1 = p_sign.add_run("SUBMITTED BY:\n\n")
-    r_s1.font.bold = True
-    r_s1.font.size = Pt(10)
-    r_s1.font.color.rgb = RGBColor(71, 85, 105)
-
-    r_s2 = p_sign.add_run("Team CybrCraft\n")
-    r_s2.font.bold = True
-    r_s2.font.size = Pt(12)
-    r_s2.font.color.rgb = RGBColor(15, 23, 42)
-
-    r_s3 = p_sign.add_run("Enterprise Solutions & Mobile Engineering\nCybrCraft | https://cybrcraft.com/")
-    r_s3.font.size = Pt(10)
-    r_s3.font.color.rgb = RGBColor(100, 116, 139)
-
-    # Save Document
+    # Save
     out_file = 'docs/Daily_Amar_Desh_Mobile_App_Proposal_CybrCraft.docx'
     doc.save(out_file)
-    print(f"Successfully generated master DOCX file: {out_file} ({os.path.getsize(out_file)} bytes)")
+    print(f"Successfully generated 3-page master DOCX file: {out_file} ({os.path.getsize(out_file)} bytes)")
 
 if __name__ == '__main__':
     build_proposal_document()

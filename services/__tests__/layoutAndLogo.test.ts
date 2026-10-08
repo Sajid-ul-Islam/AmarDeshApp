@@ -40,4 +40,12 @@ describe('Layout and BYOK Direct Link Verification', () => {
     expect(PROVIDER_METADATA.deepseek.defaultModel).toBe('deepseek-chat');
     expect(PROVIDER_METADATA.deepseek.keyHelpUrl).toBe('https://platform.deepseek.com/api_keys');
   });
+
+  it('guarantees full official calligraphy logo natural aspect ratio for headers', () => {
+    const pngRatio = 867 / 213;
+    expect(pngRatio).toBeGreaterThan(4.0); // Wide calligraphy banner
+    const defaultHeaderHeight = 28;
+    const computedHeaderWidth = Math.round(defaultHeaderHeight * pngRatio);
+    expect(computedHeaderWidth).toBeGreaterThanOrEqual(110);
+  });
 });

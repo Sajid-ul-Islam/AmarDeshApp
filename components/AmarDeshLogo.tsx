@@ -14,10 +14,12 @@ import { useThemeTokens, useIsDarkMode } from '../theme';
 // Local asset files
 const PNG_LOGO = require('../assets/amardesh_logo.png');
 const BANNER_LOGO = require('../assets/amardesh_logo.jpg');
+const ICON_LOGO = require('../assets/icon.png');
 
 // Aspect ratios of original asset files
 const PNG_ASPECT_RATIO = 867 / 213; // ~4.07
 const BANNER_ASPECT_RATIO = 1196 / 372; // ~3.21
+const ICON_ASPECT_RATIO = 1; // 1:1 square emblem
 
 export interface AmarDeshLogoProps {
   /** Desired height of the logo (default: 32) */
@@ -28,9 +30,9 @@ export interface AmarDeshLogoProps {
    * Logo variant:
    * - 'png': Transparent background official Bengali calligraphy logo
    * - 'banner': Official full masthead banner with motto
-   * - 'compact': Minimalist emblem suitable for tight reader top bars
+   * - 'icon' | 'compact': Official square icon emblem (assets/icon.png) for tight headers
    */
-  variant?: 'png' | 'banner' | 'compact';
+  variant?: 'png' | 'banner' | 'compact' | 'icon';
   /** Show the editorial motto tagline below the logo */
   showMotto?: boolean;
   /** English or Bengali motto text */
@@ -53,8 +55,9 @@ export const AmarDeshLogo: React.FC<AmarDeshLogoProps> = ({
   const tokens = useThemeTokens();
   const isDark = useIsDarkMode();
 
-  const source = variant === 'banner' ? BANNER_LOGO : PNG_LOGO;
-  const ratio = variant === 'banner' ? BANNER_ASPECT_RATIO : PNG_ASPECT_RATIO;
+  const isIcon = variant === 'icon' || variant === 'compact';
+  const source = variant === 'banner' ? BANNER_LOGO : isIcon ? ICON_LOGO : PNG_LOGO;
+  const ratio = variant === 'banner' ? BANNER_ASPECT_RATIO : isIcon ? ICON_ASPECT_RATIO : PNG_ASPECT_RATIO;
   const computedWidth = width || Math.round(height * ratio);
 
   const content = (
@@ -62,8 +65,9 @@ export const AmarDeshLogo: React.FC<AmarDeshLogoProps> = ({
       <View
         style={[
           styles.imageWrapper,
-          // In dark mode, provide a subtle light backing so the classic green & red logo shines with high contrast
-          isDark && styles.darkBackdrop,
+          isIcon && styles.squareIconFrame,
+          // In dark mode, provide a subtle light backing for wide logo
+          isDark && !isIcon && styles.darkBackdrop,
         ]}
       >
         <Image
@@ -71,13 +75,14 @@ export const AmarDeshLogo: React.FC<AmarDeshLogoProps> = ({
           style={{
             width: computedWidth,
             height,
+            borderRadius: 0,
           }}
           resizeMode="contain"
           accessibilityLabel="দৈনিক আমার দেশ লোগো"
         />
       </View>
 
-      {showMotto && (
+      {showMotto && !isIcon && (
         <Text
           style={[
             styles.mottoText,
@@ -115,15 +120,17 @@ const styles = StyleSheet.create({
   },
   imageWrapper: {
     overflow: 'hidden',
-    borderRadius: 4,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  squareIconFrame: {
+    borderRadius: 0,
   },
   darkBackdrop: {
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 6,
+    borderRadius: 4,
   },
   mottoText: {
     fontSize: 10,

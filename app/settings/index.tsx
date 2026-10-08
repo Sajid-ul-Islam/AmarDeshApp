@@ -649,7 +649,9 @@ export default function OneStopSettingsScreen() {
                   <Text style={styles.rowSubtitle}>
                     {feedLayout === 'magazine'
                       ? (language === 'bn' ? 'ম্যাগাজিন ব্রডশিট ভিউ' : 'Magazine Broadsheet View')
-                      : (language === 'bn' ? 'কমপ্যাক্ট দ্রুত তালিকা' : 'Dense Compact List')}
+                      : feedLayout === 'compact'
+                      ? (language === 'bn' ? 'কমপ্যাক্ট দ্রুত তালিকা' : 'Dense Compact List')
+                      : (language === 'bn' ? 'ইন্টারেক্টিভ কার্ড স্লাইড ডেক' : 'Interactive Card Slide Deck')}
                   </Text>
                 </View>
               </View>
@@ -657,6 +659,7 @@ export default function OneStopSettingsScreen() {
                 {[
                   { key: 'magazine' as const, label: language === 'bn' ? 'ম্যাগাজিন' : 'Magazine' },
                   { key: 'compact' as const, label: language === 'bn' ? 'কমপ্যাক্ট' : 'Compact' },
+                  { key: 'card' as const, label: language === 'bn' ? 'স্লাইড' : 'Slide' },
                 ].map((item) => {
                   const isCur = feedLayout === item.key;
                   return (
@@ -664,7 +667,7 @@ export default function OneStopSettingsScreen() {
                       key={item.key}
                       style={[
                         styles.fontPill,
-                        { width: 68 },
+                        { paddingHorizontal: 10, minWidth: 54 },
                         isCur && styles.fontPillSelected,
                       ]}
                       onPress={() => {

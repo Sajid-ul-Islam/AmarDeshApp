@@ -51,6 +51,9 @@ import {
 import { getSafeHeaderPaddingTop } from '../../utils/layout';
 import { AmarDeshLogo } from '../../components/AmarDeshLogo';
 import { SideNavDrawer } from '../../components/SideNavDrawer';
+import { FeaturedCardSlider } from '../../components/FeaturedCardSlider';
+import { SwipeCardDeck } from '../../components/SwipeCardDeck';
+import { SponsoredProductShowcase } from '../../components/SponsoredProductShowcase';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -209,13 +212,29 @@ export default function HomeScreen() {
         fontSize: 9.5,
         fontWeight: 'bold',
       },
-      categoryScroll: {
+      categoryBarRow: {
         flexDirection: 'row',
-        paddingHorizontal: 16,
-        paddingVertical: 10,
+        alignItems: 'center',
         backgroundColor: tokens.surface.base,
         borderBottomWidth: 0.5,
         borderBottomColor: tokens.border.subtle,
+      },
+      categoryScroll: {
+        flexDirection: 'row',
+        paddingLeft: 16,
+        paddingRight: 8,
+        paddingVertical: 10,
+      },
+      navBarLayoutBtn: {
+        paddingHorizontal: 9,
+        paddingVertical: 6,
+        marginRight: 12,
+        borderRadius: tokens.radii.pill,
+        backgroundColor: tokens.surface.elevated,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        justifyContent: 'center',
+        alignItems: 'center',
       },
       catChip: {
         paddingHorizontal: 14,
@@ -436,6 +455,15 @@ export default function HomeScreen() {
           <Ionicons name="arrow-forward" size={18} color={tokens.brand.primary} />
         </TouchableOpacity>
       )}
+
+      {/* Featured Stories Horizontal Card Slider */}
+      {feedLayout === 'magazine' && displayArticles.length > 0 && (
+        <FeaturedCardSlider
+          articles={displayArticles}
+          language={language}
+          onPressArticle={(item) => router.push(`/article/${item.id}` as any)}
+        />
+      )}
     </View>
   );
 
@@ -506,6 +534,11 @@ export default function HomeScreen() {
         {(index === 2 || (index > 2 && (index - 2) % 6 === 0)) && (
           <AdBanner variant={index === 2 ? 'feed' : 'compact'} />
         )}
+
+        {/* Dedicated Sponsored Commercial Showcase */}
+        {index === 3 && (
+          <SponsoredProductShowcase variant="carousel" language={language} />
+        )}
       </View>
     );
   };
@@ -548,23 +581,6 @@ export default function HomeScreen() {
             )}
           </TouchableOpacity>
 
-          {/* Feed Layout Toggle (Magazine vs Compact List) */}
-          <TouchableOpacity
-            style={styles.iconBtn}
-            onPress={() => {
-              Haptics.selectionAsync();
-              setFeedLayout(feedLayout === 'magazine' ? 'compact' : 'magazine');
-            }}
-            activeOpacity={0.7}
-            accessibilityLabel="ফিড লেআউট পরিবর্তন"
-          >
-            <Ionicons
-              name={feedLayout === 'magazine' ? 'list-outline' : 'grid-outline'}
-              size={17}
-              color={styles.mastheadTitle.color}
-            />
-          </TouchableOpacity>
-
           {/* Search */}
           <TouchableOpacity
             style={styles.iconBtn}
@@ -576,8 +592,8 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* Horizontal Category Bar */}
-      <View>
+      {/* Horizontal Category Nav Bar with View Switcher */}
+      <View style={styles.categoryBarRow}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -613,20 +629,67 @@ export default function HomeScreen() {
             );
           })}
         </ScrollView>
+
+        {/* View Mode (Grid / List / Card) Button in Nav Bar */}
+        <TouchableOpacity
+          style={styles.navBarLayoutBtn}
+          onPress={() => {
+            Haptics.selectionAsync();
+            const nextLayout =
+              feedLayout === 'magazine'
+                ? 'compact'
+                : feedLayout === 'compact'
+                ? 'card'
+                : 'magazine';
+            setFeedLayout(nextLayout);
+          }}
+          activeOpacity={0.7}
+          accessibilityLabel="ফিড ভিউ পরিবর্তন"
+        >
+          <Ionicons
+            name={
+              feedLayout === 'magazine'
+                ? 'list-outline'
+                : feedLayout === 'compact'
+                ? 'grid-outline'
+                : 'albums-outline'
+            }
+            size={16}
+            color={tokens.brand.primary}
+          />
+        </TouchableOpacity>
       </View>
 
       {/* Main Articles Stream */}
-      <FlatList
-        data={displayArticles}
-        renderItem={renderArticle}
-        keyExtractor={(item) => item.id}
-        ListHeaderComponent={renderHeader}
-        contentContainerStyle={styles.listContent}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        showsVerticalScrollIndicator={false}
-      />
+      {feedLayout === 'card' ? (
+        <ScrollView
+          contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          showsVerticalScrollIndicator={false}
+        >
+          {renderHeader()}
+          <SwipeCardDeck
+            articles={displayArticles}
+            language={language}
+            onPressArticle={(item) => router.push(`/article/${item.id}` as any)}
+          />
+          <SponsoredProductShowcase variant="carousel" language={language} />
+        </ScrollView>
+      ) : (
+        <FlatList
+          data={displayArticles}
+          renderItem={renderArticle}
+          keyExtractor={(item) => item.id}
+          ListHeaderComponent={renderHeader}
+          contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          showsVerticalScrollIndicator={false}
+        />
+      )}
 
       {/* Global Animated Side Navigation Drawer */}
       <SideNavDrawer

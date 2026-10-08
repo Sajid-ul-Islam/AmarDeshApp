@@ -317,7 +317,7 @@ export default function NotificationCenterScreen() {
                 <Text style={styles.markAllText}>সব পঠিত</Text>
               </TouchableOpacity>
             )}
-            <AmarDeshLogo height={20} variant="png" />
+            <AmarDeshLogo height={24} variant="png" />
           </View>
         </View>
 

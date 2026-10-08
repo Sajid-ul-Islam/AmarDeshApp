@@ -207,7 +207,7 @@ export default function JulyRevolutionScreen() {
             <Text style={styles.headerTitle}>জুলাই বিপ্লব ২০২৪</Text>
           </View>
 
-          <AmarDeshLogo height={20} variant="png" />
+          <AmarDeshLogo height={24} variant="png" />
         </View>
 
         <Text style={styles.subHeader}>

@@ -49,11 +49,14 @@ describe('UI/UX Upgrades and Enhancement Tokens', () => {
       expect(useAppStore.getState().themePreference).toBe('system');
     });
 
-    it('allows switching feedLayout between magazine and compact', () => {
+    it('allows switching feedLayout between magazine, compact, and card', () => {
       const store = useAppStore.getState();
 
       store.setFeedLayout('compact');
       expect(useAppStore.getState().feedLayout).toBe('compact');
+
+      store.setFeedLayout('card');
+      expect(useAppStore.getState().feedLayout).toBe('card');
 
       store.setFeedLayout('magazine');
       expect(useAppStore.getState().feedLayout).toBe('magazine');

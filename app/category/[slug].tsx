@@ -187,7 +187,7 @@ export default function CategoryScreen() {
               {toBengaliNumeral(articles.length)}
             </Text>
           </View>
-          <AmarDeshLogo height={18} variant="png" />
+          <AmarDeshLogo height={24} variant="png" />
         </View>
       </View>
 

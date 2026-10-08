@@ -83,11 +83,14 @@ describe('One-Stop Settings Hub and Side Navigation Drawer Suite', () => {
       expect(useAppStore.getState().language).toBe('bn');
     });
 
-    it('supports magazine and compact feed layout choices', () => {
+    it('supports magazine, compact, and card feed layout choices', () => {
       const store = useAppStore.getState();
 
       store.setFeedLayout('compact');
       expect(useAppStore.getState().feedLayout).toBe('compact');
+
+      store.setFeedLayout('card');
+      expect(useAppStore.getState().feedLayout).toBe('card');
 
       store.setFeedLayout('magazine');
       expect(useAppStore.getState().feedLayout).toBe('magazine');
