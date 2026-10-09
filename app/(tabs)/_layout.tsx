@@ -1,69 +1,153 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useColorScheme } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useThemeTokens } from '../../theme';
+import { useAppStore } from '../../store/useAppStore';
+import { t } from '../../services/i18n';
+import { TAB_BAR_CONTENT_HEIGHT } from '../../utils/layout';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const tokens = useThemeTokens();
+  const language = useAppStore((state) => state.language);
+  /**
+   * The tab bar is absolutely positioned by the navigator, so its height must
+   * itself include the home-indicator / gesture-bar inset. With a hard-coded
+   * 60px the labels sat underneath the indicator on iPhones and on Android
+   * gesture navigation, and screen content was hidden behind it.
+   */
+  const insets = useSafeAreaInsets();
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#006B3F',
-        tabBarInactiveTintColor: isDark ? '#9CA3AF' : '#6B7280',
+        tabBarActiveTintColor: tokens.brand.primary,
+        tabBarInactiveTintColor: tokens.interactive.inactive,
         tabBarStyle: {
-          backgroundColor: isDark ? '#111827' : '#FFFFFF',
-          borderTopColor: isDark ? '#1F2937' : '#E5E7EB',
+          backgroundColor: tokens.surface.base,
+          borderTopColor: tokens.border.default,
+          borderTopWidth: 1,
+          height: TAB_BAR_CONTENT_HEIGHT + insets.bottom,
+          paddingBottom: insets.bottom > 0 ? insets.bottom : 8,
+          paddingTop: 6,
+          elevation: 0,
+          shadowOpacity: 0,
+        },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '600',
+          letterSpacing: 0.3,
         },
         headerStyle: {
-          backgroundColor: isDark ? '#111827' : '#FFFFFF',
+          backgroundColor: tokens.surface.base,
+          borderBottomColor: tokens.border.default,
+          borderBottomWidth: 1,
+          elevation: 0,
+          shadowOpacity: 0,
         },
-        headerTintColor: isDark ? '#FFFFFF' : '#000000',
+        headerTintColor: tokens.text.primary,
       }}
     >
+      {/* 1. হোম (Home) */}
       <Tabs.Screen
         name="index"
         options={{
-          title: 'হোম',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
+          title: t('tab_home', language),
+          headerShown: false,
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name={focused ? 'home' : 'home-outline'}
+              size={size - 1}
+              color={color}
+            />
           ),
         }}
       />
+
+
+      {/* 3. ভিডিও (Video Hub) */}
       <Tabs.Screen
-        name="foryou"
+        name="video"
         options={{
-          title: 'আপনার জন্য',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="heart" size={size} color={color} />
+          title: t('tab_video', language),
+          headerShown: false,
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name={focused ? 'play-circle' : 'play-circle-outline'}
+              size={size - 1}
+              color={color}
+            />
           ),
         }}
       />
-      <Tabs.Screen
-        name="search"
-        options={{
-          title: 'খোঁজ',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="search" size={size} color={color} />
-          ),
-        }}
-      />
+
+      {/* 4. সেভ (Saved & For You) */}
       <Tabs.Screen
         name="bookmarks"
         options={{
-          title: 'সেভ',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="bookmark" size={size} color={color} />
+          title: t('tab_saved', language),
+          headerShown: false,
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name={focused ? 'bookmark' : 'bookmark-outline'}
+              size={size - 1}
+              color={color}
+            />
           ),
         }}
       />
+
+      {/* 5. মেনু (Menu & All Categories) */}
+      <Tabs.Screen
+        name="menu"
+        options={{
+          title: t('tab_menu', language),
+          headerShown: false,
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name={focused ? 'menu' : 'menu-outline'}
+              size={size}
+              color={color}
+            />
+          ),
+        }}
+      />
+
+      {/* Auxiliary screens kept accessible via routes without bottom bar icons */}
+      <Tabs.Screen
+        name="search"
+        options={{
+          href: null,
+          title: 'Search',
+          headerShown: false,
+          tabBarStyle: { display: 'none' },
+        }}
+      />
+
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'আরও',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" size={size} color={color} />
-          ),
+          href: null,
+          title: 'Profile',
+          headerShown: false,
+        }}
+      />
+
+      <Tabs.Screen
+        name="foryou"
+        options={{
+          href: null,
+          title: 'For You',
+          headerShown: false,
+        }}
+      />
+
+      <Tabs.Screen
+        name="epaper"
+        options={{
+          href: null,
+          title: t('tab_epaper', language),
+          headerShown: false,
+          tabBarStyle: { display: 'none' },
         }}
       />
     </Tabs>

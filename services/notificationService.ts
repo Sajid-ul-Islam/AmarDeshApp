@@ -1,7 +1,65 @@
-import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Linking from 'expo-linking';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
+import type * as NotificationsType from 'expo-notifications';
+import { getEasProjectId, isEasProjectConfigured } from './appConfig';
+import { openArticle } from './navigationService';
+import { parseDeepLink, openURL } from './deepLinkService';
+
+/**
+ * expo-notifications must be loaded lazily.
+ *
+ * Importing it statically triggers a module-level side effect
+ * (DevicePushTokenAutoRegistration registers a push-token listener at import
+ * time) that THROWS on Android inside Expo Go since SDK 53 — crashing the
+ * app at startup before any of our code runs. So we only require() the
+ * module when it is actually usable:
+ *
+ * - Development/production builds: always available
+ * - Expo Go on iOS: available (limited push support, local notifications OK)
+ * - Expo Go on Android: NOT available — every API no-ops via `notifications`
+ *   being null and `isNotificationApiAvailable()` returning false
+ *
+ * NOTE: when `notifications` is null, values typed as Notifications.* are
+ * unobservable at runtime, so consumers see inert behavior instead of a
+ * crash. Full functionality requires a development build.
+ */
+let notificationsModule: typeof NotificationsType | null = null;
+let notificationsLoadAttempted = false;
+
+function loadNotifications(): typeof NotificationsType | null {
+  if (notificationsLoadAttempted) {
+    return notificationsModule;
+  }
+  notificationsLoadAttempted = true;
+
+  const inExpoGo =
+    Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+
+  if (inExpoGo && Platform.OS === 'android') {
+    console.log(
+      '[Notifications] Remote push unavailable in Expo Go on Android; notifications disabled. Use a development build for full support.'
+    );
+    return null;
+  }
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    notificationsModule =
+      require('expo-notifications') as typeof NotificationsType;
+  } catch (error) {
+    console.warn('[Notifications] Failed to load expo-notifications:', error);
+    notificationsModule = null;
+  }
+  return notificationsModule;
+}
+
+/**
+ * Whether the native notification APIs are usable in the current runtime.
+ */
+export function isNotificationApiAvailable(): boolean {
+  return loadNotifications() !== null;
+}
 
 // Notification channel IDs
 export const CHANNELS = {
@@ -45,6 +103,9 @@ const defaultPreferences: NotificationPreferences = {
  * Configure notification channels for Android
  */
 export async function configureNotificationChannels(): Promise<void> {
+  const Notifications = loadNotifications();
+  if (!Notifications) return;
+
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync(CHANNELS.BREAKING, {
       name: 'Breaking News',
@@ -81,7 +142,10 @@ export async function configureNotificationChannels(): Promise<void> {
 /**
  * Request notification permissions
  */
-export async function requestNotificationPermissions(): Promise<Notifications.PermissionStatus> {
+export async function requestNotificationPermissions(): Promise<NotificationsType.PermissionStatus> {
+  const Notifications = loadNotifications();
+  if (!Notifications) return 'denied' as NotificationsType.PermissionStatus;
+
   const { status: existingStatus } = await Notifications.getPermissionsAsync();
   
   if (existingStatus === 'granted') {
@@ -93,24 +157,46 @@ export async function requestNotificationPermissions(): Promise<Notifications.Pe
 }
 
 /**
- * Get push token for remote notifications
+ * Remote push requires a linked EAS project (`getExpoPushTokenAsync` fails with
+ * a placeholder id). `isEasProjectConfigured()` is the single source of truth —
+ * see services/appConfig.ts. Local notifications work without it.
+ */
+
+/**
+ * Get push token for remote notifications.
+ * Returns null (without throwing) when push cannot work on this device.
  */
 export async function getPushToken(): Promise<string | null> {
+  const Notifications = loadNotifications();
+  if (!Notifications) return null;
+
+  if (Constants.executionEnvironment === ExecutionEnvironment.StoreClient) {
+    return null;
+  }
+
+  const projectId = getEasProjectId();
+  if (!projectId) {
+    console.log(
+      '[Notifications] EAS project not linked; remote push disabled (local notifications still work)'
+    );
+    return null;
+  }
+
   try {
     const { status } = await Notifications.getPermissionsAsync();
-    
+
     if (status !== 'granted') {
       console.log('Notification permissions not granted');
       return null;
     }
 
-    const token = (await Notifications.getExpoPushTokenAsync({
-      projectId: 'your-project-id', // Replace with actual EAS project ID
-    })).data;
+    const token = (
+      await Notifications.getExpoPushTokenAsync({ projectId })
+    ).data;
 
     // Store token for backend registration
     await AsyncStorage.setItem('@amar_desh_push_token', token);
-    
+
     return token;
   } catch (error) {
     console.error('Error getting push token:', error);
@@ -124,10 +210,13 @@ export async function getPushToken(): Promise<string | null> {
 export async function scheduleLocalNotification(
   title: string,
   body: string,
-  data?: any,
+  data?: Record<string, unknown>,
   channelId: string = CHANNELS.GENERAL,
-  trigger?: Notifications.NotificationTriggerInput
+  trigger?: NotificationsType.NotificationTriggerInput
 ): Promise<string> {
+  const Notifications = loadNotifications();
+  if (!Notifications) return '';
+
   const notificationId = await Notifications.scheduleNotificationAsync({
     content: {
       title,
@@ -143,16 +232,11 @@ export async function scheduleLocalNotification(
 }
 
 /**
- * Schedule a daily briefing notification
+ * Schedule a daily briefing notification (fires every day at 8:00 AM)
  */
-export async function scheduleDailyBriefing(time: Date = new Date()): Promise<string> {
-  // Set to 8:00 AM tomorrow
-  const trigger = new Date(time);
-  trigger.setHours(8, 0, 0, 0);
-  
-  if (trigger.getTime() < Date.now()) {
-    trigger.setDate(trigger.getDate() + 1);
-  }
+export async function scheduleDailyBriefing(): Promise<string> {
+  const Notifications = loadNotifications();
+  if (!Notifications) return '';
 
   return await scheduleLocalNotification(
     'দৈনিক সংবাদ',
@@ -160,7 +244,7 @@ export async function scheduleDailyBriefing(time: Date = new Date()): Promise<st
     { type: 'daily-briefing' },
     CHANNELS.DAILY,
     {
-      type: 'daily',
+      type: Notifications.SchedulableTriggerInputTypes.DAILY,
       hour: 8,
       minute: 0,
     }
@@ -178,10 +262,10 @@ export async function sendBreakingNewsNotification(
   return await scheduleLocalNotification(
     '🔴 ব্রেকিং নিউজ',
     title,
-    { 
+    {
       type: 'breaking-news',
       articleId,
-      url: `amardesh://article/${articleId}`,
+      source: 'notification',
     },
     CHANNELS.BREAKING
   );
@@ -198,11 +282,11 @@ export async function sendCategoryUpdateNotification(
   return await scheduleLocalNotification(
     `${category} আপডেট`,
     title,
-    { 
+    {
       type: 'category-update',
       category,
       articleId,
-      url: `amardesh://article/${articleId}`,
+      source: 'notification',
     },
     CHANNELS.CATEGORY
   );
@@ -212,6 +296,8 @@ export async function sendCategoryUpdateNotification(
  * Cancel all scheduled notifications
  */
 export async function cancelAllNotifications(): Promise<void> {
+  const Notifications = loadNotifications();
+  if (!Notifications) return;
   await Notifications.cancelAllScheduledNotificationsAsync();
 }
 
@@ -219,13 +305,17 @@ export async function cancelAllNotifications(): Promise<void> {
  * Cancel a specific notification
  */
 export async function cancelNotification(notificationId: string): Promise<void> {
+  const Notifications = loadNotifications();
+  if (!Notifications) return;
   await Notifications.cancelScheduledNotificationAsync(notificationId);
 }
 
 /**
  * Get all scheduled notifications
  */
-export async function getScheduledNotifications(): Promise<Notifications.NotificationRequest[]> {
+export async function getScheduledNotifications(): Promise<NotificationsType.NotificationRequest[]> {
+  const Notifications = loadNotifications();
+  if (!Notifications) return [];
   return await Notifications.getAllScheduledNotificationsAsync();
 }
 
@@ -261,6 +351,9 @@ export async function saveNotificationPreferences(
  * Handle notification tap - navigate to article
  */
 export function setupNotificationHandler(): void {
+  const Notifications = loadNotifications();
+  if (!Notifications) return;
+
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
       shouldShowAlert: true,
@@ -276,8 +369,10 @@ export function setupNotificationHandler(): void {
  * Listen for notification responses (taps)
  */
 export function addNotificationResponseListener(
-  callback: (response: Notifications.NotificationResponse) => void
-): Notifications.Subscription {
+  callback: (response: NotificationsType.NotificationResponse) => void
+): ReturnType<typeof NotificationsType.addNotificationResponseReceivedListener> | null {
+  const Notifications = loadNotifications();
+  if (!Notifications) return null;
   return Notifications.addNotificationResponseReceivedListener(callback);
 }
 
@@ -285,26 +380,59 @@ export function addNotificationResponseListener(
  * Listen for foreground notifications
  */
 export function addNotificationReceivedListener(
-  callback: (notification: Notifications.Notification) => void
-): Notifications.Subscription {
+  callback: (notification: NotificationsType.Notification) => void
+): ReturnType<typeof NotificationsType.addNotificationReceivedListener> | null {
+  const Notifications = loadNotifications();
+  if (!Notifications) return null;
   return Notifications.addNotificationReceivedListener(callback);
 }
 
 /**
- * Handle notification tap and navigate
+ * Handle a notification tap and route the user to the relevant content.
+ *
+ * Navigation goes through `navigationService` so a tap opens the article
+ * *inside* the app. (The previous implementation called
+ * `Linking.openURL('amardesh://article/…')`, which cannot route expo-router and
+ * left the user on whatever screen was already open.)
+ *
+ * Returns the route that was opened, or `null` when the payload carried no
+ * usable destination.
  */
 export async function handleNotificationTap(
-  response: Notifications.NotificationResponse
-): Promise<void> {
-  const { data } = response.notification.request.content;
-  
-  if (data?.url) {
-    // Deep link to article
-    await Linking.openURL(data.url);
-  } else if (data?.articleId) {
-    // Fallback: construct URL
-    await Linking.openURL(`amardesh://article/${data.articleId}`);
+  response: NotificationsType.NotificationResponse
+): Promise<string | null> {
+  const data = response?.notification?.request?.content?.data as
+    | Record<string, unknown>
+    | undefined;
+
+  // 1. Preferred payload: an explicit article id.
+  const articleId =
+    typeof data?.articleId === 'string' ? data.articleId : undefined;
+  if (articleId) {
+    return openArticle(articleId);
   }
+
+  // 2. A URL payload may be an app-scheme link, a web article URL, or an
+  //    external link. Route in-app when we recognise it, otherwise hand the
+  //    URL to the OS (browser/mail/etc.).
+  const url = typeof data?.url === 'string' ? data.url : undefined;
+  if (url) {
+    const parsed = parseDeepLink(url);
+    if (parsed.type === 'article' && parsed.id) {
+      return openArticle(parsed.id);
+    }
+
+    if (parsed.type !== 'unknown') {
+      // Category / tab / search deep link: reuse the shared gateway.
+      const { handleIncomingUrl } = await import('./navigationService');
+      return handleIncomingUrl(url);
+    }
+
+    await openURL(url);
+    return null;
+  }
+
+  return null;
 }
 
 /**
@@ -318,11 +446,11 @@ export function isWithinQuietHours(preferences: NotificationPreferences): boolea
   const now = new Date();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
   
-  const [startHours, startMinutes] = preferences.quietHours.start.split(':').map(Number);
-  const [endHours, endMinutes] = preferences.quietHours.end.split(':').map(Number);
+  const [startHour, startMinute] = preferences.quietHours.start.split(':').map(Number);
+  const [endHour, endMinute] = preferences.quietHours.end.split(':').map(Number);
   
-  const startMinutes = startHours * 60 + startMinutes;
-  const endMinutes = endHours * 60 + endMinutes;
+  const startMinutes = startHour * 60 + startMinute;
+  const endMinutes = endHour * 60 + endMinute;
 
   // Handle overnight quiet hours (e.g., 22:00 to 07:00)
   if (startMinutes > endMinutes) {

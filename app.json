@@ -4,17 +4,13 @@
     "slug": "amar-desh-mobile",
     "version": "1.3.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "scheme": "amardesh",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#006B3F"
+    "androidStatusBar": {
+      "barStyle": "dark-content",
+      "backgroundColor": "#00000000",
+      "translucent": true
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.amardesh.mobile",
@@ -30,7 +26,6 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#006B3F"
       },
       "package": "com.amardesh.mobile",
@@ -50,7 +45,10 @@
               "pathPrefix": "/"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ],
       "permissions": [
@@ -60,10 +58,10 @@
         "POST_NOTIFICATIONS",
         "RECEIVE_BOOT_COMPLETED",
         "VIBRATE"
-      ]
+      ],
+      "versionCode": 2
     },
     "web": {
-      "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
     "plugins": [
@@ -71,11 +69,33 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/icon.png",
           "color": "#006B3F",
           "sounds": []
         }
-      ]
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/amardesh_logo.png",
+          "imageWidth": 220,
+          "resizeMode": "contain",
+          "backgroundColor": "#FFFFFF",
+          "dark": {
+            "image": "./assets/amardesh_logo.png",
+            "backgroundColor": "#0A0A0A"
+          }
+        }
+      ],
+      [
+        "expo-navigation-bar",
+        {
+          "enforceContrast": false,
+          "hidden": false,
+          "style": "auto"
+        }
+      ],
+      "expo-sharing",
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true
@@ -85,17 +105,22 @@
         "origin": false
       },
       "eas": {
-        "projectId": "your-project-id"
+        "projectId": "0ea4bfdf-df15-4a62-8bb4-7ad00b0f8dd7"
+      },
+      "expo-navigation-bar": {
+        "enforceContrast": false,
+        "style": "auto",
+        "hidden": false
       }
     },
     "updates": {
-      "enabled": true,
-      "checkAutomatically": "ON_LOAD",
-      "fallbackToCacheTimeout": 0,
-      "url": "https://u.expo.dev/your-project-id"
+      "enabled": false,
+      "checkAutomatically": "NEVER",
+      "fallbackToCacheTimeout": 0
     },
     "runtimeVersion": {
       "policy": "sdkVersion"
-    }
+    },
+    "owner": "sajid.islam"
   }
 }

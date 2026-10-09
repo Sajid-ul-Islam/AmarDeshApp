@@ -3,13 +3,16 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
-import { useThemedStyles } from '../../theme';
+import { useThemedStyles, useThemeTokens } from '../../theme';
+import { getSafeHeaderPaddingTop } from '../../utils/layout';
+import { AmarDeshLogo } from '../../components/AmarDeshLogo';
 import { useUserStore } from '../../user';
 import { useState } from 'react';
 
 export default function ExportDataScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const tokens = useThemeTokens();
   const styles = useThemedStyles((tokens) => StyleSheet.create({
     container: {
       flex: 1,
@@ -18,6 +21,7 @@ export default function ExportDataScreen() {
     header: {
       flexDirection: 'row',
       alignItems: 'center',
+      paddingTop: getSafeHeaderPaddingTop(insets.top, 6),
       paddingHorizontal: 16,
       paddingVertical: 12,
       backgroundColor: tokens.surface.base,
@@ -36,6 +40,8 @@ export default function ExportDataScreen() {
     },
     content: {
       flex: 1,
+      // Edge-to-edge: keep last section clear of the gesture navigation bar
+      paddingBottom: 32,
     },
     section: {
       backgroundColor: tokens.surface.base,
@@ -187,16 +193,21 @@ export default function ExportDataScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
-          <Ionicons name="arrow-back" size={24} color="#111827" />
-        </TouchableOpacity>
-        <Text style={styles.title}>ডেটা এক্সপোর্ট</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="ফিরে যান"
+            onPress={() => router.back()}
+            style={styles.backButton}
+          >
+            <Ionicons name="arrow-back" size={24} color={tokens.text.primary} />
+          </TouchableOpacity>
+          <Text style={styles.title}>ডেটা এক্সপোর্ট</Text>
+        </View>
+        <AmarDeshLogo height={22} variant="png" />
       </View>
 
       <ScrollView style={styles.content}>

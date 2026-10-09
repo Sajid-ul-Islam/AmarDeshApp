@@ -1,20 +1,42 @@
 import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useSyncExternalStore } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { articles } from '../../data/mockData';
-import { formatRelativeTime } from '../../utils/bengali';
+import type { Article } from '../../types';
+import { formatRelativeTime, toBengaliNumeral } from '../../utils/bengali';
 import { ArticleThumbnail } from '../../components/OptimizedImage';
 import { useUserStore } from '../../user';
+import { loadArticles, getArticles, subscribeToArticles } from '../../services/articleStore';
+import { useThemedStyles, useThemeTokens } from '../../theme';
+import { getSafeHeaderPaddingTop, getSafeBottomPadding } from '../../utils/layout';
+import { AmarDeshLogo } from '../../components/AmarDeshLogo';
+
+const POPULAR_SEARCH_TAGS = [
+  'জুলাই বিপ্লব',
+  'সংস্কার প্রস্তাব',
+  'মাহমুদুর রহমান',
+  'অর্থনীতি',
+  'নির্বাচন',
+  'খেলাধুলা',
+];
 
 export default function SearchScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
+  const tokens = useThemeTokens();
   const [query, setQuery] = useState('');
   const [hasTrackedSearch, setHasTrackedSearch] = useState(false);
   const trackEvent = useUserStore((state) => state.trackEvent);
 
-  const filteredArticles = query.trim()
-    ? articles.filter(
+  // Live news from dailyamardesh.com
+  const liveArticles = useSyncExternalStore(
+    subscribeToArticles,
+    getArticles
+  );
+
+  const filteredArticles: Article[] = query.trim()
+    ? liveArticles.filter(
         (a) =>
           a.title.toLowerCase().includes(query.toLowerCase()) ||
           a.excerpt.toLowerCase().includes(query.toLowerCase()) ||
@@ -22,7 +44,6 @@ export default function SearchScreen() {
       )
     : [];
 
-  // Track search performed
   useEffect(() => {
     if (query.trim() && filteredArticles.length > 0 && !hasTrackedSearch) {
       trackEvent('search_performed', 'search', query, {
@@ -35,40 +56,216 @@ export default function SearchScreen() {
     }
   }, [query, filteredArticles.length]);
 
-  const handleResultClick = (article: typeof articles[0], index: number) => {
-    // Track search result clicked
+  const handleResultClick = (article: Article, index: number) => {
     trackEvent('search_result_clicked', 'article', article.id, {
       query,
       position: index,
     });
-    router.push(`/article/${article.id}`);
+    router.push({
+      pathname: '/article/[id]',
+      params: { id: article.id, source: 'search' },
+    } as any);
   };
+
+  useEffect(() => {
+    loadArticles();
+  }, []);
+
+  const styles = useThemedStyles((tokens) =>
+    StyleSheet.create({
+      container: {
+        flex: 1,
+        backgroundColor: tokens.surface.subtle,
+      },
+      header: {
+        paddingHorizontal: 16,
+        paddingTop: getSafeHeaderPaddingTop(insets.top, 8),
+        paddingBottom: getSafeBottomPadding(insets.bottom, 12),
+        backgroundColor: tokens.surface.base,
+        borderBottomWidth: 0.5,
+        borderBottomColor: tokens.border.subtle,
+      },
+      searchContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: tokens.surface.elevated,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderRadius: tokens.radii.pill,
+        gap: 10,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.sm,
+      },
+      searchInput: {
+        flex: 1,
+        fontSize: 15,
+        color: tokens.text.primary,
+        padding: 0,
+      },
+      tagSection: {
+        padding: 16,
+      },
+      tagSectionTitle: {
+        fontSize: 13,
+        fontWeight: 'bold',
+        color: tokens.text.secondary,
+        marginBottom: 10,
+      },
+      tagRow: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+      },
+      tagChip: {
+        paddingHorizontal: 14,
+        paddingVertical: 6,
+        borderRadius: tokens.radii.pill,
+        backgroundColor: tokens.surface.base,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+      },
+      tagChipText: {
+        fontSize: 13,
+        color: tokens.brand.primary,
+        fontWeight: '500',
+      },
+      resultMetaBar: {
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+      },
+      resultCountText: {
+        fontSize: 13,
+        color: tokens.text.secondary,
+      },
+      listContent: {
+        paddingHorizontal: 16,
+        paddingBottom: 28,
+      },
+      articleCard: {
+        flexDirection: 'row',
+        backgroundColor: tokens.surface.base,
+        borderRadius: tokens.radii.lg,
+        overflow: 'hidden',
+        marginBottom: 12,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.card,
+      },
+      articleImage: {
+        width: 104,
+        height: 88,
+        borderRadius: tokens.radii.md,
+      },
+      articleContent: {
+        flex: 1,
+        padding: 12,
+        justifyContent: 'space-between',
+      },
+      articleCategory: {
+        fontSize: 12,
+        color: tokens.brand.primary,
+        fontWeight: '700',
+        marginBottom: 3,
+      },
+      articleTitle: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: tokens.text.primary,
+        lineHeight: 19,
+        marginBottom: 4,
+      },
+      articleTime: {
+        fontSize: 11,
+        color: tokens.text.tertiary,
+      },
+      emptyState: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 56,
+        paddingHorizontal: 32,
+      },
+      emptyIconCircle: {
+        width: 72,
+        height: 72,
+        borderRadius: 36,
+        backgroundColor: tokens.surface.elevated,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 14,
+      },
+      emptyText: {
+        fontSize: 15,
+        color: tokens.text.primary,
+        fontWeight: '600',
+        marginBottom: 4,
+      },
+      emptySubtext: {
+        fontSize: 13,
+        color: tokens.text.secondary,
+        textAlign: 'center',
+      },
+    })
+  );
 
   return (
     <View style={styles.container}>
-      {/* Search Input */}
-      <View style={styles.searchContainer}>
-        <Ionicons name="search" size={20} color="#6B7280" />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="সংবাদ খুঁজুন..."
-          value={query}
-          onChangeText={setQuery}
-          placeholderTextColor="#9CA3AF"
-        />
-        {query.length > 0 && (
-          <TouchableOpacity onPress={() => setQuery('')}>
-            <Ionicons name="close-circle" size={20} color="#6B7280" />
-          </TouchableOpacity>
-        )}
+      {/* Search Header Bar */}
+      <View style={styles.header}>
+        <View style={{ marginBottom: 10, alignItems: 'center' }}>
+          <AmarDeshLogo height={26} variant="png" />
+        </View>
+        <View style={styles.searchContainer}>
+          <Ionicons name="search" size={18} color={tokens.brand.primary} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="আমার দেশ সংবাদ অনুসন্ধান..."
+            value={query}
+            onChangeText={setQuery}
+            placeholderTextColor={tokens.text.tertiary}
+            autoCapitalize="none"
+            returnKeyType="search"
+          />
+          {query.length > 0 && (
+            <TouchableOpacity onPress={() => setQuery('')}>
+              <Ionicons name="close-circle" size={18} color={tokens.interactive.inactive} />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
-      {/* Results */}
+      {/* When query is empty: popular search tags */}
+      {!query.trim() && (
+        <View style={styles.tagSection}>
+          <Text style={styles.tagSectionTitle}>জনপ্রিয় অনুসন্ধান বিষয়সমূহ:</Text>
+          <View style={styles.tagRow}>
+            {POPULAR_SEARCH_TAGS.map((tag) => (
+              <TouchableOpacity
+                key={tag}
+                style={styles.tagChip}
+                onPress={() => setQuery(tag)}
+              >
+                <Text style={styles.tagChipText}>{tag}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      )}
+
+      {/* Results or Empty State */}
       {query.trim() ? (
         filteredArticles.length > 0 ? (
           <FlatList
             data={filteredArticles}
             keyExtractor={(item) => item.id}
+            ListHeaderComponent={
+              <View style={styles.resultMetaBar}>
+                <Text style={styles.resultCountText}>
+                  "{query}" সংক্রান্ত {toBengaliNumeral(filteredArticles.length)} টি ফলাফল পাওয়া গেছে
+                </Text>
+              </View>
+            }
             renderItem={({ item, index }) => (
               <TouchableOpacity
                 style={styles.articleCard}
@@ -89,94 +286,26 @@ export default function SearchScreen() {
           />
         ) : (
           <View style={styles.emptyState}>
-            <Ionicons name="search-outline" size={48} color="#D1D5DB" />
+            <View style={styles.emptyIconCircle}>
+              <Ionicons name="search-outline" size={36} color={tokens.text.tertiary} />
+            </View>
             <Text style={styles.emptyText}>কোনো ফলাফল পাওয়া যায়নি</Text>
+            <Text style={styles.emptySubtext}>
+              ভিন্ন শব্দ বা কীওয়ার্ড দিয়ে পুনরায় অনুসন্ধান করে দেখুন
+            </Text>
           </View>
         )
       ) : (
         <View style={styles.emptyState}>
-          <Ionicons name="search-outline" size={48} color="#D1D5DB" />
-          <Text style={styles.emptyText}>সংবাদ খুঁজতে উপরে টাইপ করুন</Text>
+          <View style={styles.emptyIconCircle}>
+            <Ionicons name="newspaper-outline" size={36} color={tokens.text.tertiary} />
+          </View>
+          <Text style={styles.emptyText}>সংবাদ খুঁজতে উপরে লিখুন</Text>
+          <Text style={styles.emptySubtext}>
+            শিরোনাম, বিষয় বা যেকোনো সংবাদ ক্যাটাগরি অনুসন্ধান করুন
+          </Text>
         </View>
       )}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    margin: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 12,
-    gap: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    color: '#111827',
-  },
-  listContent: {
-    paddingHorizontal: 16,
-  },
-  articleCard: {
-    flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  articleImage: {
-    width: 100,
-    height: 100,
-  },
-  articleContent: {
-    flex: 1,
-    padding: 12,
-    justifyContent: 'space-between',
-  },
-  articleCategory: {
-    fontSize: 12,
-    color: '#006B3F',
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  articleTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 4,
-  },
-  articleTime: {
-    fontSize: 12,
-    color: '#6B7280',
-  },
-  emptyState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 48,
-  },
-  emptyText: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginTop: 12,
-  },
-});

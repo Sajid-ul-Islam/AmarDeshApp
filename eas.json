@@ -47,6 +47,18 @@
         "API_URL": "https://api.dailyamardesh.com",
         "ENABLE_ANALYTICS": "true"
       }
+    },
+    "production-apk": {
+      "channel": "production",
+      "autoIncrement": true,
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "APP_ENV": "production",
+        "API_URL": "https://api.dailyamardesh.com",
+        "ENABLE_ANALYTICS": "true"
+      }
     }
   },
   "submit": {

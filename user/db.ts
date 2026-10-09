@@ -213,7 +213,7 @@ export async function getEvents(
     const db = await getDatabase();
     
     let query = 'SELECT * FROM events WHERE user_id = ?';
-    const params: any[] = [userId];
+    const params: (string | number | null)[] = [userId];
     
     if (sinceTimestamp) {
       query += ' AND created_at > ?';
@@ -227,7 +227,7 @@ export async function getEvents(
     // Parse metadata JSON
     return rows.map(row => ({
       ...row,
-      metadata: row.metadata ? JSON.parse(row.metadata) : undefined,
+      metadata: row.metadata ? JSON.parse(row.metadata as unknown as string) : undefined,
     }));
   } catch (error) {
     console.error('[Database] Error getting events:', error);
@@ -292,8 +292,8 @@ export async function upsertArticleState(state: ArticleState): Promise<void> {
       [
         state.article_id,
         state.user_id,
-        state.first_opened_at,
-        state.last_opened_at,
+        state.first_opened_at ?? null,
+        state.last_opened_at ?? null,
         state.open_count,
         state.max_scroll_depth,
         state.total_dwell_ms,
@@ -504,7 +504,7 @@ export async function getUserMetadata(userId: string): Promise<UserMetadata | nu
     );
     
     if (row && row.preferences) {
-      row.preferences = JSON.parse(row.preferences);
+      row.preferences = JSON.parse(row.preferences as unknown as string);
     }
     
     return row || null;

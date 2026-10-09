@@ -2,13 +2,16 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert } f
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useThemedStyles } from '../../theme';
+import { useThemedStyles, useThemeTokens } from '../../theme';
+import { getSafeHeaderPaddingTop } from '../../utils/layout';
+import { AmarDeshLogo } from '../../components/AmarDeshLogo';
 import { useUserStore } from '../../user';
 import { useState, useEffect } from 'react';
 
 export default function PrivacySettingsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const tokens = useThemeTokens();
   const styles = useThemedStyles((tokens) => StyleSheet.create({
     container: {
       flex: 1,
@@ -17,15 +20,17 @@ export default function PrivacySettingsScreen() {
     header: {
       flexDirection: 'row',
       alignItems: 'center',
+      paddingTop: getSafeHeaderPaddingTop(insets.top, 8),
       paddingHorizontal: 16,
-      paddingVertical: 12,
+      paddingBottom: 12,
       backgroundColor: tokens.surface.base,
-      borderBottomWidth: 1,
-      borderBottomColor: tokens.border.default,
+      borderBottomWidth: 0.5,
+      borderBottomColor: tokens.border.subtle,
     },
     backButton: {
       padding: 8,
       marginRight: 8,
+      borderRadius: tokens.radii.pill,
     },
     title: {
       fontSize: 18,
@@ -34,12 +39,18 @@ export default function PrivacySettingsScreen() {
     },
     content: {
       flex: 1,
+      paddingBottom: 32,
     },
     section: {
       backgroundColor: tokens.surface.base,
       marginTop: 16,
+      marginHorizontal: 16,
+      borderRadius: tokens.radii.lg,
       paddingHorizontal: 16,
-      paddingVertical: 12,
+      paddingVertical: 14,
+      borderWidth: 0.5,
+      borderColor: tokens.border.subtle,
+      ...tokens.shadows.card,
     },
     sectionTitle: {
       fontSize: 14,
@@ -53,7 +64,7 @@ export default function PrivacySettingsScreen() {
       alignItems: 'center',
       justifyContent: 'space-between',
       paddingVertical: 12,
-      borderBottomWidth: 1,
+      borderBottomWidth: 0.5,
       borderBottomColor: tokens.border.subtle,
     },
     settingRowLast: {
@@ -71,24 +82,28 @@ export default function PrivacySettingsScreen() {
     },
     dangerButton: {
       backgroundColor: tokens.status.error,
-      padding: 16,
-      borderRadius: 8,
+      padding: 14,
+      borderRadius: tokens.radii.pill,
       alignItems: 'center',
       marginTop: 24,
       marginHorizontal: 16,
+      ...tokens.shadows.sm,
     },
     dangerButtonText: {
       color: tokens.text.inverse,
-      fontSize: 16,
+      fontSize: 15,
       fontWeight: '600',
     },
     infoBox: {
       backgroundColor: tokens.surface.elevated,
       padding: 16,
       margin: 16,
-      borderRadius: 8,
+      borderRadius: tokens.radii.lg,
       borderLeftWidth: 4,
       borderLeftColor: tokens.brand.primary,
+      borderWidth: 0.5,
+      borderColor: tokens.border.subtle,
+      ...tokens.shadows.card,
     },
     infoText: {
       fontSize: 14,
@@ -105,7 +120,7 @@ export default function PrivacySettingsScreen() {
       backgroundColor: tokens.brand.surface,
       paddingHorizontal: 12,
       paddingVertical: 6,
-      borderRadius: 16,
+      borderRadius: tokens.radii.pill,
     },
     interestText: {
       fontSize: 12,
@@ -182,16 +197,21 @@ export default function PrivacySettingsScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
-          <Ionicons name="arrow-back" size={24} color="#111827" />
-        </TouchableOpacity>
-        <Text style={styles.title}>গোপনীয়তা সেটিংস</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="ফিরে যান"
+            onPress={() => router.back()}
+            style={styles.backButton}
+          >
+            <Ionicons name="arrow-back" size={24} color={tokens.text.primary} />
+          </TouchableOpacity>
+          <Text style={styles.title}>গোপনীয়তা সেটিংস</Text>
+        </View>
+        <AmarDeshLogo height={22} variant="png" />
       </View>
 
       <ScrollView style={styles.content}>
@@ -215,7 +235,7 @@ export default function PrivacySettingsScreen() {
 
         {/* Reading Stats */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle">আপনার পরিসংখ্যান</Text>
+          <Text style={styles.sectionTitle}>আপনার পরিসংখ্যান</Text>
           
           <View style={styles.statsContainer}>
             <View style={styles.statItem}>
@@ -224,7 +244,7 @@ export default function PrivacySettingsScreen() {
             </View>
             <View style={styles.statItem}>
               <Text style={styles.statValue}>{formatTime(totalTimeSpentMs)}</Text>
-              <Text style={styles.statLabel">সময় ব্যয়</Text>
+              <Text style={styles.statLabel}>সময় ব্যয়</Text>
             </View>
             <View style={styles.statItem}>
               <Text style={styles.statValue}>{readingStreakDays}</Text>
@@ -273,13 +293,13 @@ export default function PrivacySettingsScreen() {
               <Text style={styles.settingLabel}>✓ আপনি কতক্ষণ পড়েন</Text>
               <Text style={styles.settingLabel}>✓ আপনি কোন বিষয় পছন্দ করেন</Text>
               <Text style={styles.settingLabel}>✓ আপনার বুকমার্ক</Text>
-              <Text style={styles.settingLabel} style={{ marginTop: 8, color: '#DC2626' }}>
+              <Text style={[styles.settingLabel, { marginTop: 8, color: '#DC2626' }]}>
                 ✗ কোনো ব্যক্তিগত তথ্য নয়
               </Text>
-              <Text style={styles.settingLabel} style={{ color: '#DC2626' }}>
+              <Text style={[styles.settingLabel, { color: '#DC2626' }]}>
                 ✗ কোনো অবস্থান ডেটা নয়
               </Text>
-              <Text style={styles.settingLabel} style={{ color: '#DC2626' }}>
+              <Text style={[styles.settingLabel, { color: '#DC2626' }]}>
                 ✗ কোনো পরিচিতি নয়
               </Text>
             </View>

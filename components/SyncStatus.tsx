@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../theme';
+import { useTheme, radii, shadows } from '../theme';
 import {
   isAuthenticated,
   getCurrentUser,
@@ -17,7 +17,15 @@ interface SyncStatusProps {
 }
 
 export default function SyncStatus({ onLoginPress }: SyncStatusProps) {
-  const { colors } = useTheme();
+  const { tokens } = useTheme();
+  const colors = {
+    surface: tokens.surface.base,
+    text: tokens.text.primary,
+    textSecondary: tokens.text.secondary,
+    primary: tokens.brand.primary,
+    white: '#FFFFFF',
+    success: tokens.status.success,
+  };
   const [isAuth, setIsAuth] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
   const [lastSync, setLastSync] = useState<number>(0);
@@ -134,9 +142,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    borderRadius: 12,
+    borderRadius: radii.lg,
     marginHorizontal: 16,
     marginVertical: 8,
+    borderWidth: 0.5,
+    borderColor: 'rgba(0, 0, 0, 0.08)',
+    ...shadows.card,
   },
   iconContainer: {
     marginRight: 12,
@@ -155,7 +166,7 @@ const styles = StyleSheet.create({
   button: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 8,
+    borderRadius: radii.pill,
   },
   buttonText: {
     fontSize: 14,
@@ -164,10 +175,10 @@ const styles = StyleSheet.create({
   syncButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    paddingHorizontal: 12,
+    borderWidth: 0.5,
+    paddingHorizontal: 14,
     paddingVertical: 6,
-    borderRadius: 8,
+    borderRadius: radii.pill,
   },
   syncButtonText: {
     fontSize: 12,

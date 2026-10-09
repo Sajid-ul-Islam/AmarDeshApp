@@ -8,6 +8,8 @@
 import React, { createContext, useContext, useMemo } from 'react';
 import { useColorScheme } from 'react-native';
 import { getThemeTokens, ThemeTokens, ThemeMode, brand, social } from './tokens';
+import { useAppStore } from '../store/useAppStore';
+import { resolveFontFamily, type FontPreference } from '../services/fontService';
 
 // ============================================================================
 // CONTEXT TYPE
@@ -19,6 +21,19 @@ interface ThemeContextType {
   brand: typeof brand;
   social: typeof social;
   isDark: boolean;
+  /**
+   * Active typography profile (site default / Noto Serif Bengali / device).
+   */
+  fontPreference: FontPreference;
+  /**
+   * Resolved family names for the active profile.
+   *
+   * `undefined` means "use the platform default", so callers can spread these
+   * straight into a style: `fontFamily: headingFont`.
+   */
+  headingFont: string | undefined;
+  bodyFont: string | undefined;
+  latinFont: string | undefined;
 }
 
 // ============================================================================
@@ -41,13 +56,30 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   forcedMode 
 }) => {
   const systemColorScheme = useColorScheme();
-  
-  // Determine theme mode
-  const mode: ThemeMode = forcedMode || (systemColorScheme === 'dark' ? 'dark' : 'light');
+  const themePreference = useAppStore((state) => state.themePreference);
+  const fontPreference = useAppStore((state) => state.fontPreference);
+
+  // Determine theme mode: explicit prop > user preference > system setting
+  const mode: ThemeMode =
+    forcedMode ||
+    (themePreference === 'dark'
+      ? 'dark'
+      : themePreference === 'sepia'
+        ? 'sepia'
+        : themePreference === 'light'
+          ? 'light'
+          : systemColorScheme === 'dark'
+            ? 'dark'
+            : 'light');
   
   // Get tokens for current mode
   const tokens = useMemo(() => getThemeTokens(mode), [mode]);
-  
+
+  // Resolve the active typography profile.
+  const headingFont = resolveFontFamily(fontPreference, 'heading');
+  const bodyFont = resolveFontFamily(fontPreference, 'body');
+  const latinFont = resolveFontFamily(fontPreference, 'latin');
+
   // Context value
   const contextValue = useMemo(() => ({
     mode,
@@ -55,7 +87,11 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     brand,
     social,
     isDark: mode === 'dark',
-  }), [mode, tokens]);
+    fontPreference,
+    headingFont,
+    bodyFont,
+    latinFont,
+  }), [mode, tokens, fontPreference, headingFont, bodyFont, latinFont]);
 
   return (
     <ThemeContext.Provider value={contextValue}>
@@ -112,6 +148,17 @@ export const useBrandColors = () => {
 export const useSocialColors = () => {
   const { social } = useTheme();
   return social;
+};
+
+/** Resolved font families for the active typography profile. */
+export const useFontFamily = (): {
+  fontPreference: FontPreference;
+  headingFont: string | undefined;
+  bodyFont: string | undefined;
+  latinFont: string | undefined;
+} => {
+  const { fontPreference, headingFont, bodyFont, latinFont } = useTheme();
+  return { fontPreference, headingFont, bodyFont, latinFont };
 };
 
 export default ThemeProvider;

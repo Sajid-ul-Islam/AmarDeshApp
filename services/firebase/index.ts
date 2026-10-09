@@ -4,12 +4,14 @@
  * Central export for all Firebase-related services.
  */
 
-export { app, auth, db, isFirebaseConfigured, getFirebaseConfig } from './config';
+export { isFirebaseConfigured, getFirebaseConfig, requireFirebase } from './config';
 export {
-  initializeAuth,
+  initializeAuthListener,
   onAuthStateChange,
   getCurrentUser,
   isAuthenticated,
+  isCloudAccountAvailable,
+  CloudNotConfiguredError,
   signInWithEmail,
   createAccountWithEmail,
   signInWithGoogle,

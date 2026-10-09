@@ -106,3 +106,11 @@ export {
   articleMatchesInterests,
   getPersonalizationStats,
 } from './personalizationEngine';
+
+// Article state aggregation
+export {
+  recordArticleOpen,
+  recordArticleClose,
+  setArticleSaved,
+  setArticleShared,
+} from './articleState';

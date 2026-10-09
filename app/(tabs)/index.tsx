@@ -1,324 +1,787 @@
-import { View, Text, FlatList, StyleSheet, RefreshControl, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect, useSyncExternalStore } from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  RefreshControl,
+  TouchableOpacity,
+  ScrollView,
+  Platform,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
 import { useRouter } from 'expo-router';
-import { useState, useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { articles as mockArticles, Article } from '../../data/mockData';
+import { Ionicons } from '@expo/vector-icons';
+import type { Article } from '../../types';
 import { formatRelativeTime } from '../../utils/bengali';
-import { fetchRSSFeed } from '../../services/rssService';
-import { loadBookmarks, saveBookmarks } from '../../services/storage';
-import { useThemedStyles } from '../../theme';
+import {
+  loadArticles,
+  getArticles,
+  subscribeToArticles,
+} from '../../services/articleStore';
+import { loadBookmarks } from '../../services/storage';
+import { stripCDATA } from '../../services/rssService';
+import { useThemedStyles, useThemeTokens } from '../../theme';
 import { ArticleThumbnail, ArticleHeroImage } from '../../components/OptimizedImage';
-import { useUserStore } from '../../user';
+import { useUserStore, trackCategoryViewed } from '../../user';
 import ReadingStreak from '../../components/ReadingStreak';
+import { BreakingNewsTicker } from '../../components/BreakingNewsTicker';
+import { ContinueReadingCard } from '../../components/ContinueReadingCard';
+import {
+  SITE_CATEGORIES,
+  getArticlesByCategory,
+} from '../../services/contentService';
+import { LOW_DATA_FEED_LIMIT } from '../../utils/imageUrl';
+import {
+  getUnreadNotificationCount,
+  subscribeToInbox,
+} from '../../services/notificationInboxService';
+import { toBengaliNumeral } from '../../utils/bengali';
+import { AdBanner } from '../../components/AdBanner';
+import { VisualStoriesBar } from '../../components/VisualStoriesBar';
+import { LiveRatesTicker } from '../../components/LiveRatesTicker';
+import * as Haptics from 'expo-haptics';
+import { useAppStore } from '../../store/useAppStore';
+import {
+  t,
+  getLocalizedCategoryName,
+  formatLocalizedNumeral,
+  formatLocalizedRelativeTime,
+} from '../../services/i18n';
+import { getSafeHeaderPaddingTop, getSafeBottomPadding } from '../../utils/layout';
+import { AmarDeshLogo } from '../../components/AmarDeshLogo';
+import { SideNavDrawer } from '../../components/SideNavDrawer';
+import { FeaturedCardSlider } from '../../components/FeaturedCardSlider';
+import { SwipeCardDeck } from '../../components/SwipeCardDeck';
+import { SponsoredProductShowcase } from '../../components/SponsoredProductShowcase';
 
 export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const tokens = useThemeTokens();
   const [refreshing, setRefreshing] = useState(false);
-  const [articles, setArticles] = useState<Article[]>(mockArticles);
-  const [personalizedArticles, setPersonalizedArticles] = useState<Article[]>(mockArticles);
+  const [selectedCategory, setSelectedCategory] = useState('সর্বশেষ');
+  const [unreadNotifCount, setUnreadNotifCount] = useState(0);
+  const [isSideNavOpen, setIsSideNavOpen] = useState(false);
+  const language = useAppStore((state) => state.language);
+  const feedLayout = useAppStore((state) => state.feedLayout);
+  const setFeedLayout = useAppStore((state) => state.setFeedLayout);
+  const lowDataMode = useAppStore((state) => state.lowDataMode);
+
+  // Live news from dailyamardesh.com shared store.
+  //
+  // No mock-data fallback: showing month-old fixture stories as if they were
+  // today's news is worse than showing an honest empty state. The offline cache
+  // inside the store already covers the no-network case.
+  const liveArticles = useSyncExternalStore(subscribeToArticles, getArticles);
+  const [isFeedLoading, setIsFeedLoading] = useState(liveArticles.length === 0);
+
+  const [displayArticles, setDisplayArticles] = useState<Article[]>(liveArticles);
   const [bookmarks, setBookmarks] = useState<string[]>([]);
-  const getPersonalizedFeed = useUserStore((state) => state.getPersonalizedFeed);
   const isUserReady = useUserStore((state) => state.isInitialized);
-  
-  // Use themed styles
-  const styles = useThemedStyles((tokens) => StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: tokens.surface.subtle,
-    },
-    header: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingHorizontal: 16,
-      paddingVertical: 12,
-      backgroundColor: tokens.surface.base,
-      borderBottomWidth: 1,
-      borderBottomColor: tokens.border.default,
-    },
-    logoContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
-    },
-    logo: {
-      backgroundColor: tokens.brand.primary,
-      paddingHorizontal: 8,
-      paddingVertical: 4,
-      borderRadius: 4,
-    },
-    logoText: {
-      color: tokens.brand.onPrimary,
-      fontSize: 16,
-      fontWeight: 'bold',
-    },
-    appName: {
-      fontSize: 18,
-      fontWeight: 'bold',
-      color: tokens.text.primary,
-    },
-    categoryContainer: {
-      flexDirection: 'row',
-      paddingHorizontal: 12,
-      paddingVertical: 8,
-      backgroundColor: tokens.surface.base,
-      borderBottomWidth: 1,
-      borderBottomColor: tokens.border.default,
-      gap: 8,
-    },
-    categoryTab: {
-      paddingHorizontal: 12,
-      paddingVertical: 6,
-      borderRadius: 20,
-      backgroundColor: tokens.surface.elevated,
-    },
-    activeCategory: {
-      backgroundColor: tokens.brand.primary,
-    },
-    categoryText: {
-      fontSize: 14,
-      color: tokens.text.secondary,
-    },
-    activeCategoryText: {
-      color: tokens.brand.onPrimary,
-      fontWeight: '600',
-    },
-    listContent: {
-      padding: 16,
-    },
-    heroCard: {
-      borderRadius: 12,
-      overflow: 'hidden',
-      marginBottom: 16,
-      backgroundColor: tokens.surface.base,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      elevation: 3,
-    },
-    heroImage: {
-      width: '100%',
-      height: 220,
-    },
-    heroOverlay: {
-      position: 'absolute',
-      bottom: 0,
-      left: 0,
-      right: 0,
-      padding: 16,
-      backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    },
-    breakingBadge: {
-      backgroundColor: tokens.status.error,
-      paddingHorizontal: 8,
-      paddingVertical: 4,
-      borderRadius: 4,
-      alignSelf: 'flex-start',
-      marginBottom: 8,
-    },
-    breakingText: {
-      color: tokens.text.inverse,
-      fontSize: 10,
-      fontWeight: 'bold',
-    },
-    heroCategory: {
-      color: tokens.brand.accent,
-      fontSize: 12,
-      fontWeight: '600',
-      marginBottom: 4,
-    },
-    heroTitle: {
-      color: tokens.text.inverse,
-      fontSize: 18,
-      fontWeight: 'bold',
-      marginBottom: 8,
-    },
-    heroTime: {
-      color: tokens.text.tertiary,
-      fontSize: 12,
-    },
-    articleCard: {
-      flexDirection: 'row',
-      backgroundColor: tokens.surface.base,
-      borderRadius: 12,
-      overflow: 'hidden',
-      marginBottom: 12,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.05,
-      shadowRadius: 2,
-      elevation: 2,
-    },
-    articleImage: {
-      width: 100,
-      height: 100,
-    },
-    articleContent: {
-      flex: 1,
-      padding: 12,
-      justifyContent: 'space-between',
-    },
-    articleCategory: {
-      fontSize: 12,
-      color: tokens.brand.primary,
-      fontWeight: '600',
-      marginBottom: 4,
-    },
-    articleTitle: {
-      fontSize: 14,
-      fontWeight: '600',
-      color: tokens.text.primary,
-      marginBottom: 4,
-    },
-    articleTime: {
-      fontSize: 12,
-      color: tokens.text.secondary,
-    },
-  }));
+  const getPersonalizedFeed = useUserStore((state) => state.getPersonalizedFeed);
 
   // Load bookmarks on mount
   useEffect(() => {
     loadBookmarks().then(setBookmarks);
   }, []);
 
-  // Fetch RSS feed on mount
+  // Clear the loading state once the store has anything to show (live or cached).
   useEffect(() => {
-    const loadRSSFeed = async () => {
-      try {
-        const rssArticles = await fetchRSSFeed();
-        if (rssArticles.length > 0) {
-          setArticles(rssArticles);
-        }
-      } catch (error) {
-        console.error('Error loading RSS feed:', error);
-        // Keep using mock data
-      }
-    };
-    
-    loadRSSFeed();
-  }, []);
+    if (liveArticles.length > 0) setIsFeedLoading(false);
+  }, [liveArticles.length]);
 
-  // Generate personalized feed when articles change or user is ready
+  // Update articles when category or live store changes.
+  //
+  // Low-data mode also caps how many items are rendered, so the saving is real
+  // rather than a label on a switch.
   useEffect(() => {
-    const generateFeed = async () => {
-      if (isUserReady && articles.length > 0) {
-        const personalized = await getPersonalizedFeed(articles);
-        setPersonalizedArticles(personalized);
-      } else {
-        setPersonalizedArticles(articles);
-      }
+    let active = true;
+
+    const apply = (next: Article[]) => {
+      if (!active) return;
+      setDisplayArticles(
+        lowDataMode ? next.slice(0, LOW_DATA_FEED_LIMIT) : next
+      );
     };
-    
-    generateFeed();
-  }, [articles, isUserReady]);
+
+    if (selectedCategory === 'সর্বশেষ') {
+      if (isUserReady && liveArticles.length > 0) {
+        getPersonalizedFeed(liveArticles).then(apply).catch(() => apply(liveArticles));
+      } else {
+        apply(liveArticles);
+      }
+    } else {
+      // Pass the slug/label through the shared lookup so a Bengali chip label
+      // and a route slug resolve to the same section.
+      apply(getArticlesByCategory(selectedCategory));
+    }
+
+    return () => {
+      active = false;
+    };
+  }, [selectedCategory, liveArticles, isUserReady, getPersonalizedFeed, lowDataMode]);
+
+
+  // Subscribe to notification inbox for unread count
+  useEffect(() => {
+    getUnreadNotificationCount().then(setUnreadNotifCount);
+    const unsub = subscribeToInbox(() => {
+      getUnreadNotificationCount().then(setUnreadNotifCount);
+    });
+    return unsub;
+  }, []);
 
   const onRefresh = async () => {
     setRefreshing(true);
     try {
-      const rssArticles = await fetchRSSFeed();
-      if (rssArticles.length > 0) {
-        setArticles(rssArticles);
-      } else {
-        // Simulate refresh delay if RSS fails
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
+      await loadArticles(true);
     } catch (error) {
       console.error('Error refreshing:', error);
-      await new Promise(resolve => setTimeout(resolve, 1000));
+    } finally {
+      setRefreshing(false);
     }
-    setRefreshing(false);
   };
 
-  const renderArticle = ({ item, index }: { item: any; index: number }) => {
-    if (index === 0) {
-      // Hero article
+  const breakingHeadlines = liveArticles
+    .filter((a) => a.isBreaking || a.category === 'জাতীয়' || a.category === 'রাজনীতি')
+    .slice(0, 5)
+    .map((a) => ({ id: a.id, title: a.title }));
+
+  const styles = useThemedStyles((tokens) =>
+    StyleSheet.create({
+      container: {
+        flex: 1,
+        backgroundColor: tokens.surface.subtle,
+      },
+      mainHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingTop: getSafeHeaderPaddingTop(insets.top, 8),
+        paddingBottom: 10,
+        backgroundColor: tokens.surface.base,
+        borderBottomWidth: 1,
+        borderBottomColor: tokens.border.default,
+      },
+      hamburgerBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: tokens.radii.pill,
+        backgroundColor: tokens.surface.elevated,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 10,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.sm,
+      },
+      mastheadCol: {
+        flex: 1,
+        justifyContent: 'center',
+      },
+      mastheadTitleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+      },
+      mastheadAccentBar: {
+        width: 3.5,
+        height: 22,
+        backgroundColor: tokens.brand.primary,
+        borderRadius: 1,
+      },
+      mastheadTitle: {
+        fontSize: 22,
+        fontWeight: '800',
+        color: tokens.text.primary,
+        letterSpacing: -0.4,
+        fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' }),
+      },
+      mastheadMotto: {
+        fontSize: 10.5,
+        color: tokens.text.secondary,
+        fontWeight: '500',
+        marginTop: 3,
+        letterSpacing: 0.3,
+      },
+      headerIcons: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+      },
+      iconBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: tokens.radii.pill,
+        backgroundColor: tokens.surface.elevated,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.sm,
+      },
+      notifBadge: {
+        position: 'absolute',
+        top: -3,
+        right: -3,
+        backgroundColor: '#DC2626',
+        borderRadius: tokens.radii.pill,
+        minWidth: 16,
+        height: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 3,
+      },
+      notifBadgeText: {
+        color: '#FFFFFF',
+        fontSize: 9.5,
+        fontWeight: 'bold',
+      },
+      categoryBarRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: tokens.surface.base,
+        borderBottomWidth: 0.5,
+        borderBottomColor: tokens.border.subtle,
+      },
+      categoryScroll: {
+        flexDirection: 'row',
+        paddingLeft: 16,
+        paddingRight: 8,
+        paddingVertical: 10,
+      },
+      navBarLayoutBtn: {
+        paddingHorizontal: 9,
+        paddingVertical: 6,
+        marginRight: 12,
+        borderRadius: tokens.radii.pill,
+        backgroundColor: tokens.surface.elevated,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      catChip: {
+        paddingHorizontal: 14,
+        paddingVertical: 6,
+        borderRadius: tokens.radii.pill,
+        backgroundColor: tokens.surface.subtle,
+        marginRight: 8,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+      },
+      specialCatChip: {
+        backgroundColor: tokens.brand.crimsonSurface,
+        borderWidth: 1,
+        borderColor: tokens.brand.primary,
+      },
+      activeCatChip: {
+        backgroundColor: tokens.text.primary,
+        borderColor: tokens.text.primary,
+      },
+      activeSpecialCatChip: {
+        backgroundColor: tokens.brand.primary,
+        borderColor: tokens.brand.primary,
+      },
+      catChipText: {
+        fontSize: 12.5,
+        color: tokens.text.secondary,
+        fontWeight: '600',
+        letterSpacing: 0.2,
+      },
+      specialCatChipText: {
+        color: tokens.brand.primary,
+        fontWeight: '700',
+      },
+      activeCatChipText: {
+        color: tokens.surface.base,
+        fontWeight: '700',
+      },
+      listContent: {
+        paddingHorizontal: 16,
+        paddingTop: 12,
+        paddingBottom: getSafeBottomPadding(insets.bottom, 40),
+      },
+      emptyFeedContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 48,
+      },
+      emptyFeedText: {
+        fontSize: 14,
+        color: tokens.text.secondary,
+        marginTop: 8,
+      },
+      emptyFeedRetry: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        marginTop: 16,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderRadius: tokens.radii.pill,
+        borderWidth: 1,
+        borderColor: tokens.brand.primary,
+        minHeight: 44,
+      },
+      emptyFeedRetryText: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: tokens.brand.primary,
+      },
+      heroCard: {
+        borderRadius: tokens.radii.lg,
+        overflow: 'hidden',
+        marginBottom: 16,
+        backgroundColor: tokens.surface.base,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.card,
+      },
+      heroImage: {
+        width: '100%',
+        height: 220,
+        borderBottomWidth: 0.5,
+        borderBottomColor: tokens.border.subtle,
+      },
+      heroBody: {
+        padding: 16,
+        backgroundColor: tokens.surface.base,
+      },
+      heroKickerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        marginBottom: 8,
+      },
+      heroKicker: {
+        color: tokens.brand.primary,
+        fontSize: 11.5,
+        fontWeight: '700',
+        textTransform: 'uppercase',
+        letterSpacing: 0.7,
+      },
+      heroTitle: {
+        color: tokens.text.primary,
+        fontSize: 22,
+        fontWeight: '700',
+        lineHeight: 30,
+        letterSpacing: -0.3,
+        marginBottom: 8,
+        fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' }),
+      },
+      heroSnippet: {
+        color: tokens.text.secondary,
+        fontSize: 14,
+        lineHeight: 21,
+        marginBottom: 10,
+      },
+      heroMetaRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        paddingTop: 8,
+        borderTopWidth: 0.5,
+        borderTopColor: tokens.border.subtle,
+      },
+      heroTime: {
+        color: tokens.text.tertiary,
+        fontSize: 11.5,
+        fontWeight: '500',
+      },
+      spotlightBanner: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: tokens.surface.elevated,
+        borderLeftWidth: 3.5,
+        borderLeftColor: tokens.brand.primary,
+        padding: 14,
+        borderRadius: tokens.radii.lg,
+        marginBottom: 16,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.card,
+      },
+      spotlightTitle: {
+        fontSize: 14.5,
+        fontWeight: '700',
+        color: tokens.brand.primary,
+        letterSpacing: -0.2,
+        fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' }),
+      },
+      spotlightSub: {
+        fontSize: 12,
+        color: tokens.text.secondary,
+        marginTop: 3,
+        lineHeight: 17,
+      },
+      articleCard: {
+        flexDirection: 'row',
+        backgroundColor: tokens.surface.base,
+        padding: 12,
+        borderRadius: tokens.radii.lg,
+        marginBottom: 12,
+        gap: 12,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+        ...tokens.shadows.card,
+      },
+      articleContent: {
+        flex: 1,
+        justifyContent: 'space-between',
+      },
+      articleCategory: {
+        fontSize: 11,
+        color: tokens.brand.primary,
+        fontWeight: '700',
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+        marginBottom: 4,
+      },
+      articleTitle: {
+        fontSize: 15.5,
+        fontWeight: '700',
+        color: tokens.text.primary,
+        lineHeight: 22,
+        letterSpacing: -0.2,
+        marginBottom: 6,
+        fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' }),
+      },
+      articleMetaRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+      },
+      articleTime: {
+        fontSize: 11,
+        color: tokens.text.tertiary,
+        fontWeight: '500',
+      },
+      articleImage: {
+        width: 86,
+        height: 86,
+        borderRadius: tokens.radii.md,
+        borderWidth: 0.5,
+        borderColor: tokens.border.subtle,
+      },
+    })
+  );
+
+  const renderHeader = () => (
+    <View>
+      {/* Live Cricket Scores & Financial Market Ticker */}
+      <LiveRatesTicker />
+
+      {/* Visual Web Stories Carousel */}
+      <VisualStoriesBar />
+
+      {/* Continue Reading Shelf (if last read exists) */}
+      <ContinueReadingCard />
+
+      {/* Breaking News Marquee */}
+      {breakingHeadlines.length > 0 && (
+        <BreakingNewsTicker headlines={breakingHeadlines} />
+      )}
+
+      {/* Reading streak */}
+      <View style={{ paddingHorizontal: 16, marginBottom: 12 }}>
+        <ReadingStreak compact={true} />
+      </View>
+
+      {/* July Revolution Highlight (on All tab) */}
+      {selectedCategory === 'সর্বশেষ' && (
+        <TouchableOpacity
+          style={styles.spotlightBanner}
+          onPress={() => setSelectedCategory('জুলাই বিপ্লব')}
+          activeOpacity={0.75}
+        >
+          <View style={{ flex: 1, paddingRight: 8 }}>
+            <Text style={styles.spotlightTitle}>
+              {t('july_spotlight_title', language)}
+            </Text>
+            <Text style={styles.spotlightSub}>
+              {t('july_spotlight_sub', language)}
+            </Text>
+          </View>
+          <Ionicons name="arrow-forward" size={18} color={tokens.brand.primary} />
+        </TouchableOpacity>
+      )}
+
+      {/* Featured Stories Horizontal Card Slider */}
+      {feedLayout === 'magazine' && displayArticles.length > 0 && (
+        <FeaturedCardSlider
+          articles={displayArticles}
+          language={language}
+          onPressArticle={(item) => router.push(`/article/${item.id}` as any)}
+        />
+      )}
+    </View>
+  );
+
+  const renderArticle = ({ item, index }: { item: Article; index: number }) => {
+    if (feedLayout === 'magazine' && index === 0) {
       return (
         <TouchableOpacity
           style={styles.heroCard}
-          onPress={() => router.push(`/article/${item.id}`)}
-          activeOpacity={0.8}
+          onPress={() => router.push(`/article/${item.id}` as any)}
+          activeOpacity={0.85}
         >
           <ArticleHeroImage uri={item.imageUrl} style={styles.heroImage} />
-          <View style={styles.heroOverlay}>
-            {item.isBreaking && (
-              <View style={styles.breakingBadge}>
-                <Text style={styles.breakingText}>ব্রেকিং</Text>
-              </View>
-            )}
-            <Text style={styles.heroCategory}>{item.category}</Text>
-            <Text style={styles.heroTitle} numberOfLines={2}>
-              {item.title}
+          <View style={styles.heroBody}>
+            <View style={styles.heroKickerRow}>
+              <Text style={styles.heroKicker}>
+                {getLocalizedCategoryName(item.category, language)}
+              </Text>
+            </View>
+            <Text style={styles.heroTitle} numberOfLines={3}>
+              {stripCDATA(item.title)}
             </Text>
-            <Text style={styles.heroTime}>{formatRelativeTime(item.publishedAt)}</Text>
+            {item.excerpt ? (
+              <Text style={styles.heroSnippet} numberOfLines={2}>
+                {item.excerpt}
+              </Text>
+            ) : null}
+            <View style={styles.heroMetaRow}>
+              <Ionicons name="time-outline" size={12} color={styles.heroTime.color} />
+              <Text style={styles.heroTime}>
+                {formatLocalizedRelativeTime(item.publishedAt, language)}
+              </Text>
+              {item.author ? (
+                <>
+                  <Text style={styles.heroTime}>•</Text>
+                  <Text style={styles.heroTime}>{item.author}</Text>
+                </>
+              ) : null}
+            </View>
           </View>
         </TouchableOpacity>
       );
     }
 
-    // Regular article card
     return (
-      <TouchableOpacity
-        style={styles.articleCard}
-        onPress={() => router.push(`/article/${item.id}`)}
-        activeOpacity={0.8}
-      >
-        <ArticleThumbnail uri={item.imageUrl} style={styles.articleImage} recyclingKey={item.id} />
-        <View style={styles.articleContent}>
-          <Text style={styles.articleCategory}>{item.category}</Text>
-          <Text style={styles.articleTitle} numberOfLines={2}>
-            {item.title}
-          </Text>
-          <Text style={styles.articleTime}>{formatRelativeTime(item.publishedAt)}</Text>
-        </View>
-      </TouchableOpacity>
+      <View>
+        <TouchableOpacity
+          style={styles.articleCard}
+          onPress={() => router.push(`/article/${item.id}` as any)}
+          activeOpacity={0.75}
+        >
+          <View style={styles.articleContent}>
+            <Text style={styles.articleCategory}>
+              {getLocalizedCategoryName(item.category, language)}
+            </Text>
+            <Text style={styles.articleTitle} numberOfLines={2}>
+              {stripCDATA(item.title)}
+            </Text>
+            <View style={styles.articleMetaRow}>
+              <Ionicons name="time-outline" size={11} color={styles.articleTime.color} />
+              <Text style={styles.articleTime}>
+                {formatLocalizedRelativeTime(item.publishedAt, language)}
+              </Text>
+            </View>
+          </View>
+          <ArticleThumbnail uri={item.imageUrl} style={styles.articleImage} />
+        </TouchableOpacity>
+        {/* Dynamic In-Feed Ad Placement */}
+        {(index === 2 || (index > 2 && (index - 2) % 6 === 0)) && (
+          <AdBanner variant={index === 2 ? 'feed' : 'compact'} />
+        )}
+
+        {/* Dedicated Sponsored Commercial Showcase */}
+        {index === 3 && (
+          <SponsoredProductShowcase variant="carousel" language={language} />
+        )}
+      </View>
     );
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.logoContainer}>
-          <View style={styles.logo}>
-            <Text style={styles.logoText}>আ.দে</Text>
-          </View>
-          <Text style={styles.appName}>আমার দেশ</Text>
+    <View style={styles.container}>
+      {/* Broadsheet Masthead with Official Logo & Side Nav Drawer Trigger */}
+      <View style={styles.mainHeader}>
+        <TouchableOpacity
+          style={styles.hamburgerBtn}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            setIsSideNavOpen(true);
+          }}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={t('side_nav_open', language)}
+        >
+          <Ionicons name="menu" size={22} color={tokens.brand.primary} />
+        </TouchableOpacity>
+
+        <View style={styles.mastheadCol}>
+          <AmarDeshLogo height={34} variant="png" showMotto language={language} />
+        </View>
+
+        <View style={styles.headerIcons}>
+          {/* Notification Center */}
+          <TouchableOpacity
+            style={styles.iconBtn}
+            onPress={() => router.push('/notifications' as any)}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="notifications-outline" size={17} color={styles.mastheadTitle.color} />
+            {unreadNotifCount > 0 && (
+              <View style={styles.notifBadge}>
+                <Text style={styles.notifBadgeText}>
+                  {unreadNotifCount > 9 ? '৯+' : formatLocalizedNumeral(unreadNotifCount, language)}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
+
+          {/* Search */}
+          <TouchableOpacity
+            style={styles.iconBtn}
+            onPress={() => router.push('/search' as any)}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="search" size={17} color={styles.mastheadTitle.color} />
+          </TouchableOpacity>
         </View>
       </View>
 
-      {/* Category Tabs */}
-      <View style={styles.categoryContainer}>
-        <TouchableOpacity style={[styles.categoryTab, styles.activeCategory]}>
-          <Text style={[styles.categoryText, styles.activeCategoryText]}>সর্বশেষ</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.categoryTab}>
-          <Text style={styles.categoryText}>জাতীয়</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.categoryTab}>
-          <Text style={styles.categoryText}>রাজনীতি</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.categoryTab}>
-          <Text style={styles.categoryText}>খেলা</Text>
+      {/* Horizontal Category Nav Bar with View Switcher */}
+      <View style={styles.categoryBarRow}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoryScroll}
+        >
+          {SITE_CATEGORIES.map((cat) => {
+            const isSelected = selectedCategory === cat.name;
+            return (
+              <TouchableOpacity
+                key={cat.id}
+                style={[
+                  styles.catChip,
+                  cat.isSpecial && styles.specialCatChip,
+                  isSelected && styles.activeCatChip,
+                  isSelected && cat.isSpecial && styles.activeSpecialCatChip,
+                ]}
+                onPress={() => {
+                  setSelectedCategory(cat.name);
+                  trackCategoryViewed(cat.name, 'tab');
+                }}
+                activeOpacity={0.7}
+              >
+                <Text
+                  style={[
+                    styles.catChipText,
+                    cat.isSpecial && styles.specialCatChipText,
+                    isSelected && styles.activeCatChipText,
+                  ]}
+                >
+                  {getLocalizedCategoryName(cat.name, language)}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+
+        {/* View Mode (Grid / List / Card) Button in Nav Bar */}
+        <TouchableOpacity
+          style={styles.navBarLayoutBtn}
+          onPress={() => {
+            Haptics.selectionAsync();
+            const nextLayout =
+              feedLayout === 'magazine'
+                ? 'compact'
+                : feedLayout === 'compact'
+                ? 'card'
+                : 'magazine';
+            setFeedLayout(nextLayout);
+          }}
+          activeOpacity={0.7}
+          accessibilityLabel="ফিড ভিউ পরিবর্তন"
+        >
+          <Ionicons
+            name={
+              feedLayout === 'magazine'
+                ? 'list-outline'
+                : feedLayout === 'compact'
+                ? 'grid-outline'
+                : 'albums-outline'
+            }
+            size={16}
+            color={tokens.brand.primary}
+          />
         </TouchableOpacity>
       </View>
 
-      {/* Reading Streak */}
-      <View style={{ paddingHorizontal: 16, paddingVertical: 12 }}>
-        <ReadingStreak compact={true} />
-      </View>
+      {/* Main Articles Stream */}
+      {feedLayout === 'card' ? (
+        <ScrollView
+          contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          showsVerticalScrollIndicator={false}
+        >
+          {renderHeader()}
+          <SwipeCardDeck
+            articles={displayArticles}
+            language={language}
+            onPressArticle={(item) => router.push(`/article/${item.id}` as any)}
+          />
+          <SponsoredProductShowcase variant="carousel" language={language} />
+        </ScrollView>
+      ) : (
+        <FlatList
+          data={displayArticles}
+          renderItem={renderArticle}
+          keyExtractor={(item) => item.id}
+          ListHeaderComponent={renderHeader}
+          contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <View style={styles.emptyFeedContainer}>
+              {isFeedLoading ? (
+                <>
+                  <ActivityIndicator size="small" color={tokens.brand.primary} />
+                  <Text style={styles.emptyFeedText}>সংবাদ লোড হচ্ছে…</Text>
+                </>
+              ) : (
+                <>
+                  <Ionicons
+                    name="cloud-offline-outline"
+                    size={40}
+                    color={tokens.text.tertiary}
+                  />
+                  <Text style={styles.emptyFeedText}>
+                    এই বিভাগে এখন কোনো সংবাদ নেই
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.emptyFeedRetry}
+                    onPress={onRefresh}
+                    activeOpacity={0.8}
+                    accessibilityRole="button"
+                    accessibilityLabel="আবার চেষ্টা করুন"
+                  >
+                    <Ionicons name="refresh" size={15} color={tokens.brand.primary} />
+                    <Text style={styles.emptyFeedRetryText}>আবার চেষ্টা করুন</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+          }
+        />
+      )}
 
-      {/* Articles List */}
-      <FlatList
-        data={personalizedArticles}
-        renderItem={renderArticle}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        showsVerticalScrollIndicator={false}
+      {/* Global Animated Side Navigation Drawer */}
+      <SideNavDrawer
+        visible={isSideNavOpen}
+        onClose={() => setIsSideNavOpen(false)}
       />
     </View>
   );

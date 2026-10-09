@@ -8,9 +8,9 @@
  * Authentication is an optional enhancement for users who want cloud sync.
  */
 
-import { initializeApp } from 'firebase/app';
-import { getAuth, initializeAuth, getReactNativePersistence } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { initializeApp, type FirebaseApp } from 'firebase/app';
+import { initializeAuth, getReactNativePersistence, type Auth } from 'firebase/auth';
+import { getFirestore, type Firestore } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Firebase configuration
@@ -24,31 +24,34 @@ const firebaseConfig = {
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID || 'YOUR_APP_ID',
 };
 
-// Initialize Firebase app
-let app;
+/**
+ * Services are `null` when initialization fails (e.g. invalid config).
+ * All call sites guard with `isFirebaseConfigured()` before use, and the
+ * auth/cloud-sync services treat `null` as "Firebase unavailable".
+ */
+let app: FirebaseApp | null = null;
+let auth: Auth | null = null;
+let db: Firestore | null = null;
+
 try {
   app = initializeApp(firebaseConfig);
   console.log('[Firebase] App initialized successfully');
-} catch (error) {
-  console.error('[Firebase] Error initializing app:', error);
-}
 
-// Initialize Auth with React Native persistence
-let auth;
-try {
-  auth = initializeAuth(app, getReactNativePersistence(AsyncStorage));
+  // Initialize Auth with React Native persistence
+  auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(AsyncStorage),
+  });
   console.log('[Firebase] Auth initialized successfully');
-} catch (error) {
-  console.error('[Firebase] Error initializing auth:', error);
-}
 
-// Initialize Firestore
-let db;
-try {
+  // Initialize Firestore
   db = getFirestore(app);
   console.log('[Firebase] Firestore initialized successfully');
 } catch (error) {
-  console.error('[Firebase] Error initializing Firestore:', error);
+  // Leave app/auth/db as null and disable dependent services gracefully.
+  console.error('[Firebase] Error initializing Firebase:', error);
+  app = null;
+  auth = null;
+  db = null;
 }
 
 // Export Firebase services
@@ -61,6 +64,20 @@ export const getFirebaseConfig = () => firebaseConfig;
 export const isFirebaseConfigured = (): boolean => {
   return (
     firebaseConfig.apiKey !== 'YOUR_API_KEY' &&
-    firebaseConfig.projectId !== 'YOUR_PROJECT_ID'
+    firebaseConfig.projectId !== 'YOUR_PROJECT_ID' &&
+    app !== null &&
+    auth !== null &&
+    db !== null
   );
 };
+
+/**
+ * Assert Firebase is configured and return the initialized services.
+ * Throws if Firebase failed to initialize or is not configured.
+ */
+export function requireFirebase(): { app: FirebaseApp; auth: Auth; db: Firestore } {
+  if (!isFirebaseConfigured() || !app || !auth || !db) {
+    throw new Error('Firebase is not configured or failed to initialize');
+  }
+  return { app, auth, db };
+}

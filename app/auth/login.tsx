@@ -13,17 +13,40 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../../theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme, radii, shadows } from '../../theme';
 import {
+  CloudNotConfiguredError,
+  isCloudAccountAvailable,
   signInWithEmail,
   createAccountWithEmail,
   signInWithGoogle,
   signInWithApple,
 } from '../../services/firebase/authService';
+import { getSafeHeaderPaddingTop } from '../../utils/layout';
+import { AmarDeshLogo } from '../../components/AmarDeshLogo';
 
 export default function AuthScreen() {
   const router = useRouter();
-  const { colors } = useTheme();
+  // Edge-to-edge: pad content below the status bar
+  const insets = useSafeAreaInsets();
+  const { tokens } = useTheme();
+  /**
+   * Whether a Firebase project is configured.
+   *
+   * With no project, every auth call fails; the screen says so plainly instead
+   * of offering buttons that cannot work. See T0-2 in the gap plan.
+   */
+  const cloudAvailable = isCloudAccountAvailable();
+  const socialSignInAvailable = false; // no provider SDK wired up yet
+  const colors = {
+    background: tokens.surface.base,
+    text: tokens.text.primary,
+    textSecondary: tokens.text.secondary,
+    primary: tokens.brand.primary,
+    border: tokens.border.default,
+    white: '#FFFFFF',
+  };
   
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
@@ -31,6 +54,9 @@ export default function AuthScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  const getErrorMessage = (error: unknown): string =>
+    error instanceof Error ? error.message : 'প্রমাণীকরণ ত্রুটি ঘটেছে';
 
   const handleEmailAuth = async () => {
     // Validation
@@ -66,8 +92,8 @@ export default function AuthScreen() {
       }
       
       router.back();
-    } catch (error: any) {
-      Alert.alert('ত্রুটি', error.message);
+    } catch (error: unknown) {
+      Alert.alert('ত্রুটি', getErrorMessage(error));
     } finally {
       setIsLoading(false);
     }
@@ -80,8 +106,8 @@ export default function AuthScreen() {
       await signInWithGoogle();
       Alert.alert('সফল', 'Google দিয়ে সফলভাবে লগইন হয়েছে');
       router.back();
-    } catch (error: any) {
-      Alert.alert('ত্রুটি', error.message);
+    } catch (error: unknown) {
+      Alert.alert('ত্রুটি', getErrorMessage(error));
     } finally {
       setIsLoading(false);
     }
@@ -94,8 +120,8 @@ export default function AuthScreen() {
       await signInWithApple();
       Alert.alert('সফল', 'Apple দিয়ে সফলভাবে লগইন হয়েছে');
       router.back();
-    } catch (error: any) {
-      Alert.alert('ত্রুটি', error.message);
+    } catch (error: unknown) {
+      Alert.alert('ত্রুটি', getErrorMessage(error));
     } finally {
       setIsLoading(false);
     }
@@ -106,18 +132,23 @@ export default function AuthScreen() {
       style={[styles.container, { backgroundColor: colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: getSafeHeaderPaddingTop(insets.top, 8) }]}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => router.back()}
-          >
-            <Ionicons name="arrow-back" size={24} color={colors.text} />
-          </TouchableOpacity>
-          <Text style={[styles.title, { color: colors.text }]}>
-            {isLogin ? 'লগইন করুন' : 'অ্যাকাউন্ট তৈরি করুন'}
-          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="ফিরে যান"
+              style={styles.backButton}
+              onPress={() => router.back()}
+            >
+              <Ionicons name="arrow-back" size={24} color={colors.text} />
+            </TouchableOpacity>
+            <Text style={[styles.title, { color: colors.text }]}>
+              {isLogin ? 'লগইন করুন' : 'অ্যাকাউন্ট তৈরি করুন'}
+            </Text>
+          </View>
+          <AmarDeshLogo height={24} variant="png" />
         </View>
 
         {/* Form */}
@@ -194,35 +225,67 @@ export default function AuthScreen() {
             <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
           </View>
 
-          {/* Social Login Buttons */}
-          <TouchableOpacity
-            style={[styles.socialButton, { borderColor: colors.border }]}
-            onPress={handleGoogleSignIn}
-            disabled={isLoading}
-          >
-            <Ionicons name="logo-google" size={20} color="#DB4437" />
-            <Text style={[styles.socialButtonText, { color: colors.text }]}>
-              Google দিয়ে চালিয়ে যান
-            </Text>
-          </TouchableOpacity>
+          {/* Social Login Buttons — only when a provider is actually wired up.
+              These used to send hard-coded mock tokens that Firebase always
+              rejected, so the reader got a generic error with no path forward. */}
+          {socialSignInAvailable && (
+            <>
+              <TouchableOpacity
+                style={[styles.socialButton, { borderColor: colors.border }]}
+                onPress={handleGoogleSignIn}
+                disabled={isLoading}
+                accessibilityRole="button"
+                accessibilityLabel="Google দিয়ে চালিয়ে যান"
+              >
+                <Ionicons name="logo-google" size={20} color="#DB4437" />
+                <Text style={[styles.socialButtonText, { color: colors.text }]}>
+                  Google দিয়ে চালিয়ে যান
+                </Text>
+              </TouchableOpacity>
 
-          {Platform.OS === 'ios' && (
-            <TouchableOpacity
-              style={[styles.socialButton, { borderColor: colors.border }]}
-              onPress={handleAppleSignIn}
-              disabled={isLoading}
+              {Platform.OS === 'ios' && (
+                <TouchableOpacity
+                  style={[styles.socialButton, { borderColor: colors.border }]}
+                  onPress={handleAppleSignIn}
+                  disabled={isLoading}
+                  accessibilityRole="button"
+                  accessibilityLabel="Apple দিয়ে চালিয়ে যান"
+                >
+                  <Ionicons name="logo-apple" size={20} color={colors.text} />
+                  <Text style={[styles.socialButtonText, { color: colors.text }]}>
+                    Apple দিয়ে চালিয়ে যান
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </>
+          )}
+
+          {!cloudAvailable && (
+            <View
+              style={[
+                styles.notConfiguredNotice,
+                { borderColor: colors.border, backgroundColor: colors.background },
+              ]}
             >
-              <Ionicons name="logo-apple" size={20} color={colors.text} />
-              <Text style={[styles.socialButtonText, { color: colors.text }]}>
-                Apple দিয়ে চালিয়ে যান
+              <Ionicons
+                name="information-circle-outline"
+                size={18}
+                color={colors.textSecondary}
+              />
+              <Text style={[styles.notConfiguredText, { color: colors.textSecondary }]}>
+                {getErrorMessage(new CloudNotConfiguredError())}
               </Text>
-            </TouchableOpacity>
+            </View>
           )}
 
           {/* Toggle Login/Signup */}
           <TouchableOpacity
             style={styles.toggleButton}
             onPress={() => setIsLogin(!isLogin)}
+            accessibilityRole="button"
+            accessibilityLabel={
+              isLogin ? 'অ্যাকাউন্ট তৈরি করুন' : 'লগইন করুন'
+            }
           >
             <Text style={[styles.toggleText, { color: colors.primary }]}>
               {isLogin
@@ -260,6 +323,7 @@ const styles = StyleSheet.create({
   backButton: {
     padding: 8,
     marginRight: 12,
+    borderRadius: radii.pill,
   },
   title: {
     fontSize: 24,
@@ -271,8 +335,8 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 12,
+    borderWidth: 0.5,
+    borderRadius: radii.md,
     paddingHorizontal: 16,
     paddingVertical: 12,
     marginBottom: 16,
@@ -283,10 +347,11 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   submitButton: {
-    borderRadius: 12,
-    paddingVertical: 16,
+    borderRadius: radii.pill,
+    paddingVertical: 14,
     alignItems: 'center',
     marginBottom: 24,
+    ...shadows.sm,
   },
   submitButtonText: {
     fontSize: 16,
@@ -309,9 +374,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingVertical: 16,
+    borderWidth: 0.5,
+    borderRadius: radii.pill,
+    paddingVertical: 14,
     marginBottom: 12,
   },
   socialButtonText: {
@@ -322,6 +387,23 @@ const styles = StyleSheet.create({
   toggleButton: {
     alignItems: 'center',
     marginTop: 24,
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  notConfiguredNotice: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    borderWidth: 0.5,
+    borderRadius: radii.md,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginBottom: 8,
+  },
+  notConfiguredText: {
+    flex: 1,
+    fontSize: 12,
+    lineHeight: 18,
   },
   toggleText: {
     fontSize: 14,

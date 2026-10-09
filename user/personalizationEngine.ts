@@ -12,7 +12,7 @@
  */
 
 import { getTopAffinities, Affinity } from './affinityCalculator';
-import { Article } from '../data/mockData';
+import type { Article } from '../types';
 
 // Configuration
 const TOPIC_WEIGHT = 0.5; // 50% weight for topic affinity

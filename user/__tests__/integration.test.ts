@@ -1,11 +1,97 @@
 /**
  * Integration Tests for User Profile System
+ *
+ * Tests the orchestration of the Zustand store with the database,
+ * event tracker, and affinity calculator layers. The database layer is
+ * mocked with an in-memory implementation so tests are deterministic
+ * and do not require a real SQLite database.
  */
 
 import { useUserStore } from '../useUserStore';
-import { initializeDatabase, closeDatabase } from '../db';
-import { initializeEventTracker, cleanupEventTracker } from '../eventTracker';
-import { calculateAffinity } from '../affinityCalculator';
+import * as db from '../db';
+import {
+  initializeDatabase,
+  closeDatabase,
+} from '../db';
+import {
+  initializeEventTracker,
+  cleanupEventTracker,
+  __resetForTests as resetTracker,
+} from '../eventTracker';
+import { __resetForTests as resetAffinity } from '../affinityCalculator';
+
+// Mock the database layer with an in-memory implementation
+jest.mock('../db', () => {
+  const events: unknown[] = [];
+  const affinities: unknown[] = [];
+
+  return {
+    initializeDatabase: jest.fn(async () => undefined),
+    closeDatabase: jest.fn(async () => undefined),
+    getDatabase: jest.fn(),
+    insertEvent: jest.fn(async (event: unknown) => {
+      events.push(event);
+      return events.length;
+    }),
+    insertEvents: jest.fn(async (list: unknown[]) => {
+      events.push(...list);
+    }),
+    getEvents: jest.fn(async (userId: string, sinceTimestamp?: number) =>
+      (events as Array<Record<string, unknown>>).filter(
+        (e) =>
+          e.user_id === userId &&
+          (sinceTimestamp === undefined ||
+            sinceTimestamp === 0 ||
+            (e.created_at as number) > sinceTimestamp)
+      )
+    ),
+    deleteOldEvents: jest.fn(async () => undefined),
+    deleteAllUserData: jest.fn(async () => {
+      events.length = 0;
+    }),
+    deleteAllAffinities: jest.fn(async () => {
+      affinities.length = 0;
+    }),
+    upsertAffinity: jest.fn(async (list: Array<Record<string, unknown>>) => {
+      for (const a of list) {
+        const idx = affinities.findIndex(
+          (x) =>
+            (x as Record<string, unknown>).entity_type === a.entity_type &&
+            (x as Record<string, unknown>).entity_id === a.entity_id
+        );
+        if (idx >= 0) affinities[idx] = a;
+        else affinities.push(a);
+      }
+    }),
+    getTopAffinities: jest.fn(
+      async (entityType: string, limit: number = 10) =>
+        (affinities as Array<Record<string, unknown>>)
+          .filter((a) => a.entity_type === entityType)
+          .sort((a, b) => (b.score as number) - (a.score as number))
+          .slice(0, limit)
+    ),
+    getAllAffinities: jest.fn(async () => [...affinities]),
+    upsertArticleState: jest.fn(async () => undefined),
+    getArticleState: jest.fn(async () => null),
+    getSavedArticles: jest.fn(async () => []),
+    upsertUserMetadata: jest.fn(async () => undefined),
+    getUserMetadata: jest.fn(async () => null),
+    getDatabaseStats: jest.fn(async () => ({
+      events: events.length,
+      articleStates: 0,
+      affinities: affinities.length,
+    })),
+  };
+});
+
+// Mock anonymous ID management
+jest.mock('../anonymousId', () => ({
+  getAnonymousId: jest.fn(async () => 'test-user-id'),
+  deleteAnonymousId: jest.fn(async () => undefined),
+  hasAnonymousId: jest.fn(async () => true),
+  linkToAuthUser: jest.fn(async () => undefined),
+  getLinkedAuthUser: jest.fn(async () => null),
+}));
 
 describe('User Profile System Integration', () => {
   beforeAll(async () => {
@@ -20,74 +106,80 @@ describe('User Profile System Integration', () => {
     await closeDatabase();
   });
 
-  beforeEach(async () => {
+  beforeEach(() => {
+    // Reset module-level state so tests don't leak into each other
+    resetTracker();
+    resetAffinity();
     // Reset store state
     useUserStore.setState({
       userId: null,
       isInitialized: false,
+      isInitializing: false,
       trackingEnabled: true,
     });
+    jest.clearAllMocks();
   });
 
   describe('Full User Journey', () => {
     it('should initialize user system and track events', async () => {
-      const store = useUserStore.getState();
-      
       // Initialize user system
-      await store.initialize();
+      await useUserStore.getState().initialize();
 
-      expect(store.isInitialized).toBe(true);
-      expect(store.userId).toBeTruthy();
+      // Re-read state: getState() returns a snapshot that is not live
+      const state = useUserStore.getState();
+      expect(state.isInitialized).toBe(true);
+      expect(state.userId).toBeTruthy();
 
       // Track some events
-      await store.trackEvent('article_opened', 'article', 'amd001', {
+      await state.trackEvent('article_opened', 'article', 'amd001', {
         category: 'জাতীয়',
         author: 'আন্তর্জাতিক ডেস্ক',
       });
 
-      await store.trackEvent('article_saved', 'article', 'amd001', {
+      await state.trackEvent('article_saved', 'article', 'amd001', {
         category: 'জাতীয়',
         author: 'আন্তর্জাতিক ডেস্ক',
       });
 
-      // Verify events are tracked (would need to query database in real test)
-      expect(store.trackingEnabled).toBe(true);
+      expect(useUserStore.getState().trackingEnabled).toBe(true);
     });
 
     it('should calculate affinities after tracking events', async () => {
-      const store = useUserStore.getState();
-      
-      await store.initialize();
+      const { initialize, trackEvent, refreshAffinities, getUserInterests } =
+        useUserStore.getState();
+
+      await initialize();
 
       // Track multiple events for same category
       for (let i = 0; i < 5; i++) {
-        await store.trackEvent('article_opened', 'article', `amd00${i}`, {
+        await trackEvent('article_opened', 'article', `amd00${i}`, {
           category: 'জাতীয়',
           author: 'আন্তর্জাতিক ডেস্ক',
         });
       }
 
       // Calculate affinities
-      await store.refreshAffinities();
+      await refreshAffinities();
 
       // Get interests
-      const interests = await store.getUserInterests(5);
+      const interests = await getUserInterests(5);
 
       // Should have at least one interest
       expect(interests.length).toBeGreaterThan(0);
     });
 
     it('should generate personalized feed', async () => {
-      const store = useUserStore.getState();
-      
-      await store.initialize();
+      const { initialize, trackEvent, refreshAffinities, getPersonalizedFeed } =
+        useUserStore.getState();
+
+      await initialize();
 
       // Track events to build affinities
-      await store.trackEvent('article_opened', 'article', 'amd001', {
+      await trackEvent('article_opened', 'article', 'amd001', {
         category: 'জাতীয়',
       });
 
-      await store.refreshAffinities();
+      await refreshAffinities();
 
       // Mock articles
       const mockArticles = [
@@ -114,115 +206,117 @@ describe('User Profile System Integration', () => {
       ];
 
       // Get personalized feed
-      const feed = await store.getPersonalizedFeed(mockArticles);
+      const feed = await getPersonalizedFeed(mockArticles);
 
       expect(feed.length).toBeGreaterThan(0);
     });
 
     it('should respect tracking toggle', async () => {
-      const store = useUserStore.getState();
-      
-      await store.initialize();
+      const { initialize, toggleTracking, trackEvent } = useUserStore.getState();
+
+      await initialize();
 
       // Disable tracking
-      store.toggleTracking(false);
+      toggleTracking(false);
 
       // Try to track event
-      await store.trackEvent('article_opened', 'article', 'amd001');
+      await trackEvent('article_opened', 'article', 'amd001');
 
-      // Event should not be tracked (would verify in database)
-      expect(store.trackingEnabled).toBe(false);
+      // Event should not be tracked
+      expect(useUserStore.getState().trackingEnabled).toBe(false);
 
       // Re-enable tracking
-      store.toggleTracking(true);
+      toggleTracking(true);
 
-      await store.trackEvent('article_opened', 'article', 'amd002');
+      await trackEvent('article_opened', 'article', 'amd002');
 
-      expect(store.trackingEnabled).toBe(true);
+      expect(useUserStore.getState().trackingEnabled).toBe(true);
     });
 
     it('should reset all user data', async () => {
-      const store = useUserStore.getState();
-      
-      await store.initialize();
+      const { initialize, trackEvent, resetUserData } = useUserStore.getState();
+
+      await initialize();
 
       // Track some events
-      await store.trackEvent('article_opened', 'article', 'amd001');
-      await store.trackEvent('article_saved', 'article', 'amd001');
+      await trackEvent('article_opened', 'article', 'amd001');
+      await trackEvent('article_saved', 'article', 'amd001');
 
       // Reset data
-      await store.resetUserData();
+      await resetUserData();
 
       // Verify reset
-      expect(store.userId).toBeNull();
-      expect(store.totalArticlesRead).toBe(0);
+      expect(useUserStore.getState().userId).toBeNull();
+      expect(useUserStore.getState().totalArticlesRead).toBe(0);
     });
   });
 
   describe('Data Persistence', () => {
     it('should persist events to database', async () => {
-      const store = useUserStore.getState();
-      
-      await store.initialize();
+      const { initialize, trackEvent, flushEventQueue } = useUserStore.getState();
 
-      await store.trackEvent('article_opened', 'article', 'amd001', {
+      await initialize();
+
+      await trackEvent('article_opened', 'article', 'amd001', {
         category: 'জাতীয়',
       });
 
       // Flush events to database
-      const { flushEventQueue } = await import('../eventTracker');
       await flushEventQueue();
 
-      // Verify events are in database (would query in real test)
-      expect(true).toBe(true); // Placeholder
+      // Verify events reached the (mocked) database layer
+      expect(db.insertEvents).toHaveBeenCalled();
+      expect(db.getEvents).toHaveBeenCalled;
     });
 
     it('should persist affinities to database', async () => {
-      const store = useUserStore.getState();
-      
-      await store.initialize();
+      const { initialize, trackEvent, refreshAffinities } =
+        useUserStore.getState();
+
+      await initialize();
 
       // Track events
       for (let i = 0; i < 10; i++) {
-        await store.trackEvent('article_opened', 'article', `amd00${i}`, {
+        await trackEvent('article_opened', 'article', `amd00${i}`, {
           category: 'জাতীয়',
         });
       }
 
       // Calculate affinities
-      await store.refreshAffinities();
+      await refreshAffinities();
 
-      // Verify affinities are in database (would query in real test)
-      expect(true).toBe(true); // Placeholder
+      // Verify affinities reached the (mocked) database layer
+      expect(db.upsertAffinity).toHaveBeenCalled();
     });
   });
 
   describe('Error Handling', () => {
     it('should handle database initialization errors', async () => {
-      const store = useUserStore.getState();
-
       // Mock database error
-      jest.spyOn(await import('../db'), 'initializeDatabase').mockRejectedValueOnce(
+      (db.initializeDatabase as jest.Mock).mockRejectedValueOnce(
         new Error('Database error')
       );
 
       // Should not crash
-      await expect(store.initialize()).resolves.not.toThrow();
+      await expect(useUserStore.getState().initialize()).resolves.not.toThrow();
+
+      // Store should not be marked as initialized
+      expect(useUserStore.getState().isInitialized).toBe(false);
     });
 
     it('should handle event tracking errors', async () => {
-      const store = useUserStore.getState();
-      
-      await store.initialize();
+      const { initialize, trackEvent } = useUserStore.getState();
 
-      // Mock tracking error
-      jest.spyOn(await import('../eventTracker'), 'trackEvent').mockRejectedValueOnce(
+      await initialize();
+
+      // Mock tracking error on the database write path
+      (db.insertEvent as jest.Mock).mockRejectedValueOnce(
         new Error('Tracking error')
       );
 
       // Should not crash
       await expect(
-        store.trackEvent('article_opened', 'article', 'amd001')
+        trackEvent('article_saved', 'article', 'amd001')
       ).resolves.not.toThrow();
     });
   });

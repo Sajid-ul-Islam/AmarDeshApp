@@ -44,37 +44,44 @@ utils/
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 22.13+ (a supported LTS release is recommended)
 - npm or yarn
-- Expo CLI (`npm install -g expo-cli`)
-- iOS Simulator (Mac only) or Android Emulator
+- Expo Go for SDK 57 on your phone, or an iOS Simulator (Mac only) / Android Emulator
+- Expo CLI is included locally; use `npx expo`.
 
 ### Installation
 
 ```bash
 # Install dependencies
-npm install
+npm ci
 
 # Start the development server
 npm start
 
+# Open in Expo Go on the same Wi-Fi network
+npm run start:go
+
 # Or run on specific platform
 npm run ios      # iOS simulator
 npm run android  # Android emulator
+
+# Check the mobile TypeScript code and export Android/iOS bundles
+npm run typecheck
+npm run build
 ```
+
+The app uses Expo SDK 57, React Native 0.86, and React 19.2. Install the matching
+Expo Go version from https://expo.dev/go?sdkVersion=57. Remote push notifications
+require a development build; local notifications remain available in Expo Go.
+Custom icon and splash image files are not included in this checkout, so app
+configuration uses platform defaults until those assets are supplied.
 
 ### Building for Production
 
 ```bash
-# Build for iOS
-expo build:ios
-
-# Build for Android
-expo build:android
-
-# Or use EAS Build (recommended)
-eas build --platform ios
-eas build --platform android
+# Configure a real EAS project and credentials before creating native binaries
+npx eas-cli build --platform ios
+npx eas-cli build --platform android
 ```
 
 ## 📊 Key Differences from Web Version

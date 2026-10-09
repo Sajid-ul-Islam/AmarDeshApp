@@ -1,15 +1,23 @@
-export interface Article {
-  id: string;
-  title: string;
-  excerpt: string;
-  content: string;
-  category: string;
-  imageUrl: string;
-  author: string;
-  publishedAt: string;
-  isBreaking?: boolean;
-}
+import type { Article } from '../types';
 
+/**
+ * Re-exported for backwards compatibility.
+ *
+ * The canonical declaration now lives in `types/index.ts`. This re-export lets
+ * existing `import { Article } from '../data/mockData'` sites keep working while
+ * they are migrated to import from `types` directly — see the module docstring
+ * in `types/index.ts` for why that matters.
+ */
+export type { Article } from '../types';
+
+/**
+ * Offline fallback content.
+ *
+ * These fixtures are the last-resort list shown when both the live feed and the
+ * offline cache are unavailable, and they are the fixtures used by tests. They
+ * deliberately carry no `link`, because the URLs they reference are historical
+ * and re-sharing them would send readers to dead pages.
+ */
 export const articles: Article[] = [
   {
     id: 'amd001',

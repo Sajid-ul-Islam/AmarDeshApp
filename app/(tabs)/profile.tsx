@@ -1,22 +1,80 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Switch,
+  Alert,
+  Linking,
+  ActivityIndicator,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import type { ComponentProps } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { useState, useEffect } from 'react';
-import { useColorScheme } from 'react-native';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import SyncStatus from '../../components/SyncStatus';
+import { useAppStore } from '../../store/useAppStore';
+import { useThemedStyles, useThemeTokens } from '../../theme';
 import {
-  isAuthenticated,
-  getCurrentUser,
   signOut,
   onAuthStateChange,
 } from '../../services/firebase';
+import { getSafeHeaderPaddingTop, getSafeBottomPadding } from '../../utils/layout';
+import { AmarDeshLogo } from '../../components/AmarDeshLogo';
+import { checkForOtaUpdate, applyOtaUpdate } from '../../services/otaUpdateService';
+import { DistrictPickerModal } from '../../components/DistrictPickerModal';
+import {
+  getSavedPrayerData,
+  requestGpsPrayerTimes,
+  resetToDhakaDefault,
+  PrayerTimeData,
+  getPrayerTimesForDivision,
+} from '../../services/prayerTimesService';
+
+type IoniconName = ComponentProps<typeof Ionicons>['name'];
+
+interface ProfileMenuItem {
+  icon: IoniconName;
+  label: string;
+  action: () => void;
+}
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const [darkMode, setDarkMode] = useState(colorScheme === 'dark');
+  const insets = useSafeAreaInsets();
+  const tokens = useThemeTokens();
+  const themePreference = useAppStore((state) => state.themePreference);
+  const setThemePreference = useAppStore((state) => state.setThemePreference);
+  const language = useAppStore((state) => state.language);
+  const setLanguage = useAppStore((state) => state.setLanguage);
+  const darkMode = themePreference === 'dark';
   const [isAuth, setIsAuth] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
+  const [prayerData, setPrayerData] = useState<PrayerTimeData>(
+    getPrayerTimesForDivision('ঢাকা')
+  );
+  const [showLocationModal, setShowLocationModal] = useState(false);
+
+  useEffect(() => {
+    getSavedPrayerData().then(setPrayerData);
+  }, []);
+
+  const handleRequestGps = async () => {
+    const result = await requestGpsPrayerTimes();
+    if (result.success && result.data) {
+      setPrayerData(result.data);
+    } else if (result.error) {
+      Alert.alert('লোকেশন বার্তা', result.error);
+    }
+  };
+
+  const handleResetDhaka = async () => {
+    const defaultData = await resetToDhakaDefault();
+    setPrayerData(defaultData);
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChange((user) => {
@@ -26,37 +84,196 @@ export default function ProfileScreen() {
     return unsubscribe;
   }, []);
 
-  const menuItems = [
-    { icon: 'notifications-outline', label: 'নোটিফিকেশন', action: () => router.push('/settings/notifications') },
-    { icon: 'shield-checkmark-outline', label: 'গোপনীয়তা', action: () => router.push('/settings/privacy') },
-    { icon: 'newspaper-outline', label: 'ইপেপার', action: () => {} },
-    { icon: 'videocam-outline', label: 'ভিডিও', action: () => {} },
-    { icon: 'chatbubble-outline', label: 'AI সহকারী', action: () => {} },
-    { icon: 'settings-outline', label: 'সেটিংস', action: () => {} },
-    { icon: 'information-circle-outline', label: 'আমাদের সম্পর্কে', action: () => {} },
+  const handleCheckOtaUpdate = async () => {
+    setCheckingUpdate(true);
+    try {
+      const updateInfo = await checkForOtaUpdate();
+      if (updateInfo.isAvailable) {
+        Alert.alert(
+          'নতুন আপডেট উপলব্ধ!',
+          `সংস্করণ: ${updateInfo.latestVersion}\n\n${updateInfo.releaseNotes}\n\nআপনি কি এখনই আপডেটটি ডাউনলোড করে সক্রিয় করতে চান?`,
+          [
+            { text: 'পরে', style: 'cancel' },
+            {
+              text: 'এখনই আপডেট করুন',
+              onPress: async () => {
+                const res = await applyOtaUpdate();
+                Alert.alert('আপডেট', res.message);
+              },
+            },
+          ]
+        );
+      } else {
+        Alert.alert(
+          'অ্যাপ আপ-টু-ডেট আছে',
+          `বর্তমান সংস্করণ: ১.৩.০ (লেটেস্ট রিলিজ)\nসর্বশেষ পরীক্ষা: ${updateInfo.lastChecked || 'এইমাত্র'}\n\nআপনার ডিভাইসে দৈনিক আমার দেশের সমস্ত নতুন ফিচার ও নিরাপত্তা আপডেট সচল রয়েছে।`
+        );
+      }
+    } catch {
+      Alert.alert('ত্রুটি', 'আপডেট পরীক্ষা করতে ব্যর্থ হয়েছে। ইন্টারনেট সংযোগ পরীক্ষা করুন।');
+    } finally {
+      setCheckingUpdate(false);
+    }
+  };
+
+  const menuItems: ProfileMenuItem[] = [
+    {
+      icon: 'settings-outline',
+      label: language === 'bn' ? 'সেটিংস' : 'Settings',
+      action: () => router.push('/settings' as any),
+    },
+    {
+      icon: 'location-outline',
+      label: language === 'bn'
+        ? `সংস্করণ ও অবস্থান (${prayerData.isGps ? prayerData.division + ' GPS' : (prayerData.division || 'ঢাকা')})`
+        : `Edition & Location (${prayerData.isGps ? prayerData.division + ' GPS' : (prayerData.division || 'Dhaka')})`,
+      action: () => setShowLocationModal(true),
+    },
+    {
+      icon: 'globe-outline',
+      label: language === 'bn' ? 'ভাষা (বাংলা)' : 'Language (English)',
+      action: () => {
+        const next = language === 'bn' ? 'en' : 'bn';
+        setLanguage(next);
+        Alert.alert(
+          next === 'bn' ? 'ভাষা পরিবর্তিত হয়েছে' : 'Language Changed',
+          next === 'bn' ? 'বাংলা সক্রিয় করা হয়েছে।' : 'English has been activated.'
+        );
+      },
+    },
+    { icon: 'bookmark-outline', label: language === 'bn' ? 'সংরক্ষিত' : 'Saved', action: () => router.push('/bookmarks' as any) },
+    { icon: 'newspaper-outline', label: language === 'bn' ? 'ই-পেপার' : 'E-Paper', action: () => router.push('/epaper' as any) },
+    { icon: 'videocam-outline', label: language === 'bn' ? 'ভিডিও' : 'Videos', action: () => router.push('/video' as any) },
+    { icon: 'notifications-outline', label: language === 'bn' ? 'নোটিফিকেশন' : 'Notifications', action: () => router.push('/notifications' as any) },
+    { icon: 'cloud-download-outline', label: language === 'bn' ? 'আপডেট পরীক্ষা' : 'Check Updates', action: handleCheckOtaUpdate },
+    {
+      icon: 'information-circle-outline',
+      label: language === 'bn' ? 'পরিচিতি' : 'About',
+      action: () => {
+        Alert.alert(
+          'আমার দেশ',
+          'দৈনিক আমার দেশ — স্বাধীনতার কথা বলে\n\nসম্পাদক ও প্রকাশক: মাহমুদুর রহমান\nকারওয়ান বাজার, ঢাকা-১২১৫।\nফোন: +৮৮০২-৯১১৮৮৫১'
+        );
+      },
+    },
   ];
 
+  const styles = useThemedStyles((tokens) =>
+    StyleSheet.create({
+      container: {
+        flex: 1,
+        backgroundColor: tokens.surface.subtle,
+      },
+      header: {
+        paddingTop: getSafeHeaderPaddingTop(insets.top, 8),
+        paddingHorizontal: 16,
+        paddingBottom: 14,
+        backgroundColor: tokens.surface.base,
+        borderBottomWidth: 1,
+        borderBottomColor: tokens.border.default,
+      },
+      title: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: tokens.text.primary,
+      },
+      section: {
+        backgroundColor: tokens.surface.base,
+        marginTop: 12,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderTopWidth: 1,
+        borderBottomWidth: 1,
+        borderColor: tokens.border.default,
+      },
+      appInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+      },
+      logo: {
+        backgroundColor: tokens.brand.primary,
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 4,
+      },
+      logoText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: 'bold',
+      },
+      appName: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: tokens.text.primary,
+      },
+      tagline: {
+        fontSize: 12,
+        color: tokens.text.secondary,
+        marginTop: 2,
+      },
+      menuItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 12,
+      },
+      menuItemBorder: {
+        borderBottomWidth: 1,
+        borderBottomColor: tokens.border.subtle,
+      },
+      menuLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+      },
+      menuLabel: {
+        fontSize: 15,
+        color: tokens.text.primary,
+        fontWeight: '500',
+      },
+      linkItem: {
+        paddingVertical: 8,
+      },
+      linkText: {
+        fontSize: 14,
+        color: tokens.brand.primary,
+        fontWeight: '500',
+      },
+      versionContainer: {
+        alignItems: 'center',
+        paddingVertical: 24,
+      },
+      versionText: {
+        fontSize: 12,
+        color: tokens.text.tertiary,
+      },
+    })
+  );
+
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{
+        paddingBottom: getSafeBottomPadding(insets.bottom, 32),
+      }}
+    >
       <View style={styles.header}>
-        <Text style={styles.title}>আরও</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Text style={styles.title}>{language === 'bn' ? 'প্রোফাইল' : 'Profile'}</Text>
+          <AmarDeshLogo height={24} variant="png" />
+        </View>
       </View>
 
       {/* App Info */}
       <View style={styles.section}>
         <View style={styles.appInfo}>
-          <View style={styles.logo}>
-            <Text style={styles.logoText}>আ.দে</Text>
-          </View>
-          <View>
-            <Text style={styles.appName}>আমার দেশ</Text>
-            <Text style={styles.tagline}>স্বাধীনতার কথা বলে</Text>
-          </View>
+          <AmarDeshLogo height={32} variant="png" showMotto />
         </View>
       </View>
 
       {/* Sync Status */}
-      <SyncStatus onLoginPress={() => router.push('/auth/login')} />
+      <SyncStatus onLoginPress={() => router.push('/auth/login' as any)} />
 
       {/* Logout Button (if authenticated) */}
       {isAuth && (
@@ -87,10 +304,10 @@ export default function ProfileScreen() {
             activeOpacity={0.7}
           >
             <View style={styles.menuLeft}>
-              <Ionicons name="log-out-outline" size={24} color="#DC2626" />
-              <Text style={[styles.menuLabel, { color: '#DC2626' }]}>লগআউট</Text>
+              <Ionicons name="log-out-outline" size={22} color={tokens.status.error} />
+              <Text style={[styles.menuLabel, { color: tokens.status.error }]}>লগআউট</Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+            <Ionicons name="chevron-forward" size={18} color={tokens.interactive.inactive} />
           </TouchableOpacity>
         </View>
       )}
@@ -99,13 +316,19 @@ export default function ProfileScreen() {
       <View style={styles.section}>
         <View style={styles.menuItem}>
           <View style={styles.menuLeft}>
-            <Ionicons name="moon-outline" size={24} color="#006B3F" />
-            <Text style={styles.menuLabel}>ডার্ক মোড</Text>
+            <Ionicons
+              name={darkMode ? 'moon' : 'sunny'}
+              size={22}
+              color={tokens.brand.primary}
+            />
+            <Text style={styles.menuLabel}>{language === 'bn' ? 'ডার্ক মোড' : 'Dark Mode'}</Text>
           </View>
           <Switch
             value={darkMode}
-            onValueChange={setDarkMode}
-            trackColor={{ false: '#D1D5DB', true: '#006B3F' }}
+            onValueChange={(value) =>
+              setThemePreference(value ? 'dark' : 'light')
+            }
+            trackColor={{ false: tokens.border.strong, true: tokens.brand.primary }}
             thumbColor="#FFFFFF"
           />
         </View>
@@ -124,113 +347,60 @@ export default function ProfileScreen() {
             activeOpacity={0.7}
           >
             <View style={styles.menuLeft}>
-              <Ionicons name={item.icon as any} size={24} color="#006B3F" />
+              <Ionicons name={item.icon} size={22} color={tokens.brand.primary} />
               <Text style={styles.menuLabel}>{item.label}</Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+            <Ionicons name="chevron-forward" size={18} color={tokens.interactive.inactive} />
           </TouchableOpacity>
         ))}
       </View>
 
-      {/* Links */}
+      {/* Official Links */}
       <View style={styles.section}>
-        <TouchableOpacity style={styles.linkItem}>
-          <Text style={styles.linkText}>🌐 ওয়েবসাইট</Text>
+        <TouchableOpacity
+          style={styles.linkItem}
+          onPress={() => Linking.openURL('https://www.dailyamardesh.com')}
+        >
+          <Text style={styles.linkText}>🌐 dailyamardesh.com</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.linkItem}>
-          <Text style={styles.linkText}>📰 ই-পেপার</Text>
+        <TouchableOpacity
+          style={styles.linkItem}
+          onPress={() => router.push('/epaper' as any)}
+        >
+          <Text style={styles.linkText}>{language === 'bn' ? '📰 ডিজিটাল ই-পেপার' : '📰 Digital ePaper'}</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Version */}
+      {/* Version & OTA Trigger */}
       <View style={styles.versionContainer}>
-        <Text style={styles.versionText}>সংস্করণ ১.৩.০</Text>
+        <Text style={styles.versionText}>সংস্করণ ১.৩.০ • CybrCraft</Text>
+        <TouchableOpacity
+          onPress={handleCheckOtaUpdate}
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 }}
+          disabled={checkingUpdate}
+          activeOpacity={0.7}
+        >
+          {checkingUpdate ? (
+            <ActivityIndicator size="small" color={tokens.brand.primary} />
+          ) : (
+            <>
+              <Ionicons name="refresh-outline" size={14} color={tokens.brand.primary} />
+              <Text style={{ fontSize: 12, color: tokens.brand.primary, fontWeight: '600' }}>
+                {language === 'bn' ? 'আপডেট পরীক্ষা' : 'Check Updates'}
+              </Text>
+            </>
+          )}
+        </TouchableOpacity>
       </View>
+      {/* Location / Prayer Settings Modal */}
+      <DistrictPickerModal
+        visible={showLocationModal}
+        selectedDivision={prayerData.division}
+        isGps={Boolean(prayerData.isGps)}
+        onRequestGps={handleRequestGps}
+        onResetDhaka={handleResetDhaka}
+        onClose={() => setShowLocationModal(false)}
+      />
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-  header: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#111827',
-  },
-  section: {
-    backgroundColor: '#FFFFFF',
-    marginTop: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  appInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  logo: {
-    backgroundColor: '#006B3F',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  logoText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  appName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#111827',
-  },
-  tagline: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginTop: 2,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 12,
-  },
-  menuItemBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
-  },
-  menuLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  menuLabel: {
-    fontSize: 16,
-    color: '#111827',
-  },
-  linkItem: {
-    paddingVertical: 8,
-  },
-  linkText: {
-    fontSize: 14,
-    color: '#006B3F',
-  },
-  versionContainer: {
-    alignItems: 'center',
-    paddingVertical: 24,
-  },
-  versionText: {
-    fontSize: 12,
-    color: '#9CA3AF',
-  },
-});

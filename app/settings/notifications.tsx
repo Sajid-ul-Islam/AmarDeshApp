@@ -2,17 +2,24 @@ import { View, Text, StyleSheet, ScrollView, Switch, TouchableOpacity } from 're
 import { useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { useThemedStyles } from '../../theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useThemedStyles, useThemeTokens } from '../../theme';
+import { getSafeHeaderPaddingTop } from '../../utils/layout';
+import { AmarDeshLogo } from '../../components/AmarDeshLogo';
 import { 
   NotificationPreferences, 
   loadNotificationPreferences, 
   saveNotificationPreferences,
   cancelAllNotifications,
   scheduleDailyBriefing,
+  isNotificationApiAvailable,
 } from '../../services/notificationService';
 
 export default function NotificationSettingsScreen() {
   const router = useRouter();
+  // Edge-to-edge: pad content below the status bar
+  const insets = useSafeAreaInsets();
+  const tokens = useThemeTokens();
   const styles = useThemedStyles((tokens) => StyleSheet.create({
     container: {
       flex: 1,
@@ -21,8 +28,9 @@ export default function NotificationSettingsScreen() {
     header: {
       flexDirection: 'row',
       alignItems: 'center',
+      paddingTop: getSafeHeaderPaddingTop(insets.top, 6),
       paddingHorizontal: 16,
-      paddingVertical: 12,
+      paddingBottom: 12,
       backgroundColor: tokens.surface.base,
       borderBottomWidth: 1,
       borderBottomColor: tokens.border.default,
@@ -38,6 +46,8 @@ export default function NotificationSettingsScreen() {
     },
     content: {
       flex: 1,
+      // Edge-to-edge: keep last section clear of the gesture navigation bar
+      paddingBottom: 32,
     },
     section: {
       backgroundColor: tokens.surface.base,
@@ -114,49 +124,80 @@ export default function NotificationSettingsScreen() {
     },
   });
 
+  // Notifications are inert in Expo Go on Android (remote push removed in
+  // SDK 53+); show an explanatory banner instead of silent dead switches.
+  const notificationsAvailable = isNotificationApiAvailable();
+
   useEffect(() => {
     loadPreferences();
   }, []);
 
   const loadPreferences = async () => {
-    const prefs = await loadNotificationPreferences();
-    setPreferences(prefs);
+    try {
+      const prefs = await loadNotificationPreferences();
+      setPreferences(prefs);
+    } catch (error) {
+      console.error('Error loading notification preferences:', error);
+    }
   };
 
-  const updatePreference = async (key: keyof NotificationPreferences, value: any) => {
-    const newPrefs = { ...preferences, [key]: value };
-    setPreferences(newPrefs);
-    await saveNotificationPreferences(newPrefs);
+  const updatePreference = async <K extends keyof NotificationPreferences>(
+    key: K,
+    value: NotificationPreferences[K]
+  ) => {
+    try {
+      const newPrefs: NotificationPreferences = { ...preferences, [key]: value };
+      setPreferences(newPrefs);
+      await saveNotificationPreferences(newPrefs);
 
-    // Handle specific preference changes
-    if (key === 'dailyBriefing') {
-      if (value) {
-        await scheduleDailyBriefing();
-      } else {
-        await cancelAllNotifications();
+      if (key === 'dailyBriefing') {
+        if (value) {
+          await scheduleDailyBriefing();
+        } else {
+          await cancelAllNotifications();
+        }
       }
+    } catch (error) {
+      console.error('Error updating notification preferences:', error);
     }
   };
 
   const handleResetNotifications = async () => {
-    await cancelAllNotifications();
-    // Show confirmation (in real app, use Alert)
+    try {
+      await cancelAllNotifications();
+    } catch (error) {
+      console.error('Error resetting notifications:', error);
+    }
   };
 
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
-          <Ionicons name="arrow-back" size={24} color="#111827" />
-        </TouchableOpacity>
-        <Text style={styles.title}>নোটিফিকেশন সেটিংস</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="ফিরে যান"
+            onPress={() => router.back()}
+            style={styles.backButton}
+          >
+            <Ionicons name="arrow-back" size={24} color={tokens.text.primary} />
+          </TouchableOpacity>
+          <Text style={styles.title}>নোটিফিকেশন সেটিংস</Text>
+        </View>
+        <AmarDeshLogo height={22} variant="png" />
       </View>
 
       <ScrollView style={styles.content}>
+        {/* Expo Go limitation notice */}
+        {!notificationsAvailable && (
+          <View style={styles.infoBox}>
+            <Text style={styles.infoText}>
+              এক্সপো গো-তে অ্যান্ড্রয়েডে পুশ নোটিফিকেশন সমর্থিত নয়। সম্পূর্ণ নোটিফিকেশন সুবিধা পেতে ডেভেলপমেন্ট বিল্ড ব্যবহার করুন।
+            </Text>
+          </View>
+        )}
+
         {/* General Settings */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>সাধারণ</Text>
@@ -265,6 +306,16 @@ export default function NotificationSettingsScreen() {
             💡 নোটিফিকেশনে ট্যাপ করে সরাসরি সংবাদ পড়ুন। ব্রেকিং নিউজ সবচেয়ে গুরুত্বপূর্ণ সংবাদ তাৎক্ষণিকভাবে পৌঁছে দেয়।
           </Text>
         </View>
+
+        {/* View Inbox Button */}
+        <TouchableOpacity
+          style={[styles.dangerButton, { backgroundColor: tokens.brand.primary, marginTop: 16 }]}
+          onPress={() => router.push('/notifications' as any)}
+        >
+          <Text style={styles.dangerButtonText}>
+            নোটিফিকেশন ইনবক্স দেখুন →
+          </Text>
+        </TouchableOpacity>
 
         {/* Reset Button */}
         <TouchableOpacity
