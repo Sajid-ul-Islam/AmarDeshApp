@@ -37,28 +37,45 @@ export const dispatchBreakingPushNotification = async (
   recipientTokens: string[] = []
 ): Promise<PushDeliveryReport> => {
   const batchId = `push-batch-${Date.now()}`;
-  const total = recipientTokens.length > 0 ? recipientTokens.length : 1; // Default to test device
 
-  const messages = (recipientTokens.length > 0 ? recipientTokens : ['ExponentPushToken[DEMO]']).map(
-    (token) => ({
-      to: token,
-      sound: 'default',
-      title: payload.title,
-      body: payload.body,
-      data: {
-        articleId: payload.articleId,
-        category: payload.category,
-        source: 'push',
-      },
-      priority: 'high',
-      channelId: BREAKING_CHANNEL_ID,
-      _displayInForeground: true,
-    })
-  );
+  // If no recipients, return early with zero counts (don't fake success)
+  if (recipientTokens.length === 0) {
+    console.warn('[PushWorker] No recipient tokens provided, skipping push notification');
+    return {
+      success: true,
+      totalRecipients: 0,
+      deliveredCount: 0,
+      failedCount: 0,
+      timestamp: Date.now(),
+      batchId,
+    };
+  }
+
+  const messages = recipientTokens.map((token) => ({
+    to: token,
+    sound: 'default',
+    title: payload.title,
+    body: payload.body,
+    data: {
+      articleId: payload.articleId,
+      category: payload.category,
+      source: 'push',
+    },
+    priority: 'high',
+    channelId: BREAKING_CHANNEL_ID,
+    _displayInForeground: true,
+  }));
 
   try {
-    // If real Expo push tokens exist, execute HTTP request
-    if (recipientTokens.length > 0) {
+    // Expo Push API has a limit of 100 messages per request
+    // Chunk messages into batches of 100
+    const CHUNK_SIZE = 100;
+    let totalDelivered = 0;
+    let totalFailed = 0;
+
+    for (let i = 0; i < messages.length; i += CHUNK_SIZE) {
+      const chunk = messages.slice(i, i + CHUNK_SIZE);
+      
       const response = await fetch('https://exp.host/--/api/v2/push/send', {
         method: 'POST',
         headers: {
@@ -66,29 +83,43 @@ export const dispatchBreakingPushNotification = async (
           'Accept-encoding': 'gzip, deflate',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(messages),
+        body: JSON.stringify(chunk),
       });
 
       if (!response.ok) {
         throw new Error(`Expo push API returned status ${response.status}`);
       }
+
+      const result = await response.json();
+      
+      // Count successes and failures from response
+      if (result.data) {
+        result.data.forEach((receipt: any) => {
+          if (receipt.status === 'ok') {
+            totalDelivered++;
+          } else {
+            totalFailed++;
+            console.warn(`[PushWorker] Failed to deliver to token:`, receipt.details?.error);
+          }
+        });
+      }
     }
 
     return {
-      success: true,
-      totalRecipients: total,
-      deliveredCount: total,
-      failedCount: 0,
+      success: totalFailed === 0,
+      totalRecipients: recipientTokens.length,
+      deliveredCount: totalDelivered,
+      failedCount: totalFailed,
       timestamp: Date.now(),
       batchId,
     };
   } catch (error: any) {
-    console.warn(`[PushWorker] Error sending batch ${batchId}:`, error?.message);
+    console.error(`[PushWorker] Error sending batch ${batchId}:`, error?.message);
     return {
       success: false,
-      totalRecipients: total,
+      totalRecipients: recipientTokens.length,
       deliveredCount: 0,
-      failedCount: total,
+      failedCount: recipientTokens.length,
       timestamp: Date.now(),
       batchId,
     };

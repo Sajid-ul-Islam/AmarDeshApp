@@ -1,3 +1,4 @@
+import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { Article } from '../types';
 
@@ -10,7 +11,7 @@ export interface ByokAiConfig {
   enabled: boolean;
 }
 
-const STORAGE_KEY = '@amar_desh_byok_ai_config';
+const SECURE_STORAGE_KEY = 'amar_desh_byok_ai_config';
 
 export interface SupportedModelInfo {
   id: string;
@@ -202,8 +203,10 @@ const DEFAULT_CONFIG: ByokAiConfig = {
  */
 export async function discoverGeminiModels(apiKey: string): Promise<string[]> {
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey.trim()}`;
-    const res = await fetch(url);
+    const url = `https://generativelanguage.googleapis.com/v1beta/models`;
+    const res = await fetch(url, {
+      headers: { 'x-goog-api-key': apiKey.trim() },
+    });
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data?.models)) {
@@ -248,11 +251,11 @@ export async function discoverGeminiModels(apiKey: string): Promise<string[]> {
 }
 
 /**
- * Get current BYOK AI Configuration from local device storage
+ * Get current BYOK AI Configuration from secure storage
  */
 export async function getByokAiConfig(): Promise<ByokAiConfig> {
   try {
-    const raw = await AsyncStorage.getItem(STORAGE_KEY);
+    const raw = await SecureStore.getItemAsync(SECURE_STORAGE_KEY);
     if (!raw) return DEFAULT_CONFIG;
     const parsed = JSON.parse(raw);
     return { ...DEFAULT_CONFIG, ...parsed };
@@ -263,11 +266,11 @@ export async function getByokAiConfig(): Promise<ByokAiConfig> {
 }
 
 /**
- * Save BYOK AI Configuration to local device storage
+ * Save BYOK AI Configuration to secure storage
  */
 export async function saveByokAiConfig(config: ByokAiConfig): Promise<void> {
   try {
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+    await SecureStore.setItemAsync(SECURE_STORAGE_KEY, JSON.stringify(config));
   } catch (error) {
     console.error('[BYOK AI] Failed to save config:', error);
   }
@@ -302,10 +305,13 @@ export async function testAiConnection(
 
       let lastError = '';
       for (const candidate of candidatesToTry) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${candidate}:generateContent?key=${apiKey.trim()}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${candidate}:generateContent`;
         const response = await fetch(url, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-goog-api-key': apiKey.trim(),
+          },
           body: JSON.stringify({
             contents: [
               {
@@ -467,10 +473,13 @@ export async function executeGeminiGenerateContent(
 
   for (const candidate of modelsToTry) {
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${candidate}:generateContent?key=${cleanKey}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${candidate}:generateContent`;
       const response = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-goog-api-key': cleanKey,
+        },
         body: JSON.stringify({
           contents,
           generationConfig: {
@@ -512,10 +521,13 @@ export async function executeGeminiGenerateContent(
     const discovered = await discoverGeminiModels(cleanKey);
     for (const model of discovered) {
       if (modelsToTry.includes(model)) continue;
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${cleanKey}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
       const response = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-goog-api-key': cleanKey,
+        },
         body: JSON.stringify({
           contents,
           generationConfig,

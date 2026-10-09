@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Article } from '../src/types';
+import { Article } from '../types';
 
 export interface ReadingStreak {
   count: number;
