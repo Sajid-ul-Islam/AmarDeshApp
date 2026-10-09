@@ -1,4 +1,4 @@
-import { createHmac } from 'crypto';
+import { createHmac, timingSafeEqual } from 'crypto';
 import type { Article } from '../types';
 import { dispatchBreakingPushNotification } from './pushNotificationWorker';
 
@@ -27,6 +27,7 @@ export interface WebhookValidationResult {
 
 /**
  * Validates HMAC SHA-256 signature from Amar Desh CMS webhook
+ * Uses timing-safe comparison to prevent timing attacks
  */
 export const verifyCmsWebhookSignature = (
   rawBody: string,
@@ -42,9 +43,22 @@ export const verifyCmsWebhookSignature = (
       .update(rawBody)
       .digest('hex');
 
-    const expectedHeader = `sha256=${computedHash}`;
-    const matches =
-      signatureHeader === expectedHeader || signatureHeader === computedHash;
+    const expectedSignature = `sha256=${computedHash}`;
+    
+    // Extract signature from header (may or may not have sha256= prefix)
+    const providedSignature = signatureHeader.startsWith('sha256=')
+      ? signatureHeader
+      : `sha256=${signatureHeader}`;
+
+    // Use timing-safe comparison to prevent timing attacks
+    const sigBuffer = Buffer.from(providedSignature);
+    const expectedBuffer = Buffer.from(expectedSignature);
+    
+    if (sigBuffer.length !== expectedBuffer.length) {
+      return { isValid: false, reason: 'Signature length mismatch' };
+    }
+
+    const matches = timingSafeEqual(sigBuffer, expectedBuffer);
 
     if (!matches) {
       return { isValid: false, reason: 'Signature mismatch' };
@@ -54,6 +68,28 @@ export const verifyCmsWebhookSignature = (
   } catch (err: any) {
     return { isValid: false, reason: `Verification error: ${err?.message}` };
   }
+};
+
+/**
+ * Validates webhook timestamp to prevent replay attacks
+ * Allows 5-minute window for clock skew
+ */
+export const verifyWebhookTimestamp = (
+  timestamp: number,
+  maxAgeMs: number = 5 * 60 * 1000 // 5 minutes
+): WebhookValidationResult => {
+  const now = Date.now();
+  const age = now - timestamp;
+
+  if (age < 0) {
+    return { isValid: false, reason: 'Timestamp is in the future' };
+  }
+
+  if (age > maxAgeMs) {
+    return { isValid: false, reason: 'Timestamp too old (possible replay attack)' };
+  }
+
+  return { isValid: true };
 };
 
 /**
@@ -87,10 +123,29 @@ export const normalizeCmsArticle = (
  */
 export const handleCmsWebhook = async (
   payload: CMSWebhookPayload,
-  clientSecret: string = process.env.CMS_WEBHOOK_SECRET || 'amardesh-webhook-secret-2026'
+  clientSecret: string,
+  rawBody: string,
+  signatureHeader: string
 ): Promise<{ success: boolean; message: string; article?: Article }> => {
+  // Validate required parameters
+  if (!clientSecret) {
+    return { success: false, message: 'Webhook secret is required' };
+  }
+
   if (!payload || !payload.event || !payload.article) {
     return { success: false, message: 'Invalid webhook payload structure' };
+  }
+
+  // Verify signature
+  const signatureResult = verifyCmsWebhookSignature(rawBody, signatureHeader, clientSecret);
+  if (!signatureResult.isValid) {
+    return { success: false, message: `Invalid signature: ${signatureResult.reason}` };
+  }
+
+  // Verify timestamp (prevent replay attacks)
+  const timestampResult = verifyWebhookTimestamp(payload.timestamp);
+  if (!timestampResult.isValid) {
+    return { success: false, message: `Invalid timestamp: ${timestampResult.reason}` };
   }
 
   const normalizedArticle = normalizeCmsArticle(payload.article);

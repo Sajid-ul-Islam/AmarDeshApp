@@ -58,7 +58,10 @@ describe('CMS Webhook & Push Notification Server Worker', () => {
       },
     };
 
-    const response = await handleCmsWebhook(payload, secretKey);
+    const rawBody = JSON.stringify(payload);
+    const signature = createHmac('sha256', secretKey).update(rawBody).digest('hex');
+
+    const response = await handleCmsWebhook(payload, secretKey, rawBody, signature);
     expect(response.success).toBe(true);
     expect(response.article?.isBreaking).toBe(true);
     expect(response.article?.title).toContain('অর্থনীতিতে');

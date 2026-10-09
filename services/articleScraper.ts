@@ -14,6 +14,26 @@ export interface ScrapedArticleData {
 
 const CACHE_PREFIX = '@amardesh_scraped_article_';
 
+// Allow-list of trusted hosts for article scraping
+const APP_LINK_HOSTS = [
+  'dailyamardesh.com',
+  'www.dailyamardesh.com',
+];
+
+/**
+ * Validates if a URL is from a trusted host
+ */
+function isTrustedHost(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return APP_LINK_HOSTS.some(host => 
+      parsed.hostname === host || parsed.hostname.endsWith(`.${host}`)
+    );
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Fetch and extract the full article content from dailyamardesh.com HTML
  */
@@ -51,8 +71,11 @@ export async function scrapeFullArticle(
     }
   }
 
-  // 3. Attempt live extraction if we have a valid HTTP URL
-  if (targetUrl.startsWith('http')) {
+  // 3. Validate URL is from trusted host before fetching (prevent SSRF)
+  if (targetUrl.startsWith('http') && !isTrustedHost(targetUrl)) {
+    console.warn('[ArticleScraper] Blocked fetch from untrusted host:', targetUrl);
+    // Fall through to fallback content
+  } else if (targetUrl.startsWith('http')) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 5000);
     try {
